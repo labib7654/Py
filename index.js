@@ -49,7 +49,7 @@ async function startBot(retries = 0) {
     console.log('✅ تم حذف Webhook القديم');
 
     bot.launch({
-      allowedUpdates: ['message', 'callback_query', 'my_chat_member', 'chat_member'],
+      allowedUpdates: ['message', 'callback_query', 'my_chat_member', 'chat_member', 'chat_join_request'],
     });
     console.log('✅ البوت يعمل الآن بوضع Polling!');
 

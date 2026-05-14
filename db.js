@@ -21,14 +21,37 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
       addedBy,
       addedByUsername,
       addedAt: new Date(),
-      admins: new Map(),       // userId → { username, promotedBy, promotedByUsername, promotedAt }
-      warns: new Map(),        // userId → [{ reason, warnedBy, warnedAt }]
+
+      // الأعضاء المتتبعون
+      members: new Map(),       // userId → { username, firstName, role, joinedAt }
+
+      // المشرفون مع بيانات الترقية
+      admins: new Map(),        // userId → { username, promotedBy, promotedByUsername, promotedAt }
+
+      // نظام التحذيرات
+      warns: new Map(),         // userId → [{ reason, warnedBy, warnedAt }]
+      maxWarns: 3,
+
+      // رسالة الترحيب
       welcomeMessage: '👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.',
       welcomeEnabled: true,
+
+      // الإعدادات العامة
       antiSpam: false,
       muteNewMembers: false,
       mutedUsers: new Set(),
       bannedUsers: new Set(),
+
+      // نظام الكلمات المحظورة
+      bannedWords: [],          // [{ word, action:'warn'|'mute'|'kick'|'ban', addedBy, addedAt }]
+      bannedWordsAction: 'warn',// الإجراء الافتراضي
+
+      // طلبات الانضمام
+      joinRequests: new Map(),  // userId → { username, firstName, requestedAt, status }
+      joinRequestsEnabled: false,
+
+      // القواعد
+      rules: '',
     });
   }
   return groups.get(chatId);
@@ -40,6 +63,19 @@ function deleteGroup(chatId) {
 
 function allGroups() {
   return [...groups.values()];
+}
+
+// ── تتبع الأعضاء ─────────────────────────────────────────────
+function trackMember(chatId, userId, username, firstName, role) {
+  const group = groups.get(chatId);
+  if (!group) return;
+  group.members.set(userId, {
+    userId,
+    username: username || '',
+    firstName: firstName || String(userId),
+    role: role || 'member',   // 'owner' | 'admin' | 'member'
+    joinedAt: new Date(),
+  });
 }
 
 // ── مستخدم ──────────────────────────────────────────────────
@@ -76,11 +112,15 @@ function getStats() {
   const totalWarns   = [...groups.values()].reduce((a, g) => {
     return a + [...g.warns.values()].reduce((b, w) => b + w.length, 0);
   }, 0);
-  return { totalGroups, totalUsers, bannedUsers, totalAdmins, totalWarns };
+  const pendingReqs  = [...groups.values()].reduce((a, g) => {
+    return a + [...g.joinRequests.values()].filter(r => r.status === 'pending').length;
+  }, 0);
+  return { totalGroups, totalUsers, bannedUsers, totalAdmins, totalWarns, pendingReqs };
 }
 
 module.exports = {
   getGroup, getOrCreateGroup, deleteGroup, allGroups,
+  trackMember,
   getOrCreateUser, getUser, allUsers,
   getStats,
 };

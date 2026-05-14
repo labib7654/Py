@@ -19,6 +19,16 @@ async function isAdmin(bot, chatId, userId) {
   }
 }
 
+// هل المستخدم مالك المجموعة؟
+async function isOwner(bot, chatId, userId) {
+  try {
+    const member = await bot.telegram.getChatMember(chatId, userId);
+    return member.status === 'creator';
+  } catch {
+    return false;
+  }
+}
+
 // تحديد المستخدم المستهدف (رد أو ذكر)
 async function getTargetUser(ctx) {
   const msg = ctx.message;
@@ -115,6 +125,7 @@ async function promoteUser(bot, chatId, userId) {
 module.exports = {
   isDeveloper,
   isAdmin,
+  isOwner,
   getTargetUser,
   getReason,
   muteMember,
