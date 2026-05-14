@@ -798,9 +798,6 @@ function registerCallbacks(bot, userStates, setUserState, clearUserState) {
   });
 }
 
-// Export the isDeveloper function for use in callbacks
-const { isDeveloper } = require("./helpers");
-
 module.exports = {
   registerCommands,
   userStates,
