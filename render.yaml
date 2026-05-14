@@ -7,9 +7,5 @@ services:
     buildCommand: npm install
     startCommand: node index.js
     envVars:
-      - key: BOT_TOKEN
-        sync: false
-      - key: DEVELOPER_ID
-        sync: false
       - key: NODE_ENV
         value: production
