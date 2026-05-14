@@ -1,38 +1,26 @@
 "use strict";
 
-const config = require("./config");
-const database = require("./database");
+const cfg = require("./config");
+const db  = require("./db");
+const { isDev } = require("./helpers");
 
-function getUserRole(userId) {
+function getRole(userId) {
   userId = parseInt(userId);
-  if (userId === parseInt(config.DEVELOPER_ID)) return config.ROLES.DEVELOPER;
-  const user = database.getUser(userId);
-  return user ? user.role : config.ROLES.USER;
+  if (userId === cfg.DEVELOPER_ID) return cfg.ROLES.DEVELOPER;
+  const u = db.getUser(userId);
+  return u ? u.role : cfg.ROLES.USER;
 }
 
-function hasRole(userId, ...roles) {
-  return roles.includes(getUserRole(userId));
+function isAtLeast(userId, ...roles) {
+  return roles.includes(getRole(userId));
 }
 
-async function registerUser(from) {
+async function touch(from) {
   if (!from) return null;
-  const userId = parseInt(from.id);
-  const existing = database.getUser(userId);
-  const data = {
-    userId,
-    firstName: from.first_name || "مستخدم",
-    username: from.username || null,
-  };
-  if (!existing) {
-    data.role = userId === parseInt(config.DEVELOPER_ID)
-      ? config.ROLES.DEVELOPER
-      : config.ROLES.USER;
-    database.setUser(userId, data);
-    database.addLog({ action: "new_user", userId });
-  } else {
-    database.setUser(userId, { firstName: data.firstName, username: data.username });
-  }
-  return database.getUser(userId);
+  const id   = parseInt(from.id);
+  const role = id === cfg.DEVELOPER_ID ? cfg.ROLES.DEVELOPER : (db.getUser(id)?.role || cfg.ROLES.USER);
+  db.upsertUser(id, { name: from.first_name || "مستخدم", username: from.username || null, role });
+  return db.getUser(id);
 }
 
-module.exports = { getUserRole, hasRole, registerUser };
+module.exports = { getRole, isAtLeast, touch };

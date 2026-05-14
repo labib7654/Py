@@ -1,32 +1,19 @@
 "use strict";
 
-const config = require("./config");
+const cfg = require("./config");
 
-function isDeveloper(userId) {
-  return parseInt(userId) === parseInt(config.DEVELOPER_ID);
-}
+const isDev   = id => parseInt(id) === cfg.DEVELOPER_ID;
+const fmtNum  = n  => (n || 0).toLocaleString("ar-SA");
+const fmtDate = s  => s ? new Date(s).toLocaleDateString("ar-SA") : "غير معروف";
 
-function formatNumber(num) {
-  return (num || 0).toLocaleString("ar-SA");
-}
-
-function parseChannelId(input) {
-  if (!input) return null;
-  const str = input.toString().trim();
-  if (str.startsWith("@")) return str;
-  if (/^-?\d+$/.test(str)) return parseInt(str);
+function parseChatId(raw) {
+  if (!raw) return null;
+  const s = raw.toString().trim();
+  if (s.startsWith("@"))     return s;
+  if (/^-?\d+$/.test(s))    return parseInt(s);
   return null;
 }
 
-function chunkArray(arr, size) {
-  const out = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
-}
+function kb(rows) { return { reply_markup: { inline_keyboard: rows } }; }
 
-function shortDate(iso) {
-  if (!iso) return "غير معروف";
-  return new Date(iso).toLocaleDateString("ar-SA");
-}
-
-module.exports = { isDeveloper, formatNumber, parseChannelId, chunkArray, shortDate };
+module.exports = { isDev, fmtNum, fmtDate, parseChatId, kb };
