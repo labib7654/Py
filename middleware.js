@@ -8,7 +8,13 @@ function getUserRole(userId) {
   userId = parseInt(userId);
   if (userId === parseInt(config.DEVELOPER_ID)) return config.ROLES.DEVELOPER;
   const user = database.getUser(userId);
-  return user ? user.role : null;
+  return user ? user.role : config.ROLES.USER;
+}
+
+// Check if user has one of the given roles
+function hasRole(userId, ...roles) {
+  const role = getUserRole(userId);
+  return roles.includes(role);
 }
 
 // Register user if new, update info
@@ -26,7 +32,6 @@ async function registerUser(msg) {
   };
 
   if (!user) {
-    // New user: default role is 'user', but developer gets 'developer'
     data.role =
       userId === parseInt(config.DEVELOPER_ID)
         ? config.ROLES.DEVELOPER
@@ -34,7 +39,6 @@ async function registerUser(msg) {
     database.setUser(userId, data);
     database.addLog({ action: "new_user", userId });
   } else {
-    // Update name/username in case it changed
     database.setUser(userId, {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -58,10 +62,7 @@ async function requireAuth(bot, msg, next) {
   }
 
   const settings = database.getSettings();
-  if (
-    settings.maintenance &&
-    role !== config.ROLES.DEVELOPER
-  ) {
+  if (settings.maintenance && role !== config.ROLES.DEVELOPER) {
     await bot.sendMessage(
       msg.chat.id,
       "البوت في وضع الصيانة حالياً. يرجى المحاولة لاحقاً."
@@ -72,19 +73,9 @@ async function requireAuth(bot, msg, next) {
   await next(user);
 }
 
-// Require owner or above
+// requireOwner: allows all non-banned users (user, owner, admin, developer)
 async function requireOwner(bot, msg, next) {
   await requireAuth(bot, msg, async (user) => {
-    const role = getUserRole(msg.from.id);
-    const allowed = [
-      config.ROLES.OWNER,
-      config.ROLES.ADMIN,
-      config.ROLES.DEVELOPER,
-    ];
-    if (!allowed.includes(role)) {
-      await bot.sendMessage(msg.chat.id, config.MESSAGES.NO_PERMISSION);
-      return;
-    }
     await next(user);
   });
 }
@@ -100,12 +91,6 @@ async function requireAdmin(bot, msg, next) {
     }
     await next(user);
   });
-}
-
-// Check if user has one of the given roles
-function hasRole(userId, ...roles) {
-  const role = getUserRole(userId);
-  return roles.includes(role);
 }
 
 // Require developer only
