@@ -1,78 +1,107 @@
-"use strict";
+// ============================================================
+//  نقطة البداية الرئيسية — البوت + السيرفر
+// ============================================================
 
-const express = require("express");
-const TelegramBot = require("node-telegram-bot-api");
+require('dotenv').config();
 
-const cfg = require("./config");
-const db  = require("./db");
-const mw  = require("./middleware");
-const { register } = require("./handlers");
+const { Telegraf }  = require('telegraf');
+const express       = require('express');
+const { BOT_TOKEN, DEVELOPER_ID, PORT, RENDER_EXTERNAL_URL, WEBHOOK_PATH } = require('./config');
+const { globalMiddleware } = require('./middleware');
+const { setupDeveloper, setupGroupHandlers, setupAdminHandlers } = require('./handlers');
 
-/* ── Express ─────────────────────────────────────────────────────── */
-const app = express();
-app.use(express.json());
-
-app.get("/",       (_, res) => res.json({ status: "ok", uptime: process.uptime() }));
-app.get("/health", (_, res) => res.json({ users: db.allUsers().length, channels: db.allChannels().length, groups: db.allGroups().length }));
-app.get("/ping",   (_, res) => res.send("pong"));
-
-/* ── Bot ─────────────────────────────────────────────────────────── */
-const bot = new TelegramBot(cfg.BOT_TOKEN, { polling: false });
-register(bot);
-
-/* ── Webhook path ────────────────────────────────────────────────── */
-const WPATH = `/wh/${cfg.BOT_TOKEN}`;
-
-async function start() {
-  // Always clear old webhook first
-  try { await bot.deleteWebhook({ drop_pending_updates: true }); } catch (_) {}
-
-  if (cfg.RENDER_URL) {
-    /* ── WEBHOOK MODE — works on Render (buttons work 100%) ──────── */
-    const webhookUrl = cfg.RENDER_URL.replace(/\/$/, "") + WPATH;
-
-    app.post(WPATH, (req, res) => {
-      res.sendStatus(200);
-      bot.processUpdate(req.body);
-    });
-
-    await bot.setWebhook(webhookUrl);
-    console.log(`[BOT] Webhook → ${webhookUrl}`);
-
-  } else {
-    /* ── POLLING MODE — fallback for local dev or missing RENDER_URL */
-    bot.on("polling_error", err => console.error("[POLL]", err.code, err.message));
-    await bot.startPolling();
-    console.log("[BOT] Polling started.");
-  }
+// ── تحقق من التوكن ───────────────────────────────────────────
+if (!BOT_TOKEN) {
+  console.error('❌ BOT_TOKEN غير موجود! أضفه في ملف .env أو متغيرات البيئة.');
+  process.exit(1);
+}
+if (!DEVELOPER_ID) {
+  console.error('❌ DEVELOPER_ID غير موجود! أضفه في ملف .env أو متغيرات البيئة.');
+  process.exit(1);
 }
 
-/* ── Start server ────────────────────────────────────────────────── */
-app.listen(cfg.PORT, "0.0.0.0", async () => {
-  console.log(`[SERVER] Port ${cfg.PORT} | env: ${cfg.NODE_ENV}`);
+// ── إنشاء البوت ─────────────────────────────────────────────
+const bot = new Telegraf(BOT_TOKEN);
+const app = express();
 
-  await start();
+// ── Middleware ───────────────────────────────────────────────
+bot.use(globalMiddleware);
 
-  // Ensure developer record exists
-  const dev = db.getUser(cfg.DEVELOPER_ID);
-  if (!dev || dev.role !== "developer")
-    db.upsertUser(cfg.DEVELOPER_ID, { name: "المطوّر", role: "developer" });
+// ── تسجيل جميع المعالجات ────────────────────────────────────
+setupDeveloper(bot);
+setupGroupHandlers(bot);
+setupAdminHandlers(bot);
 
-  db.addLog({ action: "bot_started" });
-
-  // Notify developer on startup
-  try {
-    const me = await bot.getMe();
-    console.log(`[BOT] @${me.username} (${me.id})`);
-    await bot.sendMessage(
-      cfg.DEVELOPER_ID,
-      `✅ *البوت اشتغل!*\n\n👤 @${me.username}\n📡 الوضع: ${cfg.RENDER_URL ? "Webhook ✅" : "Polling 🔄"}`,
-      { parse_mode: "Markdown" }
-    );
-  } catch (e) { console.warn("[BOT] Could not notify developer:", e.message); }
+// ── معالجة الأخطاء ──────────────────────────────────────────
+bot.catch((err, ctx) => {
+  console.error(`[BOT ERROR] update_id=${ctx.update.update_id}:`, err.message);
 });
 
-process.on("SIGTERM", () => process.exit(0));
-process.on("SIGINT",  () => process.exit(0));
-process.on("uncaughtException",  e => console.error("[ERR]", e.message));
-process.on("unhandledRejection", e => console.error("[REJ]", e));
+// ── التشغيل ─────────────────────────────────────────────────
+async function main() {
+  if (RENDER_EXTERNAL_URL) {
+    // ══ وضع Webhook (Render / خادم حقيقي) ══
+    const webhookUrl = `${RENDER_EXTERNAL_URL}${WEBHOOK_PATH}`;
+
+    try {
+      await bot.telegram.setWebhook(webhookUrl, {
+        allowed_updates: ['message', 'callback_query', 'my_chat_member', 'chat_member'],
+      });
+      console.log(`✅ Webhook مُعيَّن على: ${webhookUrl}`);
+    } catch (err) {
+      console.error('❌ فشل إعداد Webhook:', err.message);
+    }
+
+    // مسار الـ webhook لاستقبال التحديثات من تيليغرام
+    app.use(WEBHOOK_PATH, express.raw({ type: 'application/json' }), bot.webhookCallback(WEBHOOK_PATH));
+
+    // مسار صحة السيرفر (health check)
+    app.get('/health', (req, res) => res.json({ status: 'ok', mode: 'webhook', uptime: process.uptime() }));
+
+    app.listen(PORT, () => {
+      console.log(`🚀 السيرفر يعمل على المنفذ ${PORT} [وضع: webhook]`);
+    });
+
+    // Ping ذاتي كل 14 دقيقة لمنع النوم (Render Free Plan)
+    setInterval(async () => {
+      try {
+        await fetch(`${RENDER_EXTERNAL_URL}/health`);
+        console.log('[KEEP-ALIVE] ping ✓');
+      } catch { }
+    }, 14 * 60 * 1000);
+
+  } else {
+    // ══ وضع Polling (التطوير المحلي) ══
+    await bot.telegram.deleteWebhook({ drop_pending_updates: true });
+    console.log('🔄 Webhook محذوف، بدء Polling...');
+
+    const startPolling = (retries = 0) => {
+      bot.launch({
+        allowedUpdates: ['message', 'callback_query', 'my_chat_member', 'chat_member'],
+      }).catch((err) => {
+        if (err.message && err.message.includes('409') && retries < 5) {
+          console.warn(`⚠️ تعارض (409)، إعادة المحاولة ${retries + 1}/5 بعد 5 ثوانٍ...`);
+          setTimeout(() => startPolling(retries + 1), 5000);
+        } else {
+          console.error('❌ فشل البوت:', err.message);
+        }
+      });
+    };
+
+    startPolling();
+    console.log(`✅ البوت يعمل في وضع Polling`);
+    console.log(`👨‍💻 معرف المطور: ${DEVELOPER_ID}`);
+
+    // health check بسيط محلياً
+    app.get('/health', (req, res) => res.json({ status: 'ok', mode: 'polling', uptime: process.uptime() }));
+    app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على المنفذ ${PORT}`));
+  }
+
+  process.once('SIGINT',  () => { console.log('🛑 إيقاف البوت...'); bot.stop('SIGINT');  process.exit(0); });
+  process.once('SIGTERM', () => { console.log('🛑 إيقاف البوت...'); bot.stop('SIGTERM'); process.exit(0); });
+}
+
+main().catch((err) => {
+  console.error('❌ خطأ فادح:', err.message);
+  process.exit(1);
+});

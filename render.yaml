@@ -1,14 +1,15 @@
 services:
   - type: web
-    name: telegram-community-bot
+    name: telegram-group-bot
     env: node
+    region: oregon
     plan: free
     buildCommand: npm install
     startCommand: node index.js
     envVars:
       - key: BOT_TOKEN
-        value: "7243808108:AAFxlT-1HQ6twyVewzWqgdEgXd0EK_j4o5Y"
+        sync: false
       - key: DEVELOPER_ID
-        value: "7411444902"
+        sync: false
       - key: NODE_ENV
         value: production
