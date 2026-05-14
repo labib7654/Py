@@ -5,28 +5,27 @@ const config = {
   DEVELOPER_ID: parseInt(process.env.DEVELOPER_ID) || 7411444902,
   PORT: parseInt(process.env.PORT) || 3000,
   NODE_ENV: process.env.NODE_ENV || "development",
+  RENDER_URL: process.env.RENDER_EXTERNAL_URL || "",
 
   ROLES: {
     DEVELOPER: "developer",
-    OWNER: "owner",
     ADMIN: "admin",
     USER: "user",
     BANNED: "banned",
   },
 
   ROLE_LABELS: {
-    developer: "مطور البوت",
-    owner: "مالك قروب",
-    admin: "مشرف",
-    user: "مستخدم",
-    banned: "محظور",
+    developer: "👑 مطور البوت",
+    admin: "🛡 مشرف",
+    user: "👤 مستخدم",
+    banned: "🚫 محظور",
   },
 
   MESSAGES: {
-    WELCOME: "مرحباً بك في بوت إدارة القنوات",
-    NO_PERMISSION: "عذراً، ليس لديك صلاحية للوصول لهذا القسم.",
-    BANNED: "تم حظرك من استخدام هذا البوت.",
-    ERROR: "حدث خطأ ما، يرجى المحاولة لاحقاً.",
+    NO_PERMISSION: "⛔ ليس لديك صلاحية لهذا القسم.",
+    BANNED: "🚫 تم حظرك من استخدام هذا البوت.",
+    MAINTENANCE: "🔧 البوت في وضع الصيانة. حاول لاحقاً.",
+    ERROR: "❌ حدث خطأ. حاول مرة أخرى.",
   },
 };
 

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: telegram-channel-bot
+    name: telegram-community-bot
     env: node
     plan: free
     buildCommand: npm install

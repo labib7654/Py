@@ -1,211 +1,218 @@
 "use strict";
 
-const low = require("lowdb");
-const FileSync = require("lowdb/adapters/FileSync");
-const path = require("path");
 const fs = require("fs");
+const path = require("path");
 
-const dataDir = path.join(process.cwd(), "data");
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+const DATA_FILE = path.join(process.cwd(), "data", "db.json");
 
-const adapter = new FileSync(path.join(dataDir, "db.json"));
-const db = low(adapter);
-
-db.defaults({
+const defaultData = {
   users: [],
   channels: [],
   groups: [],
   logs: [],
   settings: {
     maintenance: false,
-    welcomeMessage: "مرحباً بك في بوت إدارة القنوات",
+    welcomeMessage: "مرحباً بك في بوت إدارة المجتمعات",
   },
-}).write();
+};
 
-// ========== USERS ==========
+function ensureDir() {
+  const dir = path.dirname(DATA_FILE);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+}
+
+function load() {
+  try {
+    ensureDir();
+    if (!fs.existsSync(DATA_FILE)) {
+      fs.writeFileSync(DATA_FILE, JSON.stringify(defaultData, null, 2));
+      return JSON.parse(JSON.stringify(defaultData));
+    }
+    return JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+  } catch (e) {
+    console.error("[DB] Load error:", e.message);
+    return JSON.parse(JSON.stringify(defaultData));
+  }
+}
+
+function save(data) {
+  try {
+    ensureDir();
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.error("[DB] Save error:", e.message);
+  }
+}
+
+// ===== USERS =====
 
 function getUser(userId) {
   userId = parseInt(userId);
-  return db.get("users").find({ userId }).value() || null;
+  const db = load();
+  return db.users.find((u) => u.userId === userId) || null;
 }
 
 function setUser(userId, data) {
   userId = parseInt(userId);
-  const existing = db.get("users").find({ userId }).value();
-  if (existing) {
-    db.get("users")
-      .find({ userId })
-      .assign({ ...data, updatedAt: new Date().toISOString() })
-      .write();
+  const db = load();
+  const idx = db.users.findIndex((u) => u.userId === userId);
+  const now = new Date().toISOString();
+  if (idx >= 0) {
+    db.users[idx] = { ...db.users[idx], ...data, userId, updatedAt: now };
   } else {
-    db.get("users")
-      .push({
-        userId,
-        firstName: data.firstName || "مستخدم",
-        username: data.username || null,
-        role: data.role || "user",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        ...data,
-      })
-      .write();
+    db.users.push({
+      userId,
+      firstName: data.firstName || "مستخدم",
+      username: data.username || null,
+      role: data.role || "user",
+      createdAt: now,
+      updatedAt: now,
+      ...data,
+    });
   }
+  save(db);
   return getUser(userId);
 }
 
 function getAllUsers() {
-  return db.get("users").value() || [];
+  return load().users || [];
 }
 
 function deleteUser(userId) {
   userId = parseInt(userId);
-  db.get("users").remove({ userId }).write();
+  const db = load();
+  db.users = db.users.filter((u) => u.userId !== userId);
+  save(db);
 }
 
-// ========== CHANNELS ==========
+// ===== CHANNELS =====
 
 function getChannel(channelId) {
-  channelId = parseInt(channelId) || channelId;
+  const db = load();
+  const id = parseInt(channelId) || channelId;
   return (
-    db.get("channels").find({ channelId }).value() ||
-    db.get("channels").find({ username: channelId }).value() ||
+    db.channels.find((c) => c.channelId === id) ||
+    db.channels.find((c) => c.username === channelId) ||
     null
   );
 }
 
 function setChannel(channelId, data) {
-  channelId = parseInt(channelId) || channelId;
-  const existing = db.get("channels").find({ channelId }).value();
-  if (existing) {
-    db.get("channels")
-      .find({ channelId })
-      .assign({ ...data, updatedAt: new Date().toISOString() })
-      .write();
+  const db = load();
+  const id = parseInt(channelId) || channelId;
+  const idx = db.channels.findIndex((c) => c.channelId === id);
+  const now = new Date().toISOString();
+  if (idx >= 0) {
+    db.channels[idx] = { ...db.channels[idx], ...data, channelId: id, updatedAt: now };
   } else {
-    db.get("channels")
-      .push({
-        channelId,
-        title: data.title || "قناة",
-        username: data.username || null,
-        ownerId: data.ownerId || null,
-        adminIds: data.adminIds || [],
-        membersCount: data.membersCount || 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        ...data,
-      })
-      .write();
+    db.channels.push({
+      channelId: id,
+      title: data.title || "قناة",
+      username: data.username || null,
+      ownerId: data.ownerId || null,
+      adminIds: data.adminIds || [],
+      membersCount: data.membersCount || 0,
+      createdAt: now,
+      updatedAt: now,
+      ...data,
+    });
   }
-  return getChannel(channelId);
+  save(db);
+  return getChannel(id);
 }
 
 function getAllChannels() {
-  return db.get("channels").value() || [];
+  return load().channels || [];
 }
 
 function deleteChannel(channelId) {
-  channelId = parseInt(channelId) || channelId;
-  db.get("channels").remove({ channelId }).write();
+  const db = load();
+  const id = parseInt(channelId) || channelId;
+  db.channels = db.channels.filter(
+    (c) => c.channelId !== id && c.username !== channelId
+  );
+  save(db);
 }
 
-// ========== GROUPS ==========
+// ===== GROUPS =====
 
 function getGroup(groupId) {
-  groupId = parseInt(groupId) || groupId;
-  return db.get("groups").find({ groupId }).value() || null;
+  const db = load();
+  const id = parseInt(groupId) || groupId;
+  return db.groups.find((g) => g.groupId === id) || null;
 }
 
 function setGroup(groupId, data) {
-  groupId = parseInt(groupId) || groupId;
-  const existing = db.get("groups").find({ groupId }).value();
-  if (existing) {
-    db.get("groups")
-      .find({ groupId })
-      .assign({ ...data, updatedAt: new Date().toISOString() })
-      .write();
+  const db = load();
+  const id = parseInt(groupId) || groupId;
+  const idx = db.groups.findIndex((g) => g.groupId === id);
+  const now = new Date().toISOString();
+  if (idx >= 0) {
+    db.groups[idx] = { ...db.groups[idx], ...data, groupId: id, updatedAt: now };
   } else {
-    db.get("groups")
-      .push({
-        groupId,
-        title: data.title || "مجموعة",
-        ownerId: data.ownerId || null,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        ...data,
-      })
-      .write();
+    db.groups.push({
+      groupId: id,
+      title: data.title || "مجموعة",
+      ownerId: data.ownerId || null,
+      adminIds: data.adminIds || [],
+      membersCount: data.membersCount || 0,
+      createdAt: now,
+      updatedAt: now,
+      ...data,
+    });
   }
-  return getGroup(groupId);
+  save(db);
+  return getGroup(id);
 }
 
 function getAllGroups() {
-  return db.get("groups").value() || [];
+  return load().groups || [];
 }
 
 function deleteGroup(groupId) {
-  groupId = parseInt(groupId) || groupId;
-  db.get("groups").remove({ groupId }).write();
+  const db = load();
+  const id = parseInt(groupId) || groupId;
+  db.groups = db.groups.filter((g) => g.groupId !== id);
+  save(db);
 }
 
-// ========== SETTINGS ==========
+// ===== SETTINGS =====
 
 function getSettings() {
-  return (
-    db.get("settings").value() || {
-      maintenance: false,
-      welcomeMessage: "مرحباً بك في بوت إدارة القنوات",
-    }
-  );
+  return load().settings || defaultData.settings;
 }
 
 function updateSettings(data) {
-  db.set("settings", { ...getSettings(), ...data }).write();
-  return getSettings();
+  const db = load();
+  db.settings = { ...db.settings, ...data };
+  save(db);
+  return db.settings;
 }
 
-// ========== LOGS ==========
+// ===== LOGS =====
 
-function addLog(data) {
-  db.get("logs")
-    .push({
-      ...data,
-      timestamp: new Date().toISOString(),
-    })
-    .write();
-
-  const logs = db.get("logs").value();
-  if (logs.length > 500) {
-    db.set("logs", logs.slice(logs.length - 500)).write();
-  }
+function addLog(entry) {
+  const db = load();
+  db.logs.push({ ...entry, timestamp: new Date().toISOString() });
+  if (db.logs.length > 500) db.logs = db.logs.slice(-500);
+  save(db);
 }
 
 function getLogs(limit = 20) {
-  const logs = db.get("logs").value() || [];
+  const logs = load().logs || [];
   return logs.slice(-limit).reverse();
 }
 
 function clearLogs() {
-  db.set("logs", []).write();
+  const db = load();
+  db.logs = [];
+  save(db);
 }
 
 module.exports = {
-  getUser,
-  setUser,
-  getAllUsers,
-  deleteUser,
-  getChannel,
-  setChannel,
-  getAllChannels,
-  deleteChannel,
-  getGroup,
-  setGroup,
-  getAllGroups,
-  deleteGroup,
-  getSettings,
-  updateSettings,
-  addLog,
-  getLogs,
-  clearLogs,
+  getUser, setUser, getAllUsers, deleteUser,
+  getChannel, setChannel, getAllChannels, deleteChannel,
+  getGroup, setGroup, getAllGroups, deleteGroup,
+  getSettings, updateSettings,
+  addLog, getLogs, clearLogs,
 };
