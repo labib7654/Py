@@ -261,7 +261,6 @@ function registerCommands(bot) {
   bot.onText(/\/stats/, async (msg) => {
     await middleware.requireAuth(bot, msg, async (user) => {
       const userId = msg.from.id;
-      const role = middleware.getUserRole(userId);
 
       if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) {
         await bot.sendMessage(msg.chat.id, "ليس لديك صلاحية لعرض الاحصائيات.");
@@ -340,12 +339,11 @@ function registerCommands(bot) {
   });
 
   // Register callback handlers
-  registerCallbacks(bot, userStates, setUserState, clearUserState);
+  registerCallbacks(bot);
 }
 
 // Handle user states (multi-step operations)
 async function handleUserState(bot, msg, state, userId) {
-  const { clearUserState } = require("./commands");
   const chatId = msg.chat.id;
 
   switch (state.type) {
@@ -358,7 +356,6 @@ async function handleUserState(bot, msg, state, userId) {
       try {
         const chat = await bot.getChat(channelId);
         database.setChannel(chat.id, {
-
           username: chat.username,
           channelId: chat.id,
           ownerId: userId,
@@ -366,7 +363,7 @@ async function handleUserState(bot, msg, state, userId) {
           membersCount: chat.members_count || 0,
         });
         database.addLog({ action: "add_channel_via_state", userId, channelId: chat.id });
-        delete userStates[userId];
+        clearUserState(userId);
         await bot.sendMessage(chatId, `تم اضافة القناة *${chat.title}* بنجاح!`, {
           parse_mode: "Markdown",
         });
@@ -379,7 +376,7 @@ async function handleUserState(bot, msg, state, userId) {
     case "awaiting_broadcast_msg": {
       const allUsers = database.getAllUsers();
       let sent = 0, failed = 0;
-      delete userStates[userId];
+      clearUserState(userId);
       await bot.sendMessage(chatId, `جاري ارسال الرسالة...`);
       for (const u of allUsers) {
         if (u.userId === userId) continue;
@@ -395,7 +392,7 @@ async function handleUserState(bot, msg, state, userId) {
 
     case "awaiting_welcome_msg": {
       database.updateSettings({ welcomeMessage: msg.text });
-      delete userStates[userId];
+      clearUserState(userId);
       await bot.sendMessage(chatId, "تم تحديث رسالة الترحيب بنجاح!");
       break;
     }
@@ -408,12 +405,12 @@ async function handleUserState(bot, msg, state, userId) {
       }
       if (isDeveloper(targetId)) {
         await bot.sendMessage(chatId, "لا يمكن حظر المطور!");
-        delete userStates[userId];
+        clearUserState(userId);
         return;
       }
       database.setUser(targetId, { role: config.ROLES.BANNED });
       database.addLog({ action: "ban_user", userId, targetId });
-      delete userStates[userId];
+      clearUserState(userId);
       await bot.sendMessage(chatId, `تم حظر المستخدم \`${targetId}\`.`, { parse_mode: "Markdown" });
       break;
     }
@@ -447,7 +444,7 @@ async function handleUserState(bot, msg, state, userId) {
       try {
         await bot.sendMessage(channelToSend, msg.text, { parse_mode: "Markdown" });
         database.addLog({ action: "send_msg_to_channel", userId, channelId: channelToSend });
-        delete userStates[userId];
+        clearUserState(userId);
         await bot.sendMessage(chatId, "تم ارسال الرسالة للقناة بنجاح!");
       } catch (e) {
         await bot.sendMessage(chatId, `فشل الارسال: ${e.message}`);
@@ -456,344 +453,365 @@ async function handleUserState(bot, msg, state, userId) {
     }
 
     default:
-      delete userStates[userId];
+      clearUserState(userId);
   }
 }
 
 // Register callback query handlers
-function registerCallbacks(bot, userStates, setUserState, clearUserState) {
+function registerCallbacks(bot) {
   bot.on("callback_query", async (query) => {
-    const msg = query.message;
-    const userId = query.from.id;
-    const data = query.data;
-    const chatId = msg.chat.id;
+    // ✅ FIX 1: Wrap everything in try/catch so errors don't silently kill the handler
+    try {
+      // ✅ FIX 2: Guard against missing query.message (happens with old/deleted messages)
+      if (!query || !query.from) return;
 
-    await bot.answerCallbackQuery(query.id).catch(() => {});
+      const userId = query.from.id;
+      const data = query.data;
 
-    await middleware.registerUser({ from: query.from, chat: msg.chat });
+      // ✅ FIX 3: Always answer the callback first to remove the loading spinner
+      await bot.answerCallbackQuery(query.id).catch(() => {});
 
-    const role = middleware.getUserRole(userId);
-    const isBanned = role === config.ROLES.BANNED;
-
-    if (isBanned) {
-      await bot.sendMessage(chatId, config.MESSAGES.BANNED);
-      return;
-    }
-
-    // --- DEV PANEL ---
-    if (data === "dev_main") {
-      if (!isDeveloper(userId)) {
-        await bot.sendMessage(chatId, config.MESSAGES.NO_PERMISSION);
+      // ✅ FIX 4: Handle case where message is missing (inline mode, old messages)
+      const msg = query.message;
+      if (!msg || !msg.chat) {
+        console.warn("[CALLBACK] query.message is missing for data:", data);
         return;
       }
-      await devPanel.showDevPanel(bot, { chat: msg.chat, from: query.from });
-      return;
-    }
 
-    if (data === "dev_users") {
-      if (!isDeveloper(userId)) return;
-      await devPanel.showDevUsers(bot, chatId, 0);
-      return;
-    }
+      const chatId = msg.chat.id;
 
-    if (data.startsWith("dev_users_page_")) {
-      if (!isDeveloper(userId)) return;
-      const page = parseInt(data.replace("dev_users_page_", ""));
-      await devPanel.showDevUsers(bot, chatId, page);
-      return;
-    }
+      // Register user from callback
+      await middleware.registerUser({ from: query.from, chat: msg.chat });
 
-    if (data === "dev_channels") {
-      if (!isDeveloper(userId)) return;
-      await devPanel.showDevChannels(bot, chatId);
-      return;
-    }
+      const role = middleware.getUserRole(userId);
+      const isBanned = role === config.ROLES.BANNED;
 
-    if (data === "dev_settings") {
-      if (!isDeveloper(userId)) return;
-      await devPanel.showDevSettings(bot, chatId);
-      return;
-    }
+      if (isBanned) {
+        await bot.sendMessage(chatId, config.MESSAGES.BANNED);
+        return;
+      }
 
-    if (data === "dev_logs") {
-      if (!isDeveloper(userId)) return;
-      await devPanel.showDevLogs(bot, chatId);
-      return;
-    }
+      // --- DEV PANEL ---
+      if (data === "dev_main") {
+        if (!isDeveloper(userId)) {
+          await bot.sendMessage(chatId, config.MESSAGES.NO_PERMISSION);
+          return;
+        }
+        await devPanel.showDevPanel(bot, { chat: msg.chat, from: query.from });
+        return;
+      }
 
-    if (data === "dev_clear_logs") {
-      if (!isDeveloper(userId)) return;
-      const db = require("./database");
-      db.updateSettings({});
-      await bot.sendMessage(chatId, "تم مسح السجلات.");
-      return;
-    }
+      if (data === "dev_users") {
+        if (!isDeveloper(userId)) return;
+        await devPanel.showDevUsers(bot, chatId, 0);
+        return;
+      }
 
-    if (data === "dev_toggle_maintenance") {
-      if (!isDeveloper(userId)) return;
-      const settings = database.getSettings();
-      database.updateSettings({ maintenance: !settings.maintenance });
-      await bot.sendMessage(
-        chatId,
-        `تم ${!settings.maintenance ? "تفعيل" : "ايقاف"} وضع الصيانة.`
-      );
-      return;
-    }
+      if (data.startsWith("dev_users_page_")) {
+        if (!isDeveloper(userId)) return;
+        const page = parseInt(data.replace("dev_users_page_", ""));
+        await devPanel.showDevUsers(bot, chatId, page);
+        return;
+      }
 
-    if (data === "dev_refresh") {
-      if (!isDeveloper(userId)) return;
-      await devPanel.showDevPanel(bot, { chat: msg.chat, from: query.from });
-      return;
-    }
+      if (data === "dev_channels") {
+        if (!isDeveloper(userId)) return;
+        await devPanel.showDevChannels(bot, chatId);
+        return;
+      }
 
-    if (data === "dev_broadcast") {
-      if (!isDeveloper(userId)) return;
-      userStates[userId] = { type: "awaiting_broadcast_msg" };
-      await bot.sendMessage(chatId, "اكتب الرسالة التي تريد ارسالها لجميع المستخدمين:");
-      return;
-    }
+      if (data === "dev_settings") {
+        if (!isDeveloper(userId)) return;
+        await devPanel.showDevSettings(bot, chatId);
+        return;
+      }
 
-    if (data === "dev_set_welcome") {
-      if (!isDeveloper(userId)) return;
-      userStates[userId] = { type: "awaiting_welcome_msg" };
-      await bot.sendMessage(chatId, "اكتب رسالة الترحيب الجديدة:");
-      return;
-    }
+      if (data === "dev_logs") {
+        if (!isDeveloper(userId)) return;
+        await devPanel.showDevLogs(bot, chatId);
+        return;
+      }
 
-    if (data === "dev_add_admin") {
-      if (!isDeveloper(userId)) return;
-      userStates[userId] = { type: "awaiting_promote_id", targetRole: "admin" };
-      await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد ترقيته:");
-      return;
-    }
+      if (data === "dev_clear_logs") {
+        if (!isDeveloper(userId)) return;
+        // ✅ FIX 5: Was calling updateSettings({}) instead of clearLogs()
+        database.clearLogs();
+        await bot.sendMessage(chatId, "تم مسح السجلات.");
+        return;
+      }
 
-    if (data === "dev_add_owner") {
-      if (!isDeveloper(userId)) return;
-      userStates[userId] = { type: "awaiting_promote_id", targetRole: "owner" };
-      await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد تعيينه كمالك قروب:");
-      return;
-    }
-
-    if (data === "dev_ban_user") {
-      if (!isDeveloper(userId)) return;
-      userStates[userId] = { type: "awaiting_ban_id" };
-      await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد حظره:");
-      return;
-    }
-
-    if (data === "dev_promote_user") {
-      if (!isDeveloper(userId)) return;
-      userStates[userId] = { type: "awaiting_promote_id" };
-      await bot.sendMessage(chatId, "ارسل ID المستخدم:");
-      return;
-    }
-
-    // Role setting callback
-    if (data.startsWith("set_role_")) {
-      if (!isDeveloper(userId)) return;
-      const parts = data.replace("set_role_", "").split("_");
-      const targetId = parseInt(parts[parts.length - 1]);
-      const newRole = parts.slice(0, -1).join("_");
-
-      database.setUser(targetId, { role: newRole });
-      database.addLog({ action: `set_role_${newRole}`, userId, targetId });
-      delete userStates[userId];
-
-      await bot.sendMessage(
-        chatId,
-        `تم تعيين رتبة *${config.ROLE_LABELS[newRole] || newRole}* للمستخدم \`${targetId}\``,
-        { parse_mode: "Markdown" }
-      );
-
-      try {
+      if (data === "dev_toggle_maintenance") {
+        if (!isDeveloper(userId)) return;
+        const settings = database.getSettings();
+        database.updateSettings({ maintenance: !settings.maintenance });
         await bot.sendMessage(
-          targetId,
-          `تم تغيير رتبتك الى: *${config.ROLE_LABELS[newRole] || newRole}*`,
+          chatId,
+          `تم ${!settings.maintenance ? "تفعيل" : "ايقاف"} وضع الصيانة.`
+        );
+        return;
+      }
+
+      if (data === "dev_refresh") {
+        if (!isDeveloper(userId)) return;
+        await devPanel.showDevPanel(bot, { chat: msg.chat, from: query.from });
+        return;
+      }
+
+      if (data === "dev_broadcast") {
+        if (!isDeveloper(userId)) return;
+        userStates[userId] = { type: "awaiting_broadcast_msg" };
+        await bot.sendMessage(chatId, "اكتب الرسالة التي تريد ارسالها لجميع المستخدمين:");
+        return;
+      }
+
+      if (data === "dev_set_welcome") {
+        if (!isDeveloper(userId)) return;
+        userStates[userId] = { type: "awaiting_welcome_msg" };
+        await bot.sendMessage(chatId, "اكتب رسالة الترحيب الجديدة:");
+        return;
+      }
+
+      if (data === "dev_add_admin") {
+        if (!isDeveloper(userId)) return;
+        userStates[userId] = { type: "awaiting_promote_id", targetRole: "admin" };
+        await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد ترقيته:");
+        return;
+      }
+
+      if (data === "dev_add_owner") {
+        if (!isDeveloper(userId)) return;
+        userStates[userId] = { type: "awaiting_promote_id", targetRole: "owner" };
+        await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد تعيينه كمالك قروب:");
+        return;
+      }
+
+      if (data === "dev_ban_user") {
+        if (!isDeveloper(userId)) return;
+        userStates[userId] = { type: "awaiting_ban_id" };
+        await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد حظره:");
+        return;
+      }
+
+      if (data === "dev_promote_user") {
+        if (!isDeveloper(userId)) return;
+        userStates[userId] = { type: "awaiting_promote_id" };
+        await bot.sendMessage(chatId, "ارسل ID المستخدم:");
+        return;
+      }
+
+      // Role setting callback
+      if (data.startsWith("set_role_")) {
+        if (!isDeveloper(userId)) return;
+        const parts = data.replace("set_role_", "").split("_");
+        const targetId = parseInt(parts[parts.length - 1]);
+        const newRole = parts.slice(0, -1).join("_");
+
+        database.setUser(targetId, { role: newRole });
+        database.addLog({ action: `set_role_${newRole}`, userId, targetId });
+        clearUserState(userId);
+
+        await bot.sendMessage(
+          chatId,
+          `تم تعيين رتبة *${config.ROLE_LABELS[newRole] || newRole}* للمستخدم \`${targetId}\``,
           { parse_mode: "Markdown" }
         );
+
+        try {
+          await bot.sendMessage(
+            targetId,
+            `تم تغيير رتبتك الى: *${config.ROLE_LABELS[newRole] || newRole}*`,
+            { parse_mode: "Markdown" }
+          );
+        } catch (e) {}
+        return;
+      }
+
+      // --- ADMIN PANEL ---
+      if (data === "admin_main") {
+        if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) {
+          await bot.sendMessage(chatId, config.MESSAGES.NO_PERMISSION);
+          return;
+        }
+        await adminPanel.showAdminPanel(bot, { chat: msg.chat, from: query.from });
+        return;
+      }
+
+      if (data === "admin_channels") {
+        if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
+        await adminPanel.showAdminChannels(bot, chatId, userId);
+        return;
+      }
+
+      if (data === "admin_users") {
+        if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
+        await adminPanel.showAdminUsers(bot, chatId);
+        return;
+      }
+
+      if (data.startsWith("admin_users_page_")) {
+        if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
+        const page = parseInt(data.replace("admin_users_page_", ""));
+        await adminPanel.showAdminUsers(bot, chatId, page);
+        return;
+      }
+
+      if (data === "admin_add_channel") {
+        if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.OWNER, config.ROLES.DEVELOPER)) return;
+        userStates[userId] = { type: "awaiting_channel_id" };
+        await bot.sendMessage(chatId, "ارسل ID او username القناة (مثال: @channelname او -100xxxxxxxxx):");
+        return;
+      }
+
+      if (data === "admin_ban") {
+        if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
+        userStates[userId] = { type: "awaiting_ban_id" };
+        await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد حظره:");
+        return;
+      }
+
+      if (data === "admin_unban") {
+        if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
+        await bot.sendMessage(chatId, "ارسل ID المستخدم لرفع الحظر (استخدم /unban <id>):");
+        return;
+      }
+
+      if (data === "admin_send_msg") {
+        if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
+        const allChannels = database.getAllChannels();
+        const myChannels = isDeveloper(userId)
+          ? allChannels
+          : allChannels.filter((ch) => ch.adminIds && ch.adminIds.includes(userId));
+
+        if (myChannels.length === 0) {
+          await bot.sendMessage(chatId, "لا توجد قنوات متاحة لك.");
+          return;
+        }
+
+        const buttons = myChannels.map((ch) => [
+          { text: ch.title || ch.channelId.toString(), callback_data: `select_channel_${ch.channelId}` },
+        ]);
+        buttons.push([{ text: "رجوع", callback_data: "admin_main" }]);
+
+        await bot.sendMessage(chatId, "اختر القناة لارسال الرسالة اليها:", {
+          reply_markup: { inline_keyboard: buttons },
+        });
+        return;
+      }
+
+      if (data.startsWith("select_channel_")) {
+        const channelId = data.replace("select_channel_", "");
+        userStates[userId] = { type: "awaiting_send_channel_msg", channelId };
+        await bot.sendMessage(chatId, "اكتب الرسالة التي تريد ارسالها للقناة:");
+        return;
+      }
+
+      if (data === "admin_refresh") {
+        if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
+        await adminPanel.showAdminPanel(bot, { chat: msg.chat, from: query.from });
+        return;
+      }
+
+      // --- OWNER/USER PANEL ---
+      if (data === "owner_main") {
+        // ✅ FIX 6: Allow ALL non-banned users (user role included) to see user panel
+        await userPanel.showUserPanel(bot, { chat: msg.chat, from: query.from });
+        return;
+      }
+
+      if (data === "owner_my_channels") {
+        await userPanel.showOwnerChannels(bot, chatId, userId);
+        return;
+      }
+
+      if (data === "owner_add_channel") {
+        userStates[userId] = { type: "awaiting_channel_id" };
+        await bot.sendMessage(chatId, "ارسل ID او username القناة:\n(مثال: @channelname او -100xxxxxxxxx)\n\n*تأكد من ان البوت مشرف في القناة اولاً*", {
+          parse_mode: "Markdown",
+        });
+        return;
+      }
+
+      if (data === "owner_delete_channel") {
+        await bot.sendMessage(chatId, "استخدم الامر:\n`/removechannel <channel_id>`", {
+          parse_mode: "Markdown",
+        });
+        return;
+      }
+
+      if (data === "owner_send_msg") {
+        const allChannels = database.getAllChannels();
+        const myChannels = allChannels.filter(
+          (ch) => ch.ownerId === userId || (ch.adminIds && ch.adminIds.includes(userId))
+        );
+
+        if (myChannels.length === 0) {
+          await bot.sendMessage(chatId, "لا توجد قنوات مضافة. اضف قناة اولاً.");
+          return;
+        }
+
+        const buttons = myChannels.map((ch) => [
+          { text: ch.title || ch.channelId.toString(), callback_data: `select_channel_${ch.channelId}` },
+        ]);
+        buttons.push([{ text: "رجوع", callback_data: "owner_main" }]);
+
+        await bot.sendMessage(chatId, "اختر القناة:", {
+          reply_markup: { inline_keyboard: buttons },
+        });
+        return;
+      }
+
+      if (data === "owner_stats") {
+        await userPanel.showOwnerStats(bot, chatId, userId);
+        return;
+      }
+
+      if (data === "owner_group_settings") {
+        await userPanel.showGroupSettings(bot, chatId, userId);
+        return;
+      }
+
+      if (data === "owner_register_group") {
+        await bot.sendMessage(
+          chatId,
+          "اضف البوت لقروبك واعطه صلاحيات المشرف، ثم ارسل ID القروب هنا.\n\n" +
+          "يمكنك معرفة ID القروب باستخدام @username_to_id_bot"
+        );
+        return;
+      }
+
+      if (data === "owner_support") {
+        await bot.sendMessage(
+          chatId,
+          `للدعم والمساعدة تواصل مع المطور:\nID: \`${config.DEVELOPER_ID}\``,
+          { parse_mode: "Markdown" }
+        );
+        return;
+      }
+
+      if (data === "help") {
+        await bot.sendMessage(
+          chatId,
+          `*المساعدة*\n\n` +
+          `هذا بوت لادارة القنوات والمجموعات.\n\n` +
+          `*الاوامر:*\n` +
+          `/start - بدء البوت\n` +
+          `/panel - لوحة التحكم\n` +
+          `/addchannel - اضافة قناة\n` +
+          `/myid - معرفة ID الخاص بك\n` +
+          `/help - المساعدة\n`,
+          { parse_mode: "Markdown" }
+        );
+        return;
+      }
+
+    } catch (err) {
+      // ✅ FIX 7: Log errors so you can debug, and never crash the handler
+      console.error("[CALLBACK] Error handling callback_query:", err);
+      try {
+        if (query.message?.chat?.id) {
+          await bot.sendMessage(query.message.chat.id, "حدث خطأ، يرجى المحاولة مرة اخرى.");
+        }
       } catch (e) {}
-      return;
-    }
-
-    // --- ADMIN PANEL ---
-    if (data === "admin_main") {
-      if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) {
-        await bot.sendMessage(chatId, config.MESSAGES.NO_PERMISSION);
-        return;
-      }
-      await adminPanel.showAdminPanel(bot, { chat: msg.chat, from: query.from });
-      return;
-    }
-
-    if (data === "admin_channels") {
-      if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      await adminPanel.showAdminChannels(bot, chatId, userId);
-      return;
-    }
-
-    if (data === "admin_users") {
-      if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      await adminPanel.showAdminUsers(bot, chatId);
-      return;
-    }
-
-    if (data === "admin_add_channel") {
-      if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.OWNER, config.ROLES.DEVELOPER)) return;
-      userStates[userId] = { type: "awaiting_channel_id" };
-      await bot.sendMessage(chatId, "ارسل ID او username القناة (مثال: @channelname او -100xxxxxxxxx):");
-      return;
-    }
-
-    if (data === "admin_ban") {
-      if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      userStates[userId] = { type: "awaiting_ban_id" };
-      await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد حظره:");
-      return;
-    }
-
-    if (data === "admin_unban") {
-      if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      await bot.sendMessage(chatId, "ارسل ID المستخدم لرفع الحظر (استخدم /unban <id>):");
-      return;
-    }
-
-    if (data === "admin_send_msg") {
-      if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      const allChannels = database.getAllChannels();
-      const myChannels = isDeveloper(userId)
-        ? allChannels
-        : allChannels.filter((ch) => ch.adminIds && ch.adminIds.includes(userId));
-
-      if (myChannels.length === 0) {
-        await bot.sendMessage(chatId, "لا توجد قنوات متاحة لك.");
-        return;
-      }
-
-      const buttons = myChannels.map((ch) => [
-        { text: ch.title || ch.channelId.toString(), callback_data: `select_channel_${ch.channelId}` },
-      ]);
-      buttons.push([{ text: "رجوع", callback_data: "admin_main" }]);
-
-      await bot.sendMessage(chatId, "اختر القناة لارسال الرسالة اليها:", {
-        reply_markup: { inline_keyboard: buttons },
-      });
-      return;
-    }
-
-    if (data.startsWith("select_channel_")) {
-      const channelId = data.replace("select_channel_", "");
-      userStates[userId] = { type: "awaiting_send_channel_msg", channelId };
-      await bot.sendMessage(chatId, "اكتب الرسالة التي تريد ارسالها للقناة:");
-      return;
-    }
-
-    if (data === "admin_refresh") {
-      if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      await adminPanel.showAdminPanel(bot, { chat: msg.chat, from: query.from });
-      return;
-    }
-
-    // --- OWNER/USER PANEL ---
-    if (data === "owner_main") {
-      if (!middleware.hasRole(userId, config.ROLES.OWNER, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) {
-        await bot.sendMessage(chatId, config.MESSAGES.NO_PERMISSION);
-        return;
-      }
-      await userPanel.showUserPanel(bot, { chat: msg.chat, from: query.from });
-      return;
-    }
-
-    if (data === "owner_my_channels") {
-      if (!middleware.hasRole(userId, config.ROLES.OWNER, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      await userPanel.showOwnerChannels(bot, chatId, userId);
-      return;
-    }
-
-    if (data === "owner_add_channel") {
-      if (!middleware.hasRole(userId, config.ROLES.OWNER, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      userStates[userId] = { type: "awaiting_channel_id" };
-      await bot.sendMessage(chatId, "ارسل ID او username القناة:\n(مثال: @channelname او -100xxxxxxxxx)\n\n*تأكد من ان البوت مشرف في القناة اولاً*", {
-        parse_mode: "Markdown",
-      });
-      return;
-    }
-
-    if (data === "owner_delete_channel") {
-      if (!middleware.hasRole(userId, config.ROLES.OWNER, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      await bot.sendMessage(chatId, "استخدم الامر:\n`/removechannel <channel_id>`", {
-        parse_mode: "Markdown",
-      });
-      return;
-    }
-
-    if (data === "owner_send_msg") {
-      if (!middleware.hasRole(userId, config.ROLES.OWNER, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      const allChannels = database.getAllChannels();
-      const myChannels = allChannels.filter(
-        (ch) => ch.ownerId === userId || (ch.adminIds && ch.adminIds.includes(userId))
-      );
-
-      if (myChannels.length === 0) {
-        await bot.sendMessage(chatId, "لا توجد قنوات مضافة. اضف قناة اولاً.");
-        return;
-      }
-
-      const buttons = myChannels.map((ch) => [
-        { text: ch.title || ch.channelId.toString(), callback_data: `select_channel_${ch.channelId}` },
-      ]);
-      buttons.push([{ text: "رجوع", callback_data: "owner_main" }]);
-
-      await bot.sendMessage(chatId, "اختر القناة:", {
-        reply_markup: { inline_keyboard: buttons },
-      });
-      return;
-    }
-
-    if (data === "owner_stats") {
-      if (!middleware.hasRole(userId, config.ROLES.OWNER, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      await userPanel.showOwnerStats(bot, chatId, userId);
-      return;
-    }
-
-    if (data === "owner_group_settings") {
-      if (!middleware.hasRole(userId, config.ROLES.OWNER, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      await userPanel.showGroupSettings(bot, chatId, userId);
-      return;
-    }
-
-    if (data === "owner_register_group") {
-      if (!middleware.hasRole(userId, config.ROLES.OWNER, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-      await bot.sendMessage(
-        chatId,
-        "اضف البوت لقروبك واعطه صلاحيات المشرف، ثم ارسل ID القروب هنا.\n\n" +
-        "يمكنك معرفة ID القروب باستخدام @username_to_id_bot"
-      );
-      return;
-    }
-
-    if (data === "owner_support") {
-      await bot.sendMessage(
-        chatId,
-        `للدعم والمساعدة تواصل مع المطور:\nID: \`${config.DEVELOPER_ID}\``,
-        { parse_mode: "Markdown" }
-      );
-      return;
-    }
-
-    if (data === "help") {
-      await bot.sendMessage(
-        chatId,
-        `*المساعدة*\n\n` +
-        `هذا بوت لادارة القنوات والمجموعات.\n\n` +
-        `*الاوامر:*\n` +
-        `/start - بدء البوت\n` +
-        `/panel - لوحة التحكم\n` +
-        `/addchannel - اضافة قناة\n` +
-        `/myid - معرفة ID الخاص بك\n` +
-        `/help - المساعدة\n`,
-        { parse_mode: "Markdown" }
-      );
-      return;
     }
   });
 }
