@@ -10,7 +10,5 @@ services:
         value: 7243808108:AAFxlT-1HQ6twyVewzWqgdEgXd0EK_j4o5Y
       - key: DEVELOPER_ID
         value: "7411444902"
-      - key: PORT
-        value: "3000"
       - key: NODE_ENV
         value: production

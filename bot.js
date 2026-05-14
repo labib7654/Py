@@ -1,22 +1,30 @@
+"use strict";
+
 const TelegramBot = require("node-telegram-bot-api");
 const config = require("./config");
 
 let botInstance = null;
 
-function createBot() {
+async function createBot() {
   if (botInstance) return botInstance;
 
-  const options =
-    config.NODE_ENV === "production"
-      ? { polling: true }
-      : { polling: true };
-
-  botInstance = new TelegramBot(config.BOT_TOKEN, options);
+  botInstance = new TelegramBot(config.BOT_TOKEN, { polling: false });
 
   botInstance.on("polling_error", (error) => {
     console.error("[BOT] Polling error:", error.code, error.message);
+
     if (error.code === "ETELEGRAM") {
-      console.error("[BOT] Telegram API error:", error.response?.body);
+      const body = error.response && error.response.body;
+      console.error("[BOT] Telegram API error:", body);
+
+      if (body && body.error_code === 409) {
+        console.warn("[BOT] 409 Conflict — another instance is running. Restarting polling in 10s...");
+        botInstance.stopPolling()
+          .catch(() => {})
+          .then(() => new Promise((r) => setTimeout(r, 10000)))
+          .then(() => botInstance.startPolling())
+          .catch((e) => console.error("[BOT] Failed to restart polling:", e.message));
+      }
     }
   });
 
@@ -24,7 +32,15 @@ function createBot() {
     console.error("[BOT] Error:", error.message);
   });
 
-  console.log("[BOT] Bot instance created successfully.");
+  try {
+    await botInstance.deleteWebhook({ drop_pending_updates: true });
+    console.log("[BOT] Webhook deleted and pending updates cleared.");
+  } catch (e) {
+    console.warn("[BOT] Could not delete webhook:", e.message);
+  }
+
+  await botInstance.startPolling();
+  console.log("[BOT] Bot instance created and polling started.");
   return botInstance;
 }
 

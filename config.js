@@ -6,7 +6,6 @@ const config = {
   PORT: parseInt(process.env.PORT) || 3000,
   NODE_ENV: process.env.NODE_ENV || "development",
 
-  // Roles
   ROLES: {
     DEVELOPER: "developer",
     OWNER: "owner",
@@ -15,7 +14,6 @@ const config = {
     BANNED: "banned",
   },
 
-  // Role labels in Arabic
   ROLE_LABELS: {
     developer: "مطور البوت",
     owner: "مالك قروب",
@@ -24,7 +22,6 @@ const config = {
     banned: "محظور",
   },
 
-  // Bot messages
   MESSAGES: {
     WELCOME: "مرحباً بك في بوت إدارة القنوات",
     NO_PERMISSION: "عذراً، ليس لديك صلاحية للوصول لهذا القسم.",

@@ -1,3 +1,5 @@
+"use strict";
+
 const config = require("./config");
 const database = require("./database");
 const middleware = require("./middleware");
@@ -39,15 +41,12 @@ function registerCommands(bot) {
 
       const buttons = [];
 
-      // All users see general buttons
       buttons.push([{ text: "لوحة المستخدم", callback_data: "owner_main" }]);
 
-      // Admins see admin panel
       if (role === config.ROLES.ADMIN || role === config.ROLES.DEVELOPER) {
         buttons.push([{ text: "لوحة المشرف", callback_data: "admin_main" }]);
       }
 
-      // Developer sees dev panel
       if (role === config.ROLES.DEVELOPER) {
         buttons.push([{ text: "لوحة المطور", callback_data: "dev_main" }]);
       }
@@ -61,17 +60,17 @@ function registerCommands(bot) {
     });
   });
 
-  // /dev command - shortcut to dev panel
+  // /dev command
   bot.onText(/\/dev/, async (msg) => {
     await devPanel.showDevPanel(bot, msg);
   });
 
-  // /admin command - shortcut to admin panel
+  // /admin command
   bot.onText(/\/admin/, async (msg) => {
     await adminPanel.showAdminPanel(bot, msg);
   });
 
-  // /panel command - user panel
+  // /panel command
   bot.onText(/\/panel/, async (msg) => {
     await userPanel.showUserPanel(bot, msg);
   });
@@ -176,6 +175,7 @@ function registerCommands(bot) {
 
         database.setChannel(chat.id, {
           username: chat.username,
+          title: chat.title,
           channelId: chat.id,
           ownerId: userId,
           adminIds: [userId],
@@ -329,7 +329,7 @@ function registerCommands(bot) {
   bot.on("message", async (msg) => {
     if (!msg.text || msg.text.startsWith("/")) return;
 
-    const userId = msg.from?.id;
+    const userId = msg.from && msg.from.id;
     if (!userId) return;
 
     const state = getUserState(userId);
@@ -357,6 +357,7 @@ async function handleUserState(bot, msg, state, userId) {
         const chat = await bot.getChat(channelId);
         database.setChannel(chat.id, {
           username: chat.username,
+          title: chat.title,
           channelId: chat.id,
           ownerId: userId,
           adminIds: [userId],
@@ -415,6 +416,19 @@ async function handleUserState(bot, msg, state, userId) {
       break;
     }
 
+    case "awaiting_unban_id": {
+      const targetId = parseInt(msg.text);
+      if (isNaN(targetId)) {
+        await bot.sendMessage(chatId, "يرجى ادخال ID صحيح.");
+        return;
+      }
+      database.setUser(targetId, { role: config.ROLES.USER });
+      database.addLog({ action: "unban_user", userId, targetId });
+      clearUserState(userId);
+      await bot.sendMessage(chatId, `تم رفع الحظر عن المستخدم \`${targetId}\`.`, { parse_mode: "Markdown" });
+      break;
+    }
+
     case "awaiting_promote_id": {
       const targetId = parseInt(msg.text);
       if (isNaN(targetId)) {
@@ -435,6 +449,52 @@ async function handleUserState(bot, msg, state, userId) {
             ],
           ],
         },
+      });
+      break;
+    }
+
+    case "awaiting_delete_channel_id": {
+      const channelId = parseChannelId(msg.text);
+      if (!channelId) {
+        await bot.sendMessage(chatId, "يرجى ادخال ID القناة بشكل صحيح.");
+        return;
+      }
+      const channel = database.getChannel(channelId);
+      if (!channel) {
+        clearUserState(userId);
+        await bot.sendMessage(chatId, "القناة غير موجودة في قاعدة البيانات.");
+        return;
+      }
+      database.deleteChannel(channelId);
+      database.addLog({ action: "delete_channel", userId, channelId });
+      clearUserState(userId);
+      await bot.sendMessage(chatId, `تم حذف القناة \`${channelId}\` بنجاح.`, { parse_mode: "Markdown" });
+      break;
+    }
+
+    case "awaiting_channel_info_id": {
+      const channelId = parseChannelId(msg.text);
+      if (!channelId) {
+        await bot.sendMessage(chatId, "يرجى ادخال ID صحيح.");
+        return;
+      }
+      clearUserState(userId);
+      const channel = database.getChannel(channelId);
+      if (!channel) {
+        await bot.sendMessage(chatId, "القناة غير موجودة في قاعدة البيانات.");
+        return;
+      }
+      const infoText =
+        `*تفاصيل القناة*\n\n` +
+        `الاسم: ${channel.title || "غير محدد"}\n` +
+        `ID: \`${channel.channelId}\`\n` +
+        (channel.username ? `Username: @${channel.username}\n` : "") +
+        `المالك: \`${channel.ownerId || "غير محدد"}\`\n` +
+        `الاعضاء: ${channel.membersCount || "غير محدد"}\n` +
+        `اضيفت: ${channel.createdAt ? new Date(channel.createdAt).toLocaleDateString("ar") : "غير معروف"}\n`;
+      await bot.sendMessage(chatId, infoText, {
+        parse_mode: "Markdown",
+        reply_markup: { inline_keyboard: [[{ text: "رجوع للوحة المطور", callback_data: "dev_main" }]] },
       });
       break;
     }
@@ -460,18 +520,15 @@ async function handleUserState(bot, msg, state, userId) {
 // Register callback query handlers
 function registerCallbacks(bot) {
   bot.on("callback_query", async (query) => {
-    // ✅ FIX 1: Wrap everything in try/catch so errors don't silently kill the handler
     try {
-      // ✅ FIX 2: Guard against missing query.message (happens with old/deleted messages)
       if (!query || !query.from) return;
 
       const userId = query.from.id;
       const data = query.data;
 
-      // ✅ FIX 3: Always answer the callback first to remove the loading spinner
+      // Always answer first to remove loading spinner
       await bot.answerCallbackQuery(query.id).catch(() => {});
 
-      // ✅ FIX 4: Handle case where message is missing (inline mode, old messages)
       const msg = query.message;
       if (!msg || !msg.chat) {
         console.warn("[CALLBACK] query.message is missing for data:", data);
@@ -480,13 +537,11 @@ function registerCallbacks(bot) {
 
       const chatId = msg.chat.id;
 
-      // Register user from callback
       await middleware.registerUser({ from: query.from, chat: msg.chat });
 
       const role = middleware.getUserRole(userId);
-      const isBanned = role === config.ROLES.BANNED;
 
-      if (isBanned) {
+      if (role === config.ROLES.BANNED) {
         await bot.sendMessage(chatId, config.MESSAGES.BANNED);
         return;
       }
@@ -534,7 +589,6 @@ function registerCallbacks(bot) {
 
       if (data === "dev_clear_logs") {
         if (!isDeveloper(userId)) return;
-        // ✅ FIX 5: Was calling updateSettings({}) instead of clearLogs()
         database.clearLogs();
         await bot.sendMessage(chatId, "تم مسح السجلات.");
         return;
@@ -574,7 +628,7 @@ function registerCallbacks(bot) {
       if (data === "dev_add_admin") {
         if (!isDeveloper(userId)) return;
         userStates[userId] = { type: "awaiting_promote_id", targetRole: "admin" };
-        await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد ترقيته:");
+        await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد ترقيته الى مشرف:");
         return;
       }
 
@@ -596,6 +650,22 @@ function registerCallbacks(bot) {
         if (!isDeveloper(userId)) return;
         userStates[userId] = { type: "awaiting_promote_id" };
         await bot.sendMessage(chatId, "ارسل ID المستخدم:");
+        return;
+      }
+
+      // FIX: dev_delete_channel — was missing handler
+      if (data === "dev_delete_channel") {
+        if (!isDeveloper(userId)) return;
+        userStates[userId] = { type: "awaiting_delete_channel_id" };
+        await bot.sendMessage(chatId, "ارسل ID القناة التي تريد حذفها:");
+        return;
+      }
+
+      // FIX: dev_channel_info — was missing handler
+      if (data === "dev_channel_info") {
+        if (!isDeveloper(userId)) return;
+        userStates[userId] = { type: "awaiting_channel_info_id" };
+        await bot.sendMessage(chatId, "ارسل ID القناة للحصول على تفاصيلها:");
         return;
       }
 
@@ -669,9 +739,11 @@ function registerCallbacks(bot) {
         return;
       }
 
+      // FIX: admin_unban — now properly handles with state instead of just showing text
       if (data === "admin_unban") {
         if (!middleware.hasRole(userId, config.ROLES.ADMIN, config.ROLES.DEVELOPER)) return;
-        await bot.sendMessage(chatId, "ارسل ID المستخدم لرفع الحظر (استخدم /unban <id>):");
+        userStates[userId] = { type: "awaiting_unban_id" };
+        await bot.sendMessage(chatId, "ارسل ID المستخدم الذي تريد رفع الحظر عنه:");
         return;
       }
 
@@ -713,7 +785,6 @@ function registerCallbacks(bot) {
 
       // --- OWNER/USER PANEL ---
       if (data === "owner_main") {
-        // ✅ FIX 6: Allow ALL non-banned users (user role included) to see user panel
         await userPanel.showUserPanel(bot, { chat: msg.chat, from: query.from });
         return;
       }
@@ -725,16 +796,16 @@ function registerCallbacks(bot) {
 
       if (data === "owner_add_channel") {
         userStates[userId] = { type: "awaiting_channel_id" };
-        await bot.sendMessage(chatId, "ارسل ID او username القناة:\n(مثال: @channelname او -100xxxxxxxxx)\n\n*تأكد من ان البوت مشرف في القناة اولاً*", {
-          parse_mode: "Markdown",
-        });
+        await bot.sendMessage(chatId,
+          "ارسل ID او username القناة:\n(مثال: @channelname او -100xxxxxxxxx)\n\n*تأكد من ان البوت مشرف في القناة اولاً*",
+          { parse_mode: "Markdown" }
+        );
         return;
       }
 
       if (data === "owner_delete_channel") {
-        await bot.sendMessage(chatId, "استخدم الامر:\n`/removechannel <channel_id>`", {
-          parse_mode: "Markdown",
-        });
+        userStates[userId] = { type: "awaiting_delete_channel_id" };
+        await bot.sendMessage(chatId, "ارسل ID القناة التي تريد حذفها:");
         return;
       }
 
@@ -805,10 +876,9 @@ function registerCallbacks(bot) {
       }
 
     } catch (err) {
-      // ✅ FIX 7: Log errors so you can debug, and never crash the handler
       console.error("[CALLBACK] Error handling callback_query:", err);
       try {
-        if (query.message?.chat?.id) {
+        if (query.message && query.message.chat && query.message.chat.id) {
           await bot.sendMessage(query.message.chat.id, "حدث خطأ، يرجى المحاولة مرة اخرى.");
         }
       } catch (e) {}

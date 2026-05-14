@@ -3,7 +3,6 @@
 const config = require("./config");
 const database = require("./database");
 
-// Get user role from DB
 function getUserRole(userId) {
   userId = parseInt(userId);
   if (userId === parseInt(config.DEVELOPER_ID)) return config.ROLES.DEVELOPER;
@@ -11,13 +10,11 @@ function getUserRole(userId) {
   return user ? user.role : config.ROLES.USER;
 }
 
-// Check if user has one of the given roles
 function hasRole(userId, ...roles) {
   const role = getUserRole(userId);
   return roles.includes(role);
 }
 
-// Register user if new, update info
 async function registerUser(msg) {
   if (!msg || !msg.from) return null;
   const from = msg.from;
@@ -49,7 +46,6 @@ async function registerUser(msg) {
   return database.getUser(userId);
 }
 
-// Require any authenticated (non-banned) user
 async function requireAuth(bot, msg, next) {
   if (!msg || !msg.from) return;
 
@@ -73,14 +69,12 @@ async function requireAuth(bot, msg, next) {
   await next(user);
 }
 
-// requireOwner: allows all non-banned users (user, owner, admin, developer)
 async function requireOwner(bot, msg, next) {
   await requireAuth(bot, msg, async (user) => {
     await next(user);
   });
 }
 
-// Require admin or above
 async function requireAdmin(bot, msg, next) {
   await requireAuth(bot, msg, async (user) => {
     const role = getUserRole(msg.from.id);
@@ -93,7 +87,6 @@ async function requireAdmin(bot, msg, next) {
   });
 }
 
-// Require developer only
 async function requireDeveloper(bot, msg, next) {
   await requireAuth(bot, msg, async (user) => {
     const role = getUserRole(msg.from.id);

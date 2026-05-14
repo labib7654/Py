@@ -7,11 +7,9 @@ const { registerCommands } = require("./commands");
 const database = require("./database");
 const { isDeveloper } = require("./helpers");
 
-// Initialize express server (required for Render free tier - keeps service alive)
 const app = express();
 app.use(express.json());
 
-// Health check endpoint
 app.get("/", (req, res) => {
   res.json({
     status: "ok",
@@ -35,51 +33,54 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Ping endpoint to prevent sleep on Render free tier
 app.get("/ping", (req, res) => {
   res.send("pong");
 });
 
-// Start express server
 const PORT = config.PORT;
-app.listen(PORT, () => {
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`[SERVER] Express server running on port ${PORT}`);
 });
 
-// Self-ping to prevent Render free tier from sleeping
+// Self-ping every 14 minutes to prevent Render free tier from sleeping
 if (config.NODE_ENV === "production") {
-  const RENDER_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  const RENDER_URL =
+    process.env.RENDER_EXTERNAL_URL || `https://localhost:${PORT}`;
 
-  setInterval(async () => {
+  setInterval(() => {
     try {
-      const http = require("http");
-      const url = new URL("/ping", RENDER_URL);
-      http.get(url.toString(), (res) => {
-        console.log(`[PING] Self-ping status: ${res.statusCode}`);
-      }).on("error", () => {});
-    } catch (e) {}
-  }, 14 * 60 * 1000); // Every 14 minutes
+      const pingUrl = RENDER_URL.replace(/\/$/, "") + "/ping";
+      const isHttps = pingUrl.startsWith("https");
+      const lib = isHttps ? require("https") : require("http");
+
+      lib
+        .get(pingUrl, (res) => {
+          console.log(`[PING] Self-ping status: ${res.statusCode}`);
+        })
+        .on("error", (e) => {
+          console.warn("[PING] Self-ping failed:", e.message);
+        });
+    } catch (e) {
+      console.warn("[PING] Self-ping error:", e.message);
+    }
+  }, 14 * 60 * 1000);
 }
 
-// Initialize bot
 async function main() {
   try {
     console.log("[MAIN] Starting Telegram Channel Manager Bot...");
     console.log(`[MAIN] Environment: ${config.NODE_ENV}`);
     console.log(`[MAIN] Developer ID: ${config.DEVELOPER_ID}`);
 
-    // Create bot instance
-    const bot = createBot();
+    const bot = await createBot();
 
-    // Register all commands and callbacks
     registerCommands(bot);
 
-    // Get bot info
     const me = await bot.getMe();
     console.log(`[MAIN] Bot started: @${me.username} (${me.id})`);
     console.log("[MAIN] Bot is ready and listening for messages...");
 
-    // Notify developer
     try {
       await bot.sendMessage(
         config.DEVELOPER_ID,
@@ -89,7 +90,6 @@ async function main() {
       console.log("[MAIN] Could not notify developer:", e.message);
     }
 
-    // Register developer if not already
     const devUser = database.getUser(config.DEVELOPER_ID);
     if (!devUser) {
       database.setUser(config.DEVELOPER_ID, {
@@ -102,14 +102,12 @@ async function main() {
     }
 
     database.addLog({ action: "bot_started", userId: config.DEVELOPER_ID });
-
   } catch (error) {
     console.error("[MAIN] Fatal error:", error);
     process.exit(1);
   }
 }
 
-// Handle graceful shutdown
 process.on("SIGTERM", () => {
   console.log("[MAIN] SIGTERM received. Shutting down gracefully...");
   process.exit(0);
@@ -128,5 +126,4 @@ process.on("unhandledRejection", (reason, promise) => {
   console.error("[MAIN] Unhandled Rejection at:", promise, "reason:", reason);
 });
 
-// Start the bot
 main();

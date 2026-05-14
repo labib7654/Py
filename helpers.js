@@ -1,13 +1,12 @@
+"use strict";
+
 const config = require("./config");
 
-// Format user mention
 function formatUser(user) {
-  const name =
-    user.first_name + (user.last_name ? " " + user.last_name : "");
+  const name = user.first_name + (user.last_name ? " " + user.last_name : "");
   return `[${name}](tg://user?id=${user.id})`;
 }
 
-// Format role badge
 function getRoleBadge(role) {
   const badges = {
     developer: "[DEV]",
@@ -19,7 +18,6 @@ function getRoleBadge(role) {
   return badges[role] || "[USER]";
 }
 
-// Format date to Arabic
 function formatDate(dateStr) {
   const date = new Date(dateStr);
   return date.toLocaleDateString("ar-SA", {
@@ -31,17 +29,14 @@ function formatDate(dateStr) {
   });
 }
 
-// Format number with commas
 function formatNumber(num) {
   return num ? num.toLocaleString("ar-SA") : "0";
 }
 
-// Check if user is developer
 function isDeveloper(userId) {
   return parseInt(userId) === parseInt(config.DEVELOPER_ID);
 }
 
-// Build keyboard
 function buildKeyboard(buttons, options = {}) {
   return {
     reply_markup: {
@@ -51,7 +46,6 @@ function buildKeyboard(buttons, options = {}) {
   };
 }
 
-// Build reply keyboard
 function buildReplyKeyboard(buttons, options = {}) {
   return {
     reply_markup: {
@@ -63,13 +57,11 @@ function buildReplyKeyboard(buttons, options = {}) {
   };
 }
 
-// Escape markdown
 function escapeMarkdown(text) {
   if (!text) return "";
   return text.toString().replace(/[_*[\]()~`>#+=|{}.!\\-]/g, "\\$&");
 }
 
-// Parse channel ID
 function parseChannelId(input) {
   if (!input) return null;
   const str = input.toString().trim();
@@ -79,12 +71,10 @@ function parseChannelId(input) {
   return null;
 }
 
-// Delay function
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Chunk array
 function chunkArray(array, size) {
   const chunks = [];
   for (let i = 0; i < array.length; i += size) {

@@ -1,15 +1,15 @@
+"use strict";
+
 const config = require("./config");
 const database = require("./database");
 const { requireOwner, getUserRole } = require("./middleware");
 const { formatDate } = require("./helpers");
 
-// Show owner/user panel
 async function showUserPanel(bot, msg) {
   await requireOwner(bot, msg, async () => {
     const userId = msg.from.id;
     const user = database.getUser(userId);
     const role = getUserRole(userId);
-    const settings = database.getSettings();
 
     const allChannels = database.getAllChannels();
     const myChannels = allChannels.filter(
@@ -21,7 +21,7 @@ async function showUserPanel(bot, msg) {
       `مرحباً ${user.firstName}!\n` +
       `رتبتك: ${config.ROLE_LABELS[role]}\n\n` +
       `*قنواتك:* ${myChannels.length} قناة\n\n` +
-      `*الرسائل المتاحة:*\n` +
+      `*الخيارات المتاحة:*\n` +
       `- اضافة/حذف قنواتك\n` +
       `- ارسال رسائل للقنوات\n` +
       `- ادارة اعضاء قنواتك\n`;
@@ -52,7 +52,6 @@ async function showUserPanel(bot, msg) {
   });
 }
 
-// Show owner's channels
 async function showOwnerChannels(bot, chatId, userId) {
   const allChannels = database.getAllChannels();
   const myChannels = allChannels.filter((ch) => ch.ownerId === userId);
@@ -89,7 +88,6 @@ async function showOwnerChannels(bot, chatId, userId) {
   });
 }
 
-// Show owner stats
 async function showOwnerStats(bot, chatId, userId) {
   const allChannels = database.getAllChannels();
   const myChannels = allChannels.filter((ch) => ch.ownerId === userId);
@@ -123,11 +121,8 @@ async function showOwnerStats(bot, chatId, userId) {
   });
 }
 
-// Owner group settings
 async function showGroupSettings(bot, chatId, userId) {
-  const myGroups = database
-    .getAllGroups()
-    .filter((g) => g.ownerId === userId);
+  const myGroups = database.getAllGroups().filter((g) => g.ownerId === userId);
 
   let text = `*اعدادات القروب*\n\nقروباتك: ${myGroups.length}\n\n`;
 

@@ -1,9 +1,10 @@
+"use strict";
+
 const config = require("./config");
 const database = require("./database");
 const { formatDate, formatNumber, chunkArray } = require("./helpers");
 const { requireDeveloper } = require("./middleware");
 
-// Developer main panel
 async function showDevPanel(bot, msg) {
   await requireDeveloper(bot, msg, async () => {
     const settings = database.getSettings();
@@ -60,7 +61,6 @@ async function showDevPanel(bot, msg) {
   });
 }
 
-// Show users list
 async function showDevUsers(bot, chatId, page = 0) {
   const allUsers = database.getAllUsers();
   const pageSize = 10;
@@ -69,17 +69,17 @@ async function showDevUsers(bot, chatId, page = 0) {
 
   let text = `*قائمة المستخدمين* (صفحة ${page + 1}/${totalPages || 1})\n\n`;
 
-  pageUsers.forEach((user, idx) => {
-    const roleName = config.ROLE_LABELS[user.role] || user.role;
-    text +=
-      `${page * pageSize + idx + 1}. ${user.firstName}` +
-      (user.username ? ` (@${user.username})` : "") +
-      ` - ID: \`${user.userId}\`\n` +
-      `   الرتبة: ${roleName}\n\n`;
-  });
-
   if (allUsers.length === 0) {
     text += "لا يوجد مستخدمون مسجلون بعد.";
+  } else {
+    pageUsers.forEach((user, idx) => {
+      const roleName = config.ROLE_LABELS[user.role] || user.role;
+      text +=
+        `${page * pageSize + idx + 1}. ${user.firstName}` +
+        (user.username ? ` (@${user.username})` : "") +
+        ` - ID: \`${user.userId}\`\n` +
+        `   الرتبة: ${roleName}\n\n`;
+    });
   }
 
   const navButtons = [];
@@ -105,7 +105,6 @@ async function showDevUsers(bot, chatId, page = 0) {
   });
 }
 
-// Show channels management
 async function showDevChannels(bot, chatId) {
   const channels = database.getAllChannels();
 
@@ -140,7 +139,6 @@ async function showDevChannels(bot, chatId) {
   });
 }
 
-// Show settings panel
 async function showDevSettings(bot, chatId) {
   const settings = database.getSettings();
 
@@ -165,7 +163,6 @@ async function showDevSettings(bot, chatId) {
   });
 }
 
-// Show logs
 async function showDevLogs(bot, chatId) {
   const logs = database.getLogs(15);
 

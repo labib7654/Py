@@ -5,7 +5,6 @@ const database = require("./database");
 const { requireAdmin, getUserRole } = require("./middleware");
 const { formatNumber } = require("./helpers");
 
-// Admin main panel
 async function showAdminPanel(bot, msg) {
   await requireAdmin(bot, msg, async () => {
     const userId = msg.from.id;
@@ -52,7 +51,6 @@ async function showAdminPanel(bot, msg) {
   });
 }
 
-// Show all users (for admins)
 async function showAdminUsers(bot, chatId, page = 0) {
   const allUsers = database.getAllUsers();
   const pageSize = 10;
@@ -84,9 +82,7 @@ async function showAdminUsers(bot, chatId, page = 0) {
     reply_markup: {
       inline_keyboard: [
         ...(navButtons.length > 0 ? [navButtons] : []),
-        [
-          { text: "🚫 حظر مستخدم", callback_data: "admin_ban" },
-        ],
+        [{ text: "🚫 حظر مستخدم", callback_data: "admin_ban" }],
         [{ text: "رجوع للوحة المشرف", callback_data: "admin_main" }],
       ],
     },
@@ -98,12 +94,10 @@ async function showAdminUsers(bot, chatId, page = 0) {
   });
 }
 
-// Show channels the admin manages
 async function showAdminChannels(bot, chatId, userId) {
   const allChannels = database.getAllChannels();
   const role = getUserRole(userId);
 
-  // Developer sees all channels, admin sees only their own
   const myChannels =
     role === config.ROLES.DEVELOPER
       ? allChannels

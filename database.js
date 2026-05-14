@@ -5,7 +5,6 @@ const FileSync = require("lowdb/adapters/FileSync");
 const path = require("path");
 const fs = require("fs");
 
-// Ensure data directory exists
 const dataDir = path.join(process.cwd(), "data");
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -14,7 +13,6 @@ if (!fs.existsSync(dataDir)) {
 const adapter = new FileSync(path.join(dataDir, "db.json"));
 const db = low(adapter);
 
-// Default database structure
 db.defaults({
   users: [],
   channels: [],
@@ -177,7 +175,6 @@ function addLog(data) {
     })
     .write();
 
-  // Keep only last 500 logs to save space
   const logs = db.get("logs").value();
   if (logs.length > 500) {
     db.set("logs", logs.slice(logs.length - 500)).write();
@@ -194,25 +191,20 @@ function clearLogs() {
 }
 
 module.exports = {
-  // Users
   getUser,
   setUser,
   getAllUsers,
   deleteUser,
-  // Channels
   getChannel,
   setChannel,
   getAllChannels,
   deleteChannel,
-  // Groups
   getGroup,
   setGroup,
   getAllGroups,
   deleteGroup,
-  // Settings
   getSettings,
   updateSettings,
-  // Logs
   addLog,
   getLogs,
   clearLogs,
