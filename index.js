@@ -10,15 +10,7 @@ const { BOT_TOKEN, DEVELOPER_ID, PORT, RENDER_EXTERNAL_URL, WEBHOOK_PATH } = req
 const { globalMiddleware } = require('./middleware');
 const { setupDeveloper, setupGroupHandlers, setupAdminHandlers } = require('./handlers');
 
-// ── تحقق من التوكن ───────────────────────────────────────────
-if (!BOT_TOKEN) {
-  console.error('❌ BOT_TOKEN غير موجود! أضفه في ملف .env أو متغيرات البيئة.');
-  process.exit(1);
-}
-if (!DEVELOPER_ID) {
-  console.error('❌ DEVELOPER_ID غير موجود! أضفه في ملف .env أو متغيرات البيئة.');
-  process.exit(1);
-}
+console.log(`✅ البوت جاهز — المطور: ${DEVELOPER_ID}`);
 
 // ── إنشاء البوت ─────────────────────────────────────────────
 const bot = new Telegraf(BOT_TOKEN);
