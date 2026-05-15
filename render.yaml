@@ -1,5 +1,5 @@
 services:
-  - type: worker
+  - type: web
     name: telegram-group-bot
     env: node
     region: oregon
@@ -9,18 +9,3 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-
-      - key: BOT_TOKEN
-        value: "7243808108:AAFxlT-1HQ6twyVewzWqgdEgXd0EK_j4o5Y"
-
-      - key: DEVELOPER_ID
-        value: "7411444902"
-
-      - key: SUPABASE_URL
-        value: ""
-
-      - key: SUPABASE_KEY
-        value: ""
-
-      - key: PORT
-        value: "3000"
