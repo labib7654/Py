@@ -176,18 +176,84 @@ async function logAction(bot, g, action, by, target, details = '') {
   } catch {}
 }
 
-// إنشاء رابط دعوة يتطلب موافقة (لتفعيل/تعطيل Join Requests)
-async function setJoinApproval(bot, chatId, enabled) {
+// ─────────────────────────────────────────────────────────────
+//  setJoinApproval — مُصلَح: يضبط setChatPermissions + رابط دعوة
+// ─────────────────────────────────────────────────────────────
+async function setJoinApproval(bot, chatId, enabled, currentPerms) {
   try {
+    // 1) ضبط صلاحية دعوة الأعضاء
+    const permsUpdate = {
+      can_send_messages:         currentPerms?.canSendMessages   !== false,
+      can_send_audios:           currentPerms?.canSendMedia      !== false,
+      can_send_documents:        currentPerms?.canSendMedia      !== false,
+      can_send_photos:           currentPerms?.canSendMedia      !== false,
+      can_send_videos:           currentPerms?.canSendMedia      !== false,
+      can_send_video_notes:      currentPerms?.canSendMedia      !== false,
+      can_send_voice_notes:      currentPerms?.canSendMedia      !== false,
+      can_send_polls:            currentPerms?.canSendPolls      !== false,
+      can_send_other_messages:   currentPerms?.canSendMessages   !== false,
+      can_add_web_page_previews: currentPerms?.canAddWebPreviews !== false,
+      can_invite_users:          !enabled, // عند التفعيل نمنع الأعضاء من الدعوة المباشرة
+      can_pin_messages:          currentPerms?.canPinMessages    === true,
+      can_manage_topics:         currentPerms?.canManageTopics   === true,
+    };
+    await bot.telegram.setChatPermissions(chatId, permsUpdate);
+
+    // 2) إنشاء رابط دعوة رسمي مع/بدون موافقة
     const link = await bot.telegram.callApi('createChatInviteLink', {
       chat_id:              chatId,
       creates_join_request: enabled,
-      name: enabled ? 'رابط مع موافقة' : 'رابط مباشر',
+      name: enabled ? 'رابط رسمي - موافقة مطلوبة' : 'رابط رسمي - دخول مباشر',
     });
     return link;
   } catch (e) {
     console.error('setJoinApproval error:', e.message);
     return null;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Topic helpers — قفل وفتح المواضيع
+// ─────────────────────────────────────────────────────────────
+async function lockTopic(bot, chatId, topicId) {
+  try {
+    await bot.telegram.callApi('closeForumTopic', {
+      chat_id:           chatId,
+      message_thread_id: topicId,
+    });
+    return true;
+  } catch (e) {
+    console.error('lockTopic error:', e.message);
+    return false;
+  }
+}
+
+async function unlockTopic(bot, chatId, topicId) {
+  try {
+    await bot.telegram.callApi('reopenForumTopic', {
+      chat_id:           chatId,
+      message_thread_id: topicId,
+    });
+    return true;
+  } catch (e) {
+    console.error('unlockTopic error:', e.message);
+    return false;
+  }
+}
+
+async function archiveTopic(bot, chatId, topicId) {
+  try {
+    // أغلق أولاً ثم أخفِ
+    await bot.telegram.callApi('closeForumTopic', {
+      chat_id: chatId, message_thread_id: topicId,
+    });
+    await bot.telegram.callApi('hideGeneralForumTopic', {
+      chat_id: chatId,
+    }).catch(() => {}); // ليس كل موضوع قابل للإخفاء
+    return true;
+  } catch (e) {
+    console.error('archiveTopic error:', e.message);
+    return false;
   }
 }
 
@@ -225,5 +291,6 @@ module.exports = {
   applyGroupPermissions,
   logAction,
   setJoinApproval,
+  lockTopic, unlockTopic, archiveTopic,
   verifyAndRegisterOwner,
 };
