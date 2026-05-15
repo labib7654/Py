@@ -1,6 +1,6 @@
 const { Markup } = require('telegraf');
 const db = require('./db');
-const { isDeveloper, isAdmin } = require('./helpers');
+const { isDeveloper, isAdmin, promoteUser, demoteUser, muteMember, unmutePerms, logAction } = require('./helpers');
 
 function devMainKeyboard() {
   return Markup.inlineKeyboard([
@@ -16,18 +16,24 @@ function devMainKeyboard() {
      Markup.button.callback('✅ رفع حظر عالمي', 'dev_unban_menu')],
   ]);
 }
+
 function back(cb) { return Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', cb)]]); }
 
 function memberActionsKeyboard(targetId, chatId, backCb) {
   return Markup.inlineKeyboard([
-    [Markup.button.callback('🔇 كتم',      `mute_${targetId}_${chatId}`),
-     Markup.button.callback('🔊 رفع كتم', `unmute_${targetId}_${chatId}`)],
-    [Markup.button.callback('⚠️ تحذير',    `warn_${targetId}_${chatId}`),
-     Markup.button.callback('👢 طرد',      `kick_${targetId}_${chatId}`)],
-    [Markup.button.callback('🚫 حظر',      `ban_${targetId}_${chatId}`),
-     Markup.button.callback('✅ رفع حظر', `unban_${targetId}_${chatId}`)],
-    [Markup.button.callback('📋 معلومات',  `info_${targetId}_${chatId}`),
-     Markup.button.callback('🔙 رجوع',    backCb || 'cancel')],
+    [Markup.button.callback('⬆️ رفع مشرف',   `promote_${targetId}_${chatId}`),
+     Markup.button.callback('⬇️ تنزيل مشرف', `demote_${targetId}_${chatId}`)],
+    [Markup.button.callback('🔇 كتم',         `mute_${targetId}_${chatId}`),
+     Markup.button.callback('🔊 رفع كتم',     `unmute_${targetId}_${chatId}`)],
+    [Markup.button.callback('⏱️ كتم مؤقت',   `mutet_show_${targetId}_${chatId}`),
+     Markup.button.callback('🚫⏱️ حظر مؤقت', `bant_show_${targetId}_${chatId}`)],
+    [Markup.button.callback('⚠️ تحذير',       `warn_${targetId}_${chatId}`),
+     Markup.button.callback('🗑️ مسح تحذيرات',`clearwarns_${targetId}_${chatId}`)],
+    [Markup.button.callback('👢 طرد',         `kick_${targetId}_${chatId}`),
+     Markup.button.callback('🚫 حظر',         `ban_${targetId}_${chatId}`)],
+    [Markup.button.callback('✅ رفع حظر',     `unban_${targetId}_${chatId}`),
+     Markup.button.callback('📋 معلومات',     `info_${targetId}_${chatId}`)],
+    [Markup.button.callback('🔙 رجوع', backCb || 'cancel')],
   ]);
 }
 
@@ -40,7 +46,7 @@ module.exports = function setupDeveloper(bot) {
     if (isDeveloper(ctx)) {
       const s = db.getStats();
       return ctx.replyWithMarkdown(
-        `🤖 *بوت إدارة المجموعات*\n\n🔐 *لوحة التحكم السرية للمطور*\n\n` +
+        `🤖 *بوت إدارة المجموعات — جامعة*\n\n🔐 *لوحة التحكم السرية للمطور*\n\n` +
         `📊 *الإحصائيات:*\n• المجموعات: \`${s.totalGroups}\`\n• القنوات: \`${s.totalChannels}\`\n` +
         `• المستخدمون: \`${s.totalUsers}\`\n• المحظورون: \`${s.bannedUsers}\`\n` +
         `• المشرفون: \`${s.totalAdmins}\`\n• الطلبات المعلقة: \`${s.pendingReqs}\``,
@@ -48,8 +54,7 @@ module.exports = function setupDeveloper(bot) {
       );
     }
     await ctx.replyWithMarkdown(
-      `👋 *مرحباً ${u.first_name}!*\n\nأنا بوت إدارة المجموعات والمجتمعات.\n\n` +
-      `📌 *أضفني لمجموعتك وامنحني صلاحيات المشرف!*`,
+      `👋 *مرحباً ${u.first_name}!*\n\nأنا بوت إدارة المجموعات والمجتمعات.\n\n📌 *أضفني لمجموعتك وامنحني صلاحيات المشرف!*`,
       Markup.inlineKeyboard([
         [Markup.button.url('➕ أضفني لمجموعتك', `https://t.me/${ctx.botInfo.username}?startgroup=true`)],
         [Markup.button.callback('ℹ️ مساعدة وأوامر', 'help_menu')],
@@ -93,18 +98,18 @@ module.exports = function setupDeveloper(bot) {
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
     if (!g) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
-    const warns = [...g.warns.values()].reduce((a, w) => a + w.length, 0);
+    const warns   = [...g.warns.values()].reduce((a, w) => a + w.length, 0);
     const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending').length;
     await ctx.editMessageText(
-      `📋 *${g.title}*\n\n🆔 \`${g.chatId}\`\n👑 المالك: \`${g.ownerUsername || 'غير محدد'}\`\n➕ أضافه: \`${g.addedByUsername}\`\n👮 المشرفون: \`${g.admins.size}\`\n👥 الأعضاء: \`${g.members.size}\`\n⚠️ التحذيرات: \`${warns}\`\n🔤 الكلمات: \`${g.bannedWords.length}\`\n📨 طلبات معلقة: \`${pending}\`\n🛡️ مكافحة السبام: ${g.antiSpam ? '✅' : '❌'} | 👋 الترحيب: ${g.welcomeEnabled ? '✅' : '❌'}`,
+      `📋 *${g.title}*\n\n🆔 \`${g.chatId}\`\n👑 المالك: \`${g.ownerUsername || 'غير محدد'}\`\n➕ أضافه: \`${g.addedByUsername}\`\n👮 المشرفون: \`${g.admins.size}\`\n👥 الأعضاء: \`${g.members.size}\`\n⚠️ التحذيرات: \`${warns}\`\n🔤 الكلمات: \`${g.bannedWords.length}\`\n📨 طلبات معلقة: \`${pending}\`\n🛡️ حماية المحتوى: ${g.protectContent ? '✅' : '❌'}\n🔗 منع روابط: ${g.antiLinks ? '✅' : '❌'}\n🤖 منع بوتات: ${g.antiBot ? '✅' : '❌'}\n🛡️ مكافحة السبام: ${g.antiSpam ? '✅' : '❌'} | 👋 الترحيب: ${g.welcomeEnabled ? '✅' : '❌'}`,
       {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
-          [Markup.button.callback('👥 الأعضاء', `dev_members_${chatId}`), Markup.button.callback('⚠️ المحذَّرون', `dev_warned_${chatId}`)],
-          [Markup.button.callback('🔇 المكتومون', `dev_muted_${chatId}`), Markup.button.callback('🚫 المحظورون', `dev_banned_grp_${chatId}`)],
-          [Markup.button.callback('📨 طلبات الانضمام', `dev_joinreqs_${chatId}`), Markup.button.callback('📢 بث للمجموعة', `dev_grp_bcast_${chatId}`)],
-          [Markup.button.callback('⚙️ الإعدادات', `settings_${chatId}`)],
-          [Markup.button.callback('🔙 رجوع', 'dev_groups')],
+          [Markup.button.callback('👥 الأعضاء',          `dev_members_${chatId}`),   Markup.button.callback('⚠️ المحذَّرون', `dev_warned_${chatId}`)],
+          [Markup.button.callback('🔇 المكتومون',         `dev_muted_${chatId}`),     Markup.button.callback('🚫 المحظورون', `dev_banned_grp_${chatId}`)],
+          [Markup.button.callback('📨 طلبات الانضمام',   `dev_joinreqs_${chatId}`),  Markup.button.callback('📢 بث للمجموعة', `dev_grp_bcast_${chatId}`)],
+          [Markup.button.callback('⚙️ الإعدادات',         `settings_${chatId}`)],
+          [Markup.button.callback('🔙 رجوع',             'dev_groups')],
         ])
       }
     );
@@ -126,18 +131,18 @@ module.exports = function setupDeveloper(bot) {
         if (a.status === 'creator') { ownerLine = `👑 المالك: ${name} \`[${a.user.id}]\``; g.ownerId = a.user.id; g.ownerUsername = a.user.username || a.user.first_name; }
         else { const rec = g.admins.get(a.user.id); adminLines.push(`👮 ${name} \`[${a.user.id}]\`${rec ? ` ← @${rec.promotedByUsername}` : ''}`); }
       }
-    } catch { }
-    const members = [...g.members.values()].filter(m => !adminIds.has(m.userId) && m.userId !== g.ownerId);
-    let text = `👥 *أعضاء ${g.title}*\n\n`;
-    if (ownerLine) text += `${ownerLine}\n\n`;
+    } catch {}
+    const members    = [...g.members.values()].filter(m => !adminIds.has(m.userId) && m.userId !== g.ownerId);
+    let text         = `👥 *أعضاء ${g.title}*\n\n`;
+    if (ownerLine)     text += `${ownerLine}\n\n`;
     if (adminLines.length) text += `*المشرفون:*\n${adminLines.join('\n')}\n\n`;
     const memberBtns = [];
     if (members.length > 0) {
       text += `*الأعضاء (${members.length}):*\n`;
       members.slice(0, 8).forEach(m => {
-        const name = m.username ? `@${m.username}` : m.firstName;
-        const icons = `${(g.warns.get(m.userId)?.length || 0) > 0 ? `⚠️` : ''}${g.mutedUsers.has(m.userId) ? '🔇' : ''}${g.bannedUsers.has(m.userId) ? '🚫' : ''}`;
-        text += `👤 ${name} \`[${m.userId}]\` ${icons}\n`;
+        const name  = m.username ? `@${m.username}` : m.firstName;
+        const icons = `${(g.warns.get(m.userId)?.length || 0) > 0 ? '⚠️' : ''}${g.mutedUsers.has(m.userId) ? '🔇' : ''}${g.bannedUsers.has(m.userId) ? '🚫' : ''}`;
+        text += `👤 ${name} \`[${m.userId}]\` ${icons} ⭐${m.score || 0}\n`;
         memberBtns.push([Markup.button.callback(`👤 ${name.slice(0, 20)} ${icons}`, `dev_mact_${m.userId}_${chatId}`)]);
       });
     } else { text += '_لا يوجد أعضاء عاديون_'; }
@@ -154,7 +159,7 @@ module.exports = function setupDeveloper(bot) {
     if (!warned.length) return ctx.editMessageText('⚠️ *لا يوجد أعضاء محذَّرون*', { parse_mode: 'Markdown', ...back(`dev_grp_${chatId}`) });
     let text = `⚠️ *المحذَّرون في ${g.title}*\n\n`;
     const btns = warned.map(([uid, wList]) => {
-      const m = g.members.get(uid);
+      const m    = g.members.get(uid);
       const name = m ? (m.username ? `@${m.username}` : m.firstName) : String(uid);
       text += `👤 ${name} — \`${wList.length}/${g.maxWarns}\`\n`;
       return [Markup.button.callback(`👤 ${name.slice(0, 22)} (${wList.length})`, `dev_mact_${uid}_${chatId}`)];
@@ -172,7 +177,7 @@ module.exports = function setupDeveloper(bot) {
     let text = `🔇 *المكتومون في ${g.title}* (${g.mutedUsers.size})\n\n`;
     const btns = [];
     for (const uid of g.mutedUsers) {
-      const m = g.members.get(uid);
+      const m    = g.members.get(uid);
       const name = m ? (m.username ? `@${m.username}` : m.firstName) : String(uid);
       text += `👤 ${name}\n`;
       btns.push([Markup.button.callback(`🔊 رفع كتم ${name.slice(0, 18)}`, `unmute_${uid}_${chatId}`)]);
@@ -190,9 +195,10 @@ module.exports = function setupDeveloper(bot) {
     let text = `🚫 *المحظورون في ${g.title}* (${g.bannedUsers.size})\n\n`;
     const btns = [];
     for (const uid of g.bannedUsers) {
-      const m = g.members.get(uid);
+      const m    = g.members.get(uid);
       const name = m ? (m.username ? `@${m.username}` : m.firstName) : String(uid);
-      text += `👤 ${name}\n`;
+      const timed = g.timedBans.get(uid);
+      text += `👤 ${name}${timed ? ` (حتى ${new Date(timed).toLocaleString('ar')})` : ''}\n`;
       btns.push([Markup.button.callback(`✅ رفع حظر ${name.slice(0, 18)}`, `unban_${uid}_${chatId}`)]);
     }
     btns.push([Markup.button.callback('🔙 رجوع', `dev_grp_${chatId}`)]);
@@ -204,13 +210,13 @@ module.exports = function setupDeveloper(bot) {
     await ctx.answerCbQuery();
     const targetId = Number(ctx.match[1]);
     const chatId   = Number(ctx.match[2]);
-    const g = db.getGroup(chatId);
-    const m = g?.members.get(targetId);
-    const name = m ? (m.username ? `@${m.username}` : m.firstName) : String(targetId);
+    const g   = db.getGroup(chatId);
+    const m   = g?.members.get(targetId);
+    const name  = m ? (m.username ? `@${m.username}` : m.firstName) : String(targetId);
     const warns = g?.warns.get(targetId)?.length || 0;
-    const gu = db.getUser(targetId);
+    const gu    = db.getUser(targetId);
     await ctx.editMessageText(
-      `👤 *${name}*\n\n🆔 \`${targetId}\`\n⚠️ التحذيرات: \`${warns}/${g?.maxWarns || 3}\`\n🔇 مكتوم: ${g?.mutedUsers.has(targetId) ? '✅' : '❌'}\n🚫 محظور محلياً: ${g?.bannedUsers.has(targetId) ? '✅' : '❌'}\n🌍 محظور عالمياً: ${gu?.globalBanned ? `✅ — ${gu.bannedReason}` : '❌'}\n📨 رسائل: \`${m?.messageCount || 0}\``,
+      `👤 *${name}*\n\n🆔 \`${targetId}\`\n⚠️ التحذيرات: \`${warns}/${g?.maxWarns || 3}\`\n🔇 مكتوم: ${g?.mutedUsers.has(targetId) ? '✅' : '❌'}\n🚫 محظور محلياً: ${g?.bannedUsers.has(targetId) ? '✅' : '❌'}\n🌍 محظور عالمياً: ${gu?.globalBanned ? `✅ — ${gu.bannedReason}` : '❌'}\n📨 رسائل: \`${m?.messageCount || 0}\`\n⭐ نقاط: \`${m?.score || 0}\``,
       { parse_mode: 'Markdown', ...memberActionsKeyboard(targetId, chatId, `dev_members_${chatId}`) }
     );
   });
@@ -252,7 +258,10 @@ module.exports = function setupDeveloper(bot) {
     const c = db.getCommunity(Number(ctx.match[1]));
     if (!c) return ctx.answerCbQuery('❌ غير موجود!', { show_alert: true });
     const subNames = [...c.subGroups].map(id => { const g = db.getGroup(id); return g ? `• ${g.title} \`[${id}]\`` : `• \`${id}\``; }).join('\n') || '_لا توجد مجموعات فرعية_';
-    await ctx.editMessageText(`🌐 *${c.title}*\n\n🆔 \`${c.communityId}\`\n📁 المجموعات:\n${subNames}\n\n⚙️ الحد الأقصى: \`${c.maxGroupJoins}\`\n🛡️ الحماية: ${c.enabled ? '✅' : '❌'}`, { parse_mode: 'Markdown', ...back('dev_communities') });
+    await ctx.editMessageText(
+      `🌐 *${c.title}*\n\n🆔 \`${c.communityId}\`\n📁 المجموعات:\n${subNames}\n\n⚙️ الحد الأقصى: \`${c.maxGroupJoins}\`\n🛡️ الحماية: ${c.enabled ? '✅' : '❌'}`,
+      { parse_mode: 'Markdown', ...back('dev_communities') }
+    );
   });
 
   bot.command('community', async (ctx) => {
@@ -283,7 +292,7 @@ module.exports = function setupDeveloper(bot) {
   bot.action('dev_broadcast', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
-    await ctx.editMessageText('📢 *بث جماعي*\n\n`/broadcast نص الرسالة`', { parse_mode: 'Markdown', ...back('dev_back') });
+    await ctx.editMessageText('📢 *بث جماعي*\n\n`/broadcast نص الرسالة`\n\nملاحظة: هذا الأمر يبث لكل المجموعات.', { parse_mode: 'Markdown', ...back('dev_back') });
   });
 
   bot.command('broadcast', async (ctx) => {
@@ -293,13 +302,16 @@ module.exports = function setupDeveloper(bot) {
     const groups = db.allGroups();
     await ctx.reply(`📢 جاري الإرسال لـ ${groups.length} مجموعة...`);
     let sent = 0, failed = 0;
-    for (const g of groups) { try { await bot.telegram.sendMessage(g.chatId, `📢 *رسالة إدارة البوت*\n\n${text}`, { parse_mode: 'Markdown' }); sent++; } catch { failed++; } }
+    for (const g of groups) {
+      try { await bot.telegram.sendMessage(g.chatId, `📢 *رسالة إدارة البوت*\n\n${text}`, { parse_mode: 'Markdown' }); sent++; } catch { failed++; }
+    }
     await ctx.replyWithMarkdown(`✅ *اكتمل البث*\n• أُرسل: \`${sent}\`\n• فشل: \`${failed}\``);
   });
 
   bot.command('bcastone', async (ctx) => {
     if (!isDeveloper(ctx)) return;
-    const parts = ctx.message.text.split(' '); const chatId = Number(parts[1]); const text = parts.slice(2).join(' ');
+    const parts = ctx.message.text.split(' ');
+    const chatId = Number(parts[1]); const text = parts.slice(2).join(' ');
     if (!chatId || !text) return ctx.reply('❌ مثال: /bcastone -100123456 نص');
     try { await bot.telegram.sendMessage(chatId, `📢 *رسالة من المطور*\n\n${text}`, { parse_mode: 'Markdown' }); await ctx.reply('✅ تم!'); }
     catch (e) { await ctx.reply(`❌ ${e.message}`); }
@@ -319,16 +331,19 @@ module.exports = function setupDeveloper(bot) {
 
   bot.command('gban', async (ctx) => {
     if (!isDeveloper(ctx)) return;
-    const args = ctx.message.text.split(' ').slice(1); const targetId = Number(args[0]); const reason = args.slice(1).join(' ') || 'لا يوجد سبب';
+    const args = ctx.message.text.split(' ').slice(1);
+    const targetId = Number(args[0]); const reason = args.slice(1).join(' ') || 'لا يوجد سبب';
     if (!targetId) return ctx.reply('❌ مثال: /gban 123456 سبب');
-    const user = db.getOrCreateUser(targetId, '', ''); user.globalBanned = true; user.bannedReason = reason; user.bannedAt = new Date();
+    const user = db.getOrCreateUser(targetId, '', '');
+    user.globalBanned = true; user.bannedReason = reason; user.bannedAt = new Date();
     await ctx.replyWithMarkdown(`🚫 *تم الحظر العالمي*\n\`${targetId}\`\n${reason}`);
-    for (const g of db.allGroups()) { try { await bot.telegram.banChatMember(g.chatId, targetId); } catch { } }
+    for (const g of db.allGroups()) { try { await bot.telegram.banChatMember(g.chatId, targetId); } catch {} }
   });
 
   bot.command('ungban', async (ctx) => {
     if (!isDeveloper(ctx)) return;
-    const targetId = Number(ctx.message.text.split(' ')[1]); if (!targetId) return ctx.reply('❌ مثال: /ungban 123456');
+    const targetId = Number(ctx.message.text.split(' ')[1]);
+    if (!targetId) return ctx.reply('❌ مثال: /ungban 123456');
     const user = db.getUser(targetId); if (!user) return ctx.reply('❌ المستخدم غير موجود!');
     user.globalBanned = false; user.bannedReason = ''; user.bannedAt = null;
     await ctx.replyWithMarkdown(`✅ *رُفع الحظر عن:* \`${targetId}\``);
@@ -353,23 +368,33 @@ module.exports = function setupDeveloper(bot) {
   bot.command('userinfo', async (ctx) => {
     if (!isDeveloper(ctx)) return;
     const arg = ctx.message.text.split(' ')[1]; if (!arg) return ctx.reply('❌ مثال: /userinfo 123456');
-    const user = /^\d+$/.test(arg) ? db.getUser(Number(arg)) : db.allUsers().find(u => u.username.toLowerCase() === arg.replace('@', '').toLowerCase());
+    const user = /^\d+$/.test(arg)
+      ? db.getUser(Number(arg))
+      : db.allUsers().find(u => u.username.toLowerCase() === arg.replace('@', '').toLowerCase());
     if (!user) return ctx.reply('❌ المستخدم غير موجود!');
-    await ctx.replyWithMarkdown(`👤 *معلومات المستخدم*\n\n🆔 \`${user.userId}\`\n📛 ${user.firstName}\n🔗 ${user.username ? `@${user.username}` : '—'}\n🌍 محظور: ${user.globalBanned ? `✅ — ${user.bannedReason}` : '❌'}`);
+    await ctx.replyWithMarkdown(
+      `👤 *معلومات المستخدم*\n\n🆔 \`${user.userId}\`\n📛 ${user.firstName}\n🔗 ${user.username ? `@${user.username}` : '—'}\n🌍 محظور: ${user.globalBanned ? `✅ — ${user.bannedReason}` : '❌'}\n📅 أول ظهور: ${new Date(user.firstSeen).toLocaleDateString('ar')}`
+    );
   });
 
   bot.action('dev_refresh', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery('🔄 تم التحديث!');
     const s = db.getStats();
-    await ctx.editMessageText(`🔐 *لوحة تحكم المطور*\n\n📊 المجموعات: \`${s.totalGroups}\` | القنوات: \`${s.totalChannels}\`\n👤 ${s.totalUsers} مستخدم | 🚫 ${s.bannedUsers} محظور`, { parse_mode: 'Markdown', ...devMainKeyboard() });
+    await ctx.editMessageText(
+      `🔐 *لوحة تحكم المطور*\n\n📊 المجموعات: \`${s.totalGroups}\` | القنوات: \`${s.totalChannels}\`\n👤 ${s.totalUsers} مستخدم | 🚫 ${s.bannedUsers} محظور`,
+      { parse_mode: 'Markdown', ...devMainKeyboard() }
+    );
   });
 
   bot.action('dev_back', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const s = db.getStats();
-    await ctx.editMessageText(`🔐 *لوحة تحكم المطور*\n\n📊 المجموعات: \`${s.totalGroups}\` | القنوات: \`${s.totalChannels}\`\n👤 ${s.totalUsers} مستخدم | 🚫 ${s.bannedUsers} محظور`, { parse_mode: 'Markdown', ...devMainKeyboard() });
+    await ctx.editMessageText(
+      `🔐 *لوحة تحكم المطور*\n\n📊 المجموعات: \`${s.totalGroups}\` | القنوات: \`${s.totalChannels}\`\n👤 ${s.totalUsers} مستخدم | 🚫 ${s.bannedUsers} محظور`,
+      { parse_mode: 'Markdown', ...devMainKeyboard() }
+    );
   });
 
   bot.action(/^dev_joinreqs_(-?\d+)$/, async (ctx) => {
@@ -379,7 +404,11 @@ module.exports = function setupDeveloper(bot) {
     const g = db.getGroup(chatId); if (!g) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
     const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
     if (!pending.length) return ctx.editMessageText('📨 *لا توجد طلبات معلقة.*', { parse_mode: 'Markdown', ...back(`dev_grp_${chatId}`) });
-    const btns = pending.slice(0, 8).map(r => [Markup.button.callback(`✅ ${r.firstName.slice(0, 12)}`, `jr_approve_${r.userId}_${chatId}`), Markup.button.callback('❌ رفض', `jr_reject_${r.userId}_${chatId}`)]);
+    const btns = pending.slice(0, 8).map(r => [
+      Markup.button.callback(`✅ ${r.firstName.slice(0, 12)}`, `jr_approve_${r.userId}_${chatId}`),
+      Markup.button.callback('❌ رفض', `jr_reject_${r.userId}_${chatId}`),
+      Markup.button.callback('🔍 تحقق', `jr_check_${r.userId}_${chatId}`),
+    ]);
     btns.push([Markup.button.callback('✅ قبول الكل', `jr_approveall_${chatId}`), Markup.button.callback('❌ رفض الكل', `jr_rejectall_${chatId}`)]);
     btns.push([Markup.button.callback('🔙 رجوع', `dev_grp_${chatId}`)]);
     await ctx.editMessageText(`📨 *طلبات الانضمام* (${pending.length} معلقة)`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
@@ -393,11 +422,24 @@ module.exports = function setupDeveloper(bot) {
 
   bot.action('help_menu', async (ctx) => {
     await ctx.answerCbQuery();
-    await ctx.editMessageText('📖 *دليل الاستخدام*\n\n🔧 *المشرفون:*\n`/ban` `/kick` `/mute` `/unmute` `/warn` `/warns` `/manage` `/admins`\n\n👑 *المالك:*\n`/settings` `/setwelcome` `/setrules` `/setmaxwarns` `/addword` `/removeword` `/words` `/joinreqs`\n\n🌐 *المجتمعات (المطور):*\n`/community create` `/community addgroup` `/community setlimit`', { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', 'help_back')]]) });
+    await ctx.editMessageText(
+      `📖 *دليل الاستخدام*\n\n` +
+      `🔧 *المشرفون:*\n\`/ban\` \`/kick\` \`/mute\` \`/unmute\` \`/warn\` \`/warns\` \`/manage\` \`/admins\`\n\n` +
+      `👑 *المالك:*\n\`/settings\` \`/setwelcome\` \`/setrules\` \`/setmaxwarns\` \`/setlogchannel\`\n\`/addword\` \`/removeword\` \`/words\` \`/joinreqs\` \`/broadcast\`\n\n` +
+      `📊 *النشاط:*\n\`/top\` — أكثر 10 أعضاء نشاطاً\n\`/myscore\` — نقاطك الشخصية\n\n` +
+      `🌐 *المجتمعات (المطور):*\n\`/community create\` \`/community addgroup\` \`/community setlimit\``,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', 'help_back')]]) }
+    );
   });
 
   bot.action('help_back', async (ctx) => {
     await ctx.answerCbQuery();
-    await ctx.editMessageText(`👋 *مرحباً!*\n\nأضفني لمجموعتك وامنحني صلاحيات المشرف!`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.url('➕ أضفني', `https://t.me/${ctx.botInfo.username}?startgroup=true`)], [Markup.button.callback('ℹ️ مساعدة', 'help_menu')]]) });
+    await ctx.editMessageText(
+      `👋 *مرحباً!*\n\nأضفني لمجموعتك وامنحني صلاحيات المشرف!`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([
+        [Markup.button.url('➕ أضفني', `https://t.me/${ctx.botInfo.username}?startgroup=true`)],
+        [Markup.button.callback('ℹ️ مساعدة', 'help_menu')]
+      ]) }
+    );
   });
 };
