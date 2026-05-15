@@ -1,7 +1,7 @@
 {
   "name": "telegram-group-bot",
-  "version": "1.0.0",
-  "description": "بوت إدارة المجموعات والمجتمعات",
+  "version": "2.0.0",
+  "description": "بوت إدارة المجموعات والقنوات والمجتمعات",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

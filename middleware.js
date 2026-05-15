@@ -1,27 +1,16 @@
 // ============================================================
-//  Middleware للبوت
+//  Middleware
 // ============================================================
 
-const { getUser, getOrCreateUser } = require('./db');
+const db = require('./db');
 
-// تسجيل المستخدمين تلقائياً + منع المحظورين عالمياً
 async function globalMiddleware(ctx, next) {
   if (!ctx.from) return next();
-
-  const user = getOrCreateUser(
-    ctx.from.id,
-    ctx.from.username || '',
-    ctx.from.first_name || ''
-  );
-
-  // إذا كان المستخدم محظوراً عالمياً وفي مجموعة → طرده
+  const user = db.getOrCreateUser(ctx.from.id, ctx.from.username || '', ctx.from.first_name || '');
   if (user.globalBanned && ctx.chat && ctx.chat.type !== 'private') {
-    try {
-      await ctx.telegram.banChatMember(ctx.chat.id, ctx.from.id);
-    } catch { }
-    return; // لا نكمل
+    try { await ctx.telegram.banChatMember(ctx.chat.id, ctx.from.id); } catch { }
+    return;
   }
-
   return next();
 }
 

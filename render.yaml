@@ -9,3 +9,7 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: BOT_TOKEN
+        sync: false
+      - key: DEVELOPER_ID
+        sync: false
