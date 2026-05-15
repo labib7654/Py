@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: npm install
-    startCommand: node index-1.js
+    startCommand: node index.js
     envVars:
       - key: NODE_ENV
         value: production
@@ -16,7 +16,6 @@ services:
       - key: DEVELOPER_ID
         value: "7411444902"
 
-      # اختياري (اتركهما كما هما إن لم تستخدم Supabase)
       - key: SUPABASE_URL
         value: ""
 
