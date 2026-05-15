@@ -16,6 +16,15 @@ async function isOwner(bot, chatId, userId) {
   } catch { return false; }
 }
 
+async function checkBotPermissions(bot, chatId, permission) {
+  try {
+    const botId  = (await bot.telegram.getMe()).id;
+    const member = await bot.telegram.getChatMember(chatId, botId);
+    if (member.status !== 'administrator') return false;
+    return member[permission] === true;
+  } catch { return false; }
+}
+
 async function getTargetUser(ctx) {
   const msg = ctx.message;
   if (msg?.reply_to_message?.from) {
@@ -40,16 +49,16 @@ function getReason(text, offset = 1) {
 async function muteMember(bot, chatId, userId) {
   await bot.telegram.restrictChatMember(chatId, userId, {
     permissions: {
-      can_send_messages:      false,
-      can_send_audios:        false,
-      can_send_documents:     false,
-      can_send_photos:        false,
-      can_send_videos:        false,
-      can_send_video_notes:   false,
-      can_send_voice_notes:   false,
-      can_send_polls:         false,
-      can_send_other_messages:false,
-      can_add_web_page_previews:false,
+      can_send_messages:         false,
+      can_send_audios:           false,
+      can_send_documents:        false,
+      can_send_photos:           false,
+      can_send_videos:           false,
+      can_send_video_notes:      false,
+      can_send_voice_notes:      false,
+      can_send_polls:            false,
+      can_send_other_messages:   false,
+      can_add_web_page_previews: false,
     },
   });
 }
@@ -58,16 +67,16 @@ async function muteMemberTimed(bot, chatId, userId, durationSeconds) {
   const untilDate = Math.floor(Date.now() / 1000) + durationSeconds;
   await bot.telegram.restrictChatMember(chatId, userId, {
     permissions: {
-      can_send_messages:      false,
-      can_send_audios:        false,
-      can_send_documents:     false,
-      can_send_photos:        false,
-      can_send_videos:        false,
-      can_send_video_notes:   false,
-      can_send_voice_notes:   false,
-      can_send_polls:         false,
-      can_send_other_messages:false,
-      can_add_web_page_previews:false,
+      can_send_messages:         false,
+      can_send_audios:           false,
+      can_send_documents:        false,
+      can_send_photos:           false,
+      can_send_videos:           false,
+      can_send_video_notes:      false,
+      can_send_voice_notes:      false,
+      can_send_polls:            false,
+      can_send_other_messages:   false,
+      can_add_web_page_previews: false,
     },
     until_date: untilDate,
   });
@@ -80,30 +89,30 @@ async function banMemberTimed(bot, chatId, userId, durationSeconds) {
 
 async function unmutePerms() {
   return {
-    can_send_messages:       true,
-    can_send_audios:         true,
-    can_send_documents:      true,
-    can_send_photos:         true,
-    can_send_videos:         true,
-    can_send_video_notes:    true,
-    can_send_voice_notes:    true,
-    can_send_polls:          true,
-    can_send_other_messages: true,
-    can_add_web_page_previews:true,
+    can_send_messages:         true,
+    can_send_audios:           true,
+    can_send_documents:        true,
+    can_send_photos:           true,
+    can_send_videos:           true,
+    can_send_video_notes:      true,
+    can_send_voice_notes:      true,
+    can_send_polls:            true,
+    can_send_other_messages:   true,
+    can_add_web_page_previews: true,
   };
 }
 
 async function promoteUser(bot, chatId, userId) {
   try {
     await bot.telegram.promoteChatMember(chatId, userId, {
-      can_manage_chat:       true,
-      can_delete_messages:   true,
-      can_manage_video_chats:true,
-      can_restrict_members:  true,
-      can_promote_members:   false,
-      can_change_info:       true,
-      can_invite_users:      true,
-      can_pin_messages:      true,
+      can_manage_chat:        true,
+      can_delete_messages:    true,
+      can_manage_video_chats: true,
+      can_restrict_members:   true,
+      can_promote_members:    false,
+      can_change_info:        true,
+      can_invite_users:       true,
+      can_pin_messages:       true,
     });
     return true;
   } catch { return false; }
@@ -112,14 +121,14 @@ async function promoteUser(bot, chatId, userId) {
 async function demoteUser(bot, chatId, userId) {
   try {
     await bot.telegram.promoteChatMember(chatId, userId, {
-      can_manage_chat:       false,
-      can_delete_messages:   false,
-      can_manage_video_chats:false,
-      can_restrict_members:  false,
-      can_promote_members:   false,
-      can_change_info:       false,
-      can_invite_users:      false,
-      can_pin_messages:      false,
+      can_manage_chat:        false,
+      can_delete_messages:    false,
+      can_manage_video_chats: false,
+      can_restrict_members:   false,
+      can_promote_members:    false,
+      can_change_info:        false,
+      can_invite_users:       false,
+      can_pin_messages:       false,
     });
     return true;
   } catch { return false; }
@@ -127,28 +136,28 @@ async function demoteUser(bot, chatId, userId) {
 
 async function applyGroupPermissions(bot, chatId, perms) {
   await bot.telegram.setChatPermissions(chatId, {
-    can_send_messages:        perms.canSendMessages,
-    can_send_audios:          perms.canSendMedia,
-    can_send_documents:       perms.canSendMedia,
-    can_send_photos:          perms.canSendMedia,
-    can_send_videos:          perms.canSendMedia,
-    can_send_video_notes:     perms.canSendMedia,
-    can_send_voice_notes:     perms.canSendMedia,
-    can_send_polls:           perms.canSendPolls,
-    can_send_other_messages:  perms.canSendMessages,
-    can_add_web_page_previews:perms.canAddWebPreviews,
-    can_invite_users:         perms.canInviteUsers,
-    can_pin_messages:         perms.canPinMessages,
-    can_manage_topics:        perms.canManageTopics,
+    can_send_messages:         perms.canSendMessages,
+    can_send_audios:           perms.canSendMedia,
+    can_send_documents:        perms.canSendMedia,
+    can_send_photos:           perms.canSendMedia,
+    can_send_videos:           perms.canSendMedia,
+    can_send_video_notes:      perms.canSendMedia,
+    can_send_voice_notes:      perms.canSendMedia,
+    can_send_polls:            perms.canSendPolls,
+    can_send_other_messages:   perms.canSendMessages,
+    can_add_web_page_previews: perms.canAddWebPreviews,
+    can_invite_users:          perms.canInviteUsers,
+    can_pin_messages:          perms.canPinMessages,
+    can_manage_topics:         perms.canManageTopics,
   });
 }
 
 async function logAction(bot, g, action, by, target, details = '') {
-  const db = require('./db');
+  const db    = require('./db');
   const entry = {
     action,
-    by:      { id: by.id, username: by.username || by.first_name || String(by.id) },
-    target:  { id: target.id, username: target.username || target.firstName || String(target.id) },
+    by:     { id: by.id, username: by.username || by.first_name || String(by.id) },
+    target: { id: target.id, username: target.username || target.firstName || String(target.id) },
     details,
   };
   db.addAuditLog(g.chatId, entry);
@@ -157,8 +166,8 @@ async function logAction(bot, g, action, by, target, details = '') {
   const text =
     `📋 *سجل إجراء*\n\n` +
     `⚡ الإجراء: *${action}*\n` +
-    `👮 بواسطة: ${by.username ? `@${by.username}` : by.first_name}\n` +
-    `👤 على: ${target.username ? `@${target.username}` : target.firstName}\n` +
+    `👮 بواسطة: ${by.username ? `@${by.username}` : by.first_name || String(by.id)}\n` +
+    `👤 على: ${target.username ? `@${target.username}` : target.firstName || String(target.id)}\n` +
     `📌 المجموعة: *${g.title}*\n` +
     (details ? `📝 ${details}\n` : '') +
     `🕐 ${new Date().toLocaleString('ar')}`;
@@ -167,8 +176,47 @@ async function logAction(bot, g, action, by, target, details = '') {
   } catch {}
 }
 
+// إنشاء رابط دعوة يتطلب موافقة (لتفعيل/تعطيل Join Requests)
+async function setJoinApproval(bot, chatId, enabled) {
+  try {
+    const link = await bot.telegram.callApi('createChatInviteLink', {
+      chat_id:              chatId,
+      creates_join_request: enabled,
+      name: enabled ? 'رابط مع موافقة' : 'رابط مباشر',
+    });
+    return link;
+  } catch (e) {
+    console.error('setJoinApproval error:', e.message);
+    return null;
+  }
+}
+
+// التحقق من المالك الحقيقي عبر Telegram API وتسجيله
+async function verifyAndRegisterOwner(bot, chatId) {
+  try {
+    const admins  = await bot.telegram.getChatAdministrators(chatId);
+    const creator = admins.find(a => a.status === 'creator' && !a.user.is_bot);
+    if (!creator) return null;
+
+    const db = require('./db');
+    const g  = db.getGroup(chatId);
+    if (g) {
+      g.ownerId         = creator.user.id;
+      g.ownerUsername   = creator.user.username || creator.user.first_name || String(creator.user.id);
+      g.ownerVerified   = true;
+      g.ownerVerifiedAt = new Date();
+    }
+
+    db.getOrCreateUser(creator.user.id, creator.user.username || '', creator.user.first_name || '');
+    return creator.user;
+  } catch (e) {
+    console.error(`verifyOwner error for ${chatId}:`, e.message);
+    return null;
+  }
+}
+
 module.exports = {
-  isDeveloper, isAdmin, isOwner,
+  isDeveloper, isAdmin, isOwner, checkBotPermissions,
   getTargetUser, getReason,
   muteMember, muteMemberTimed,
   banMemberTimed,
@@ -176,4 +224,6 @@ module.exports = {
   promoteUser, demoteUser,
   applyGroupPermissions,
   logAction,
+  setJoinApproval,
+  verifyAndRegisterOwner,
 };

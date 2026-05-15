@@ -1,11 +1,11 @@
 {
   "name": "telegram-group-bot",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "بوت إدارة المجموعات والقنوات والمجتمعات — جامعة",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js"
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "telegraf": "^4.16.3",
