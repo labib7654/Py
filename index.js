@@ -1,6 +1,8 @@
 // ============================================================
-//  نقطة البداية — جامعة v4.0
+//  نقطة البداية — جامعة v5.0
 //  Webhook تلقائي على Render، Polling محلياً
+//  + Supabase persistent storage
+//  + Scheduler للقيود المنتهية
 // ============================================================
 
 require('dotenv').config();
@@ -8,6 +10,7 @@ require('dotenv').config();
 const { Telegraf }   = require('telegraf');
 const { BOT_TOKEN, DEVELOPER_ID, PORT } = require('./config');
 const db             = require('./db');
+const supa           = require('./supabase');
 const { globalMiddleware, messageTrackingMiddleware } = require('./middleware');
 const setupDeveloper     = require('./handler_developer');
 const setupGroupHandlers = require('./handler_groups');
@@ -16,12 +19,17 @@ const { setupOwnerHandlers } = require('./handler_owner');
 
 if (!BOT_TOKEN)    { console.error('❌ BOT_TOKEN غير موجود!');    process.exit(1); }
 if (!DEVELOPER_ID) { console.error('❌ DEVELOPER_ID غير موجود!'); process.exit(1); }
+if (!process.env.SUPABASE_URL) { console.warn('⚠️ SUPABASE_URL غير موجود — التخزين سيكون في الذاكرة فقط!'); }
 
-console.log('🚀 جاري تشغيل البوت — جامعة v4.0...');
+console.log('🚀 جاري تشغيل البوت — جامعة v5.0...');
 console.log(`👨‍💻 معرف المطور: ${DEVELOPER_ID}`);
 
-// ── تحميل البيانات المحفوظة ──────────────────────────────────
-db.loadData();
+// ── تحميل البيانات من Supabase ───────────────────────────────
+db.loadData().then(() => {
+  console.log('✅ قاعدة البيانات جاهزة');
+}).catch(e => {
+  console.error('❌ خطأ في تحميل البيانات:', e.message);
+});
 
 const bot = new Telegraf(BOT_TOKEN);
 
@@ -46,13 +54,64 @@ setupGroupHandlers(bot);
 setupAdminHandlers(bot);
 setupOwnerHandlers(bot);
 
-// ── معالج callback_query عام (يمنع timeout على أزرار غير معالَجة) ──
+// ── Scheduler: رفع تلقائي للقيود المنتهية كل 60 ثانية ────────
+setInterval(async () => {
+  try {
+    const expired = await supa.getExpiredRestrictions();
+    if (!expired.length) return;
+    console.log(`⏰ معالجة ${expired.length} قيد منتهٍ...`);
+    for (const r of expired) {
+      try {
+        if (r.type === 'timed_mute') {
+          await bot.telegram.restrictChatMember(r.chat_id, r.user_id, {
+            permissions: {
+              can_send_messages:         true,
+              can_send_audios:           true,
+              can_send_documents:        true,
+              can_send_photos:           true,
+              can_send_videos:           true,
+              can_send_video_notes:      true,
+              can_send_voice_notes:      true,
+              can_send_polls:            true,
+              can_send_other_messages:   true,
+              can_add_web_page_previews: true,
+            },
+          });
+          // تحديث الكاش
+          const g = await db.getGroup(r.chat_id);
+          if (g) { g.mutedUsers.delete(r.user_id); g.timedMutes?.delete(r.user_id); }
+        } else if (r.type === 'timed_ban') {
+          await bot.telegram.unbanChatMember(r.chat_id, r.user_id);
+          const g = await db.getGroup(r.chat_id);
+          if (g) { g.bannedUsers.delete(r.user_id); g.timedBans?.delete(r.user_id); }
+        }
+        await supa.removeRestriction(r.chat_id, r.user_id, r.type);
+        await supa.addAuditLog(r.chat_id, '⏰ رفع تلقائي', 0, 'bot', r.user_id, '', `انتهاء مدة ${r.type}`);
+        console.log(`✅ تم رفع ${r.type} عن ${r.user_id} في ${r.chat_id}`);
+      } catch (e) {
+        console.error(`❌ فشل رفع ${r.type} عن ${r.user_id}:`, e.message);
+      }
+    }
+  } catch (e) {
+    console.error('❌ خطأ في scheduler القيود:', e.message);
+  }
+}, 60 * 1000);
+
+// ── Scheduler: مزامنة دورية مع Supabase كل 30 دقيقة ──────────
+setInterval(async () => {
+  console.log('🔄 مزامنة دورية مع Supabase...');
+  const groups = db.allGroups();
+  for (const g of groups) {
+    db.scheduleSync(g);
+  }
+}, 30 * 60 * 1000);
+
+// ── معالج callback_query عام ──────────────────────────────────
 bot.on('callback_query', async (ctx) => {
   try { await ctx.answerCbQuery(); } catch {}
 });
 
 // ── أوامر عامة مفيدة ──────────────────────────────────────────
-
 bot.command('id', async (ctx) => {
   const chatInfo   = `🆔 Chat ID: \`${ctx.chat.id}\`\n👤 User ID: \`${ctx.from.id}\``;
   const target     = ctx.message.reply_to_message?.from;
@@ -69,6 +128,13 @@ bot.command('ping', async (ctx) => {
   await ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, null, `🏓 Pong! \`${ms}ms\``, { parse_mode: 'Markdown' });
 });
 
+bot.command('rules', async (ctx) => {
+  if (ctx.chat.type === 'private') return;
+  const g = await db.getGroup(ctx.chat.id);
+  if (!g?.rules) return ctx.reply('📋 لا توجد قواعد محددة بعد.\n\nاستخدم /setrules لتعيين القواعد.');
+  await ctx.replyWithMarkdown(`📋 *قواعد ${ctx.chat.title}*\n\n${g.rules}`);
+});
+
 // ── 5️⃣ مزامنة بيانات المجموعات عند بدء التشغيل ───────────────
 async function syncBotChats(botInfo) {
   const groups = db.allGroups();
@@ -76,29 +142,28 @@ async function syncBotChats(botInfo) {
   console.log(`🔄 مزامنة ${groups.length} مجموعة...`);
   let updated = 0, removed = 0;
   for (const g of groups) {
+    const chatId = g.chatId || g.chat_id;
     try {
-      const member = await bot.telegram.getChatMember(g.chatId, botInfo.id);
+      const member = await bot.telegram.getChatMember(chatId, botInfo.id);
       if (member.status === 'left' || member.status === 'kicked') {
-        db.deleteGroup(g.chatId);
+        await db.deleteGroup(chatId);
         removed++;
       } else {
-        // تحديث المالك
         try {
-          const admins = await bot.telegram.getChatAdministrators(g.chatId);
+          const admins = await bot.telegram.getChatAdministrators(chatId);
           const owner  = admins.find(a => a.status === 'creator');
           if (owner) {
             g.ownerId      = owner.user.id;
             g.ownerUsername = owner.user.username || owner.user.first_name;
+            db.scheduleSync(g);
           }
           updated++;
         } catch {}
       }
     } catch {}
-    // تأخير بسيط لتجنب flood
     await new Promise(r => setTimeout(r, 300));
   }
   console.log(`✅ تم تحديث ${updated} مجموعة، إزالة ${removed} مجموعة غير نشطة`);
-  db.saveData();
 }
 
 // ── معالج الأخطاء ─────────────────────────────────────────────
@@ -110,14 +175,13 @@ bot.catch((err, ctx) => {
 const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
 
 if (RENDER_URL) {
-  // وضع Webhook على Render
   const express        = require('express');
   const app            = express();
   const WEBHOOK_PATH   = `/webhook/${BOT_TOKEN}`;
   const WEBHOOK_URL    = `${RENDER_URL}${WEBHOOK_PATH}`;
 
   app.use(express.json());
-  app.get('/', (req, res) => res.json({ status: 'ok', bot: 'جامعة v4.0', uptime: process.uptime() }));
+  app.get('/', (req, res) => res.json({ status: 'ok', bot: 'جامعة v5.0', uptime: process.uptime() }));
   app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
   app.use(bot.webhookCallback(WEBHOOK_PATH));
 
@@ -131,7 +195,6 @@ if (RENDER_URL) {
       console.log(`✅ Webhook مفعّل: ${WEBHOOK_URL}`);
       const botInfo = await bot.telegram.getMe();
       console.log(`✅ البوت يعمل الآن بوضع Webhook: @${botInfo.username}`);
-      // مزامنة البيانات بعد التشغيل
       setTimeout(() => syncBotChats(botInfo).catch(console.error), 5000);
     } catch (err) {
       console.error('❌ فشل تعيين Webhook:', err.message);
@@ -151,18 +214,16 @@ if (RENDER_URL) {
   console.log(`🔁 Keep-alive مفعّل → ${RENDER_URL}/health`);
 
 } else {
-  // وضع Polling محلياً
   async function startPolling(retries = 0) {
     try {
       await bot.telegram.deleteWebhook({ drop_pending_updates: true });
       console.log('✅ تم حذف Webhook القديم');
       await bot.launch({
-        allowedUpdates:      ALLOWED_UPDATES,
-        dropPendingUpdates:  true,
+        allowedUpdates:     ALLOWED_UPDATES,
+        dropPendingUpdates: true,
       });
       const botInfo = await bot.telegram.getMe();
       console.log(`✅ البوت يعمل الآن بوضع Polling: @${botInfo.username}`);
-      // مزامنة البيانات بعد التشغيل
       setTimeout(() => syncBotChats(botInfo).catch(console.error), 5000);
     } catch (err) {
       if (err.message?.includes('409') && retries < 5) {
@@ -177,6 +238,6 @@ if (RENDER_URL) {
 
   startPolling();
 
-  process.once('SIGINT',  () => { bot.stop('SIGINT');  db.saveData(); process.exit(0); });
-  process.once('SIGTERM', () => { bot.stop('SIGTERM'); db.saveData(); process.exit(0); });
+  process.once('SIGINT',  () => { bot.stop('SIGINT');  process.exit(0); });
+  process.once('SIGTERM', () => { bot.stop('SIGTERM'); process.exit(0); });
 }
