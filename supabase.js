@@ -1,12 +1,31 @@
 // supabase.js — عميل Supabase + كل دوال قاعدة البيانات
 // جامعة v5.0
-const { createClient } = require('@supabase/supabase-js');
+// ── إذا لم تُوجَد متغيرات Supabase → وضع الذاكرة فقط (بدون DB) ──
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+const DB_ENABLED   = !!(SUPABASE_URL && SUPABASE_KEY);
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-  { auth: { persistSession: false } }
-);
+if (!DB_ENABLED) {
+  console.warn('⚠️  SUPABASE_URL / SUPABASE_SERVICE_KEY غير موجودَين — البوت يعمل بالذاكرة فقط (بيانات مؤقتة).');
+}
+
+// stub يُعيد نتائج فارغة بدلاً من الإخفاق
+const stubClient = {
+  from: () => ({
+    select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }), order: () => ({ limit: async () => ({ data: [], error: null }) }), data: [], error: null }), data: [], error: null }),
+    insert: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }),
+    upsert: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }),
+    update: () => ({ eq: () => ({}) }),
+    delete: () => ({ eq: () => ({}) }),
+  }),
+  rpc: async () => ({ data: null, error: null }),
+};
+
+let supabase = stubClient;
+if (DB_ENABLED) {
+  const { createClient } = require('@supabase/supabase-js');
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
+}
 
 // ═══════════════════════════════════════════
 //  GROUPS
