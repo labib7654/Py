@@ -1,8 +1,6 @@
-// middleware.js — جامعة v5.0
-const db   = require('./db');
-const supa = require('./supabase');
+const db = require('./db');
 
-// ── Rate limiting ─────────────────────────────────────────────
+// ── Rate limiting (flood protection) ─────────────────────────
 const userLastAction = new Map();
 function isFlood(userId, minInterval = 800) {
   const now  = Date.now();
@@ -15,16 +13,18 @@ function isFlood(userId, minInterval = 800) {
 // ── Middleware 1: تسجيل المستخدم + فحص الحظر العالمي ─────────
 async function globalMiddleware(ctx, next) {
   if (!ctx.from) return next();
+
   const from = ctx.from;
 
-  // تسجيل / تحديث بيانات المستخدم في الكاش
-  const user = await db.getOrCreateUser(from.id, from.username || '', from.first_name || '');
-  if (from.username   && user.username   !== from.username)   { user.username   = from.username;   supa.upsertUser(from.id, from.username, from.first_name || '').catch(() => {}); }
-  if (from.first_name && user.firstName  !== from.first_name) { user.firstName  = from.first_name; }
+  // تسجيل / تحديث بيانات المستخدم
+  const user = db.getOrCreateUser(from.id, from.username || '', from.first_name || '');
+  if (from.username   && user.username   !== from.username)   user.username   = from.username;
+  if (from.first_name && user.firstName  !== from.first_name) user.firstName  = from.first_name;
   user.lastSeen = new Date();
 
+  // تسجيل المجموعة في بيانات المستخدم
   if (ctx.chat && ctx.chat.type !== 'private') {
-    user.groups?.add(ctx.chat.id);
+    user.groups.add(ctx.chat.id);
   }
 
   // فحص الحظر العالمي في المجموعات
@@ -45,44 +45,28 @@ async function messageTrackingMiddleware(ctx, next) {
   const chatId = ctx.chat.id;
 
   // تتبع تلقائي للمجموعة إذا لم تكن مسجّلة
-  let g = await db.getGroup(chatId);
-  if (!g) {
-    g = await db.getOrCreateGroup(chatId, ctx.chat.title || 'مجموعة', ctx.chat.type, 0, 'unknown');
+  if (!db.getGroup(chatId)) {
+    db.getOrCreateGroup(chatId, ctx.chat.title || 'مجموعة', ctx.chat.type, 0, 'unknown');
     try {
       const admins = await ctx.telegram.getChatAdministrators(chatId);
       const owner  = admins.find(a => a.status === 'creator');
+      const g      = db.getGroup(chatId);
       if (owner && g) {
         g.ownerId      = owner.user.id;
         g.ownerUsername = owner.user.username || owner.user.first_name;
-        db.scheduleSync(g);
       }
     } catch {}
   }
 
+  const g = db.getGroup(chatId);
   if (g) {
-    // تحديث كاش الأعضاء
-    if (!g.members.has(from.id)) {
-      g.members.set(from.id, {
-        userId: from.id,
-        username: from.username || '',
-        firstName: from.first_name || String(from.id),
-        role: 'member',
-        joinedAt: new Date(),
-        messageCount: 0,
-        score: 0,
-        lastMessageAt: new Date(),
-      });
-    }
+    db.trackMember(chatId, from.id, from.username || '', from.first_name || '');
     const m = g.members.get(from.id);
     if (m) {
       m.messageCount  = (m.messageCount || 0) + 1;
       m.score         = (m.score        || 0) + 1;
       m.lastMessageAt = new Date();
-      if (from.username) m.username = from.username;
-      if (from.first_name) m.firstName = from.first_name;
     }
-    // مزامنة مع Supabase (increment_member_stats)
-    supa.incrementMessageCount(chatId, from.id, from.username || '', from.first_name || '').catch(() => {});
   }
 
   return next();

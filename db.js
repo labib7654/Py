@@ -1,271 +1,105 @@
-// db.js — Cache layer فوق Supabase
-// جامعة v5.0: يحتفظ بـ in-memory cache لتسريع الأداء
-// ويزامن مع Supabase في الخلفية — لا فقدان بيانات عند restart
+const fs   = require('fs');
+const path = require('path');
 
-const supa = require('./supabase');
+const DATA_FILE = process.env.DATA_FILE
+  ? path.resolve(process.env.DATA_FILE)
+  : path.join(__dirname, '..', 'data.json');
 
-// ── Cache في الذاكرة ──────────────────────────────────────────
-const cache = {
-  groups:      new Map(),   // chatId → groupData (snake_case من Supabase)
-  users:       new Map(),   // userId → userData
-  channels:    new Map(),   // chatId → channelData
-  communities: new Map(),   // communityId → communityData
-};
+const groups      = new Map();
+const channels    = new Map();
+const users       = new Map();
+const communities = new Map();
 
-// ── دالة مساعدة: تحويل بيانات المجموعة من Supabase إلى بنية داخلية ──
-function hydrateGroup(g) {
-  if (!g) return null;
-  return {
-    ...g,
-    chatId:              g.chat_id,
-    title:               g.title || '',
-    type:                g.type || 'group',
-    ownerId:             g.owner_id || null,
-    ownerUsername:       g.owner_username || '',
-    ownerVerified:       g.owner_verified || false,
-    ownerVerifiedAt:     g.owner_verified_at || null,
-    addedBy:             g.added_by || 0,
-    addedByUsername:     g.added_by_username || '',
-    addedAt:             g.added_at ? new Date(g.added_at) : new Date(),
-    maxWarns:            g.max_warns || 3,
-    welcomeMessage:      g.welcome_message || '👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.',
-    welcomeEnabled:      g.welcome_enabled !== false,
-    antiSpam:            g.anti_spam || false,
-    muteNewMembers:      g.mute_new_members || false,
-    joinRequestsEnabled: g.join_requests_enabled || false,
-    protectContent:      g.protect_content || false,
-    antiLinks:           g.anti_links || false,
-    antiBot:             g.anti_bot || false,
-    logChannelId:        g.log_channel_id || null,
-    rules:               g.rules || '',
-    communityId:         g.community_id || null,
-    slowMode:            g.slow_mode || 0,
-    captchaEnabled:      g.captcha_enabled || false,
-    perms: {
-      canSendMessages:   g.perm_send_messages   !== false,
-      canSendMedia:      g.perm_send_media       !== false,
-      canSendPolls:      g.perm_send_polls       !== false,
-      canAddWebPreviews: g.perm_web_previews     !== false,
-      canInviteUsers:    g.perm_invite_users     !== false,
-      canPinMessages:    g.perm_pin_messages     || false,
-      canManageTopics:   g.perm_manage_topics    || false,
-    },
-    topicSettings: {
-      requireApprovalToJoin: g.topic_require_approval || false,
-      autoLockOnCreate:      g.topic_auto_lock        || false,
-      ownerBypassAll:        g.topic_owner_bypass     !== false,
-    },
-    // كاشات مؤقتة في الذاكرة (تُعاد عند restart من Supabase)
-    members:             new Map(),
-    admins:              new Map(),
-    warns:               new Map(),
-    mutedUsers:          new Set(),
-    bannedUsers:         new Set(),
-    bannedWords:         [],
-    wordViolations:      new Map(),
-    joinRequests:        new Map(),
-    joinRequestCooldown: new Map(),
-    topics:              new Map(),
-    timedMutes:          new Map(),
-    timedBans:           new Map(),
-    auditLog:            [],
-    autoBannedUsers:     new Map(),
-  };
-}
+// ═══════════════════════════════════════════════════════════════
+//  Groups
+// ═══════════════════════════════════════════════════════════════
 
-// ── تحميل البيانات من Supabase عند الـ startup ────────────────
-async function loadData() {
-  console.log('📥 تحميل البيانات من Supabase...');
-  try {
-    const [groups, users, channels, communities] = await Promise.all([
-      supa.getAllGroups(),
-      supa.getAllUsers(),
-      supa.getAllChannels(),
-      supa.getAllCommunities(),
-    ]);
+function getGroup(chatId) { return groups.get(chatId) || null; }
 
-    for (const g of groups) {
-      cache.groups.set(g.chat_id, hydrateGroup(g));
-    }
-    for (const u of users) {
-      cache.users.set(u.user_id, {
-        ...u,
-        userId:       u.user_id,
-        username:     u.username || '',
-        firstName:    u.first_name || '',
-        globalBanned: u.global_banned || false,
-        bannedReason: u.banned_reason || '',
-        bannedAt:     u.banned_at || null,
-        firstSeen:    u.first_seen ? new Date(u.first_seen) : new Date(),
-        lastSeen:     u.last_seen  ? new Date(u.last_seen)  : new Date(),
-        groups:   new Set(),
-        channels: new Set(),
-      });
-    }
-    for (const c of channels) {
-      cache.channels.set(c.chat_id, {
-        ...c,
-        chatId:           c.chat_id,
-        title:            c.title || '',
-        username:         c.username || '',
-        ownerId:          c.owner_id || null,
-        ownerUsername:    c.owner_username || '',
-        addedBy:          c.added_by || 0,
-        addedByUsername:  c.added_by_username || '',
-        addedAt:          c.added_at ? new Date(c.added_at) : new Date(),
-        subscribers:      new Map(),
-      });
-    }
-    for (const com of communities) {
-      cache.communities.set(com.community_id, {
-        ...com,
-        communityId:    com.community_id,
-        title:          com.title || '',
-        maxGroupJoins:  com.max_group_joins || 1,
-        enabled:        com.enabled !== false,
-        subGroups:      new Set(),
-        memberJoins:    new Map(),
-        autoBannedUsers: new Map(),
-      });
-    }
-
-    console.log(`✅ تم تحميل ${groups.length} مجموعة، ${users.length} مستخدم، ${channels.length} قناة من Supabase`);
-  } catch (e) {
-    console.error('❌ فشل تحميل البيانات من Supabase:', e.message);
-  }
-}
-
-// ── saveData — للتوافق مع الكود القديم ──────────────────────
-function saveData() {
-  // البيانات تُحفظ فوراً في Supabase — لا حاجة لهذه الدالة
-}
-
-// ═══════════════════════════════════════════
-//  GROUPS
-// ═══════════════════════════════════════════
-
-async function getGroup(chatId) {
-  if (cache.groups.has(chatId)) return cache.groups.get(chatId);
-  const g = await supa.getGroup(chatId);
-  if (g) {
-    const hydrated = hydrateGroup(g);
-    cache.groups.set(chatId, hydrated);
-    return hydrated;
-  }
-  return null;
-}
-
-async function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
-  let g = await getGroup(chatId);
-  if (!g) {
-    await supa.upsertGroup(chatId, {
-      title: title || 'مجموعة',
-      type:  type  || 'group',
-      added_by: addedBy || 0,
-      added_by_username: addedByUsername || '',
+function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
+  if (!groups.has(chatId)) {
+    groups.set(chatId, {
+      chatId, title, type,
+      ownerId: null, ownerUsername: '',
+      ownerVerified: false, ownerVerifiedAt: null,
+      addedBy, addedByUsername, addedAt: new Date(),
+      members:      new Map(),
+      admins:       new Map(),
+      warns:        new Map(),
+      maxWarns:     3,
+      welcomeMessage: '👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.',
+      welcomeEnabled:      true,
+      antiSpam:            false,
+      muteNewMembers:      false,
+      mutedUsers:          new Set(),
+      bannedUsers:         new Set(),
+      bannedWords:         [],
+      wordViolations:      new Map(),
+      joinRequests:        new Map(),
+      joinRequestsEnabled: false,
+      rules:               '',
+      communityId:         null,
+      protectContent:      false,
+      antiLinks:           false,
+      antiBot:             false,
+      logChannelId:        null,
+      timedMutes:          new Map(),
+      timedBans:           new Map(),
+      joinRequestCooldown: new Map(),
+      // ميزة المواضيع (Topics) - جديدة
+      topics: new Map(),
+      topicSettings: {
+        requireApprovalToJoin: false,
+        autoLockOnCreate:      false,
+        ownerBypassAll:        true,
+      },
+      perms: {
+        canSendMessages:   true,
+        canSendMedia:      true,
+        canSendPolls:      true,
+        canAddWebPreviews: true,
+        canInviteUsers:    true,
+        canPinMessages:    false,
+        canManageTopics:   false,
+      },
+      auditLog: [],
     });
-    const fresh = await supa.getGroup(chatId);
-    g = hydrateGroup(fresh);
-    cache.groups.set(chatId, g);
   }
-  return g;
+  return groups.get(chatId);
 }
 
-async function deleteGroup(chatId) {
-  cache.groups.delete(chatId);
-  await supa.deleteGroup(chatId);
-}
+function deleteGroup(chatId) { groups.delete(chatId); }
+function allGroups()         { return [...groups.values()]; }
 
-function allGroups() {
-  return [...cache.groups.values()];
-}
+// ═══════════════════════════════════════════════════════════════
+//  Channels
+// ═══════════════════════════════════════════════════════════════
 
-// حفظ تغييرات المجموعة في Supabase (غير مُعيق)
-async function _syncGroup(g) {
-  try {
-    await supa.upsertGroup(g.chat_id || g.chatId, {
-      title:                  g.title,
-      type:                   g.type,
-      owner_id:               g.ownerId || g.owner_id || null,
-      owner_username:         g.ownerUsername || g.owner_username || '',
-      owner_verified:         g.ownerVerified || false,
-      added_by:               g.addedBy || g.added_by || 0,
-      added_by_username:      g.addedByUsername || g.added_by_username || '',
-      max_warns:              g.maxWarns || 3,
-      welcome_message:        g.welcomeMessage || '',
-      welcome_enabled:        g.welcomeEnabled !== false,
-      anti_spam:              g.antiSpam || false,
-      mute_new_members:       g.muteNewMembers || false,
-      join_requests_enabled:  g.joinRequestsEnabled || false,
-      protect_content:        g.protectContent || false,
-      anti_links:             g.antiLinks || false,
-      anti_bot:               g.antiBot || false,
-      log_channel_id:         g.logChannelId || null,
-      rules:                  g.rules || '',
-      community_id:           g.communityId || null,
-      slow_mode:              g.slowMode || 0,
-      captcha_enabled:        g.captchaEnabled || false,
-      perm_send_messages:     g.perms?.canSendMessages   !== false,
-      perm_send_media:        g.perms?.canSendMedia       !== false,
-      perm_send_polls:        g.perms?.canSendPolls       !== false,
-      perm_web_previews:      g.perms?.canAddWebPreviews  !== false,
-      perm_invite_users:      g.perms?.canInviteUsers     !== false,
-      perm_pin_messages:      g.perms?.canPinMessages     || false,
-      perm_manage_topics:     g.perms?.canManageTopics    || false,
-      topic_require_approval: g.topicSettings?.requireApprovalToJoin || false,
-      topic_auto_lock:        g.topicSettings?.autoLockOnCreate      || false,
-      topic_owner_bypass:     g.topicSettings?.ownerBypassAll        !== false,
+function getChannel(chatId) { return channels.get(chatId) || null; }
+function getOrCreateChannel(chatId, title, username, addedBy, addedByUsername) {
+  if (!channels.has(chatId)) {
+    channels.set(chatId, {
+      chatId, title,
+      username:         username || '',
+      addedBy,
+      addedByUsername,
+      addedAt:          new Date(),
+      subscribers:      new Map(),
+      ownerId:          null,
+      ownerUsername:    '',
     });
-  } catch (e) { console.error('_syncGroup error:', e.message); }
-}
-
-// دالة مساعدة لحفظ التغييرات بعد التعديل
-function scheduleSync(g) {
-  setImmediate(() => _syncGroup(g));
-}
-
-// ═══════════════════════════════════════════
-//  CHANNELS
-// ═══════════════════════════════════════════
-
-function getChannel(chatId) { return cache.channels.get(chatId) || null; }
-
-async function getOrCreateChannel(chatId, title, username, addedBy, addedByUsername) {
-  if (!cache.channels.has(chatId)) {
-    await supa.upsertChannel(chatId, {
-      title: title || 'قناة',
-      username: username || '',
-      added_by: addedBy || 0,
-      added_by_username: addedByUsername || '',
-    });
-    const channel = {
-      chatId, title: title || 'قناة',
-      username: username || '',
-      addedBy: addedBy || 0,
-      addedByUsername: addedByUsername || '',
-      addedAt: new Date(),
-      subscribers: new Map(),
-      ownerId: null,
-      ownerUsername: '',
-    };
-    cache.channels.set(chatId, channel);
   }
-  return cache.channels.get(chatId);
+  return channels.get(chatId);
 }
+function deleteChannel(chatId) { channels.delete(chatId); }
+function allChannels()         { return [...channels.values()]; }
 
-async function deleteChannel(chatId) {
-  cache.channels.delete(chatId);
-  await supa.deleteChannel(chatId);
-}
+// ═══════════════════════════════════════════════════════════════
+//  Members
+// ═══════════════════════════════════════════════════════════════
 
-function allChannels() { return [...cache.channels.values()]; }
-
-// ═══════════════════════════════════════════
-//  MEMBERS
-// ═══════════════════════════════════════════
-
-async function trackMember(chatId, userId, username, firstName, role) {
-  const g = await getGroup(chatId);
+function trackMember(chatId, userId, username, firstName, role) {
+  const g = groups.get(chatId);
   if (!g) return;
   if (!g.members.has(userId)) {
     g.members.set(userId, {
@@ -284,21 +118,15 @@ async function trackMember(chatId, userId, username, firstName, role) {
     if (username)  m.username  = username;
     if (firstName) m.firstName = firstName;
   }
-  // مزامنة مع Supabase
-  await supa.upsertMember(chatId, userId, {
-    username:   username  || '',
-    first_name: firstName || '',
-    role:       role      || 'member',
-  });
 }
 
-// ═══════════════════════════════════════════
-//  USERS
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//  Users
+// ═══════════════════════════════════════════════════════════════
 
-async function getOrCreateUser(userId, username, firstName) {
-  if (!cache.users.has(userId)) {
-    const u = {
+function getOrCreateUser(userId, username, firstName) {
+  if (!users.has(userId)) {
+    users.set(userId, {
       userId,
       username:     username  || '',
       firstName:    firstName || '',
@@ -309,131 +137,240 @@ async function getOrCreateUser(userId, username, firstName) {
       lastSeen:     new Date(),
       groups:       new Set(),
       channels:     new Set(),
-    };
-    cache.users.set(userId, u);
-    // مزامنة مع Supabase
-    supa.upsertUser(userId, username || '', firstName || '').catch(() => {});
+    });
   }
-  return cache.users.get(userId);
+  return users.get(userId);
 }
-
-function getUser(userId) { return cache.users.get(userId) || null; }
-function allUsers()      { return [...cache.users.values()]; }
+function getUser(userId) { return users.get(userId) || null; }
+function allUsers()      { return [...users.values()]; }
 
 function getUserGroups(userId) {
-  return [...cache.groups.values()]
+  return [...groups.values()]
     .filter(g => g.ownerId === userId || g.admins.has(userId))
-    .map(g => g.chatId || g.chat_id);
+    .map(g => g.chatId);
 }
 
-// ═══════════════════════════════════════════
-//  COMMUNITIES
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//  Communities
+// ═══════════════════════════════════════════════════════════════
 
-async function getOrCreateCommunity(communityId, title) {
-  if (!cache.communities.has(communityId)) {
-    await supa.upsertCommunity(communityId, title, 1, true);
-    cache.communities.set(communityId, {
-      communityId, title: title || '',
-      maxGroupJoins: 1,
-      enabled: true,
-      subGroups: new Set(),
-      memberJoins: new Map(),
+function getOrCreateCommunity(communityId, title) {
+  if (!communities.has(communityId)) {
+    communities.set(communityId, {
+      communityId, title,
+      subGroups:      new Set(),
+      memberJoins:    new Map(),
+      maxGroupJoins:  1,
+      enabled:        true,
+      // جديد: سجل المحظورين تلقائياً
       autoBannedUsers: new Map(),
     });
   }
-  return cache.communities.get(communityId);
+  return communities.get(communityId);
 }
+function getCommunity(communityId) { return communities.get(communityId) || null; }
+function allCommunities()          { return [...communities.values()]; }
 
-function getCommunity(communityId) { return cache.communities.get(communityId) || null; }
-function allCommunities()          { return [...cache.communities.values()]; }
-
-async function recordCommunityJoin(communityId, userId, chatId) {
-  // كاش محلي
-  const com = cache.communities.get(communityId);
-  if (!com || !com.enabled) return false;
-  if (!com.memberJoins.has(userId)) com.memberJoins.set(userId, new Set());
-  const joined = com.memberJoins.get(userId);
+function recordCommunityJoin(communityId, userId, chatId) {
+  const c = communities.get(communityId);
+  if (!c || !c.enabled) return false;
+  if (!c.memberJoins.has(userId)) c.memberJoins.set(userId, new Set());
+  const joined = c.memberJoins.get(userId);
   joined.add(chatId);
-  // مزامنة مع Supabase
-  return await supa.recordCommunityJoin(communityId, userId, chatId);
+  return joined.size > c.maxGroupJoins;
 }
 
-// ═══════════════════════════════════════════
-//  WORD VIOLATIONS
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+//  Word violations & Audit log
+// ═══════════════════════════════════════════════════════════════
 
-async function recordWordViolation(chatId, userId, word) {
-  const g = await getGroup(chatId);
-  if (!g) return 0;
+function recordWordViolation(chatId, userId, word) {
+  const g = groups.get(chatId); if (!g) return 0;
   if (!g.wordViolations.has(userId)) g.wordViolations.set(userId, {});
   const vio = g.wordViolations.get(userId);
-  const count = await supa.incrementWordViolation(chatId, userId, word);
-  vio[word] = count;
-  return count;
+  vio[word] = (vio[word] || 0) + 1;
+  return vio[word];
 }
-
-async function resetWordViolation(chatId, userId, word) {
-  const g = await getGroup(chatId);
-  if (!g) return;
+function resetWordViolation(chatId, userId, word) {
+  const g = groups.get(chatId); if (!g) return;
   const vio = g.wordViolations.get(userId);
   if (vio) delete vio[word];
-  await supa.resetWordViolation(chatId, userId, word);
 }
 
-// ═══════════════════════════════════════════
-//  AUDIT LOG
-// ═══════════════════════════════════════════
+function addAuditLog(chatId, entry) {
+  const g = groups.get(chatId); if (!g) return;
+  g.auditLog.unshift({ ...entry, at: new Date() });
+  if (g.auditLog.length > 100) g.auditLog.length = 100;
+}
 
-async function addAuditLog(chatId, entry) {
-  const g = await getGroup(chatId);
-  if (g) {
-    g.auditLog.unshift({ ...entry, at: new Date() });
-    if (g.auditLog.length > 100) g.auditLog.length = 100;
+// ═══════════════════════════════════════════════════════════════
+//  Stats
+// ═══════════════════════════════════════════════════════════════
+
+function getStats() {
+  return {
+    totalGroups:   groups.size,
+    totalChannels: channels.size,
+    totalUsers:    users.size,
+    bannedUsers:   [...users.values()].filter(u => u.globalBanned).length,
+    totalAdmins:   [...groups.values()].reduce((a, g) => a + g.admins.size, 0),
+    totalWarns:    [...groups.values()].reduce((a, g) => a + [...g.warns.values()].reduce((b, w) => b + w.length, 0), 0),
+    pendingReqs:   [...groups.values()].reduce((a, g) => a + [...g.joinRequests.values()].filter(r => r.status === 'pending').length, 0),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Persistence — save / load data.json
+// ═══════════════════════════════════════════════════════════════
+
+function saveData() {
+  try {
+    const data = {
+      savedAt: new Date().toISOString(),
+      groups: Object.fromEntries(
+        [...groups.entries()].map(([k, v]) => [k, {
+          ...v,
+          members:             Object.fromEntries(v.members),
+          admins:              Object.fromEntries(v.admins),
+          warns:               Object.fromEntries([...v.warns.entries()]),
+          mutedUsers:          [...v.mutedUsers],
+          bannedUsers:         [...v.bannedUsers],
+          timedMutes:          Object.fromEntries(v.timedMutes),
+          timedBans:           Object.fromEntries(v.timedBans),
+          joinRequests:        Object.fromEntries(v.joinRequests),
+          joinRequestCooldown: Object.fromEntries(v.joinRequestCooldown),
+          wordViolations:      Object.fromEntries(v.wordViolations),
+          // مواضيع
+          topics: Object.fromEntries(
+            [...v.topics.entries()].map(([tk, tv]) => [tk, {
+              ...tv,
+              approvedUsers: tv.approvedUsers ? [...tv.approvedUsers] : [],
+            }])
+          ),
+        }])
+      ),
+      channels: Object.fromEntries(
+        [...channels.entries()].map(([k, v]) => [k, {
+          ...v,
+          subscribers: Object.fromEntries(v.subscribers),
+        }])
+      ),
+      users: Object.fromEntries(
+        [...users.entries()].map(([k, v]) => [k, {
+          ...v,
+          groups:   [...v.groups],
+          channels: [...v.channels],
+        }])
+      ),
+      communities: Object.fromEntries(
+        [...communities.entries()].map(([k, v]) => [k, {
+          ...v,
+          subGroups:   [...v.subGroups],
+          memberJoins: Object.fromEntries(
+            [...v.memberJoins.entries()].map(([uk, uv]) => [uk, [...uv]])
+          ),
+          autoBannedUsers: Object.fromEntries(v.autoBannedUsers || new Map()),
+        }])
+      ),
+    };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('saveData error:', e.message);
   }
-  await supa.addAuditLog(
-    chatId,
-    entry.action,
-    entry.by?.id || 0,
-    entry.by?.username || '',
-    entry.target?.id || 0,
-    entry.target?.username || '',
-    entry.details || ''
-  );
 }
 
-// ═══════════════════════════════════════════
-//  STATS
-// ═══════════════════════════════════════════
+function loadData() {
+  if (!fs.existsSync(DATA_FILE)) return;
+  try {
+    const raw  = fs.readFileSync(DATA_FILE, 'utf-8');
+    const data = JSON.parse(raw);
 
-async function getStats() {
-  return await supa.getStats();
+    for (const [k, v] of Object.entries(data.groups || {})) {
+      // إعادة بناء topics مع approvedUsers كـ Set
+      const topicsMap = new Map();
+      for (const [tk, tv] of Object.entries(v.topics || {})) {
+        topicsMap.set(Number(tk), {
+          ...tv,
+          approvedUsers: new Set((tv.approvedUsers || []).map(Number)),
+        });
+      }
+
+      groups.set(Number(k), {
+        ...v,
+        chatId:              Number(k),
+        ownerVerified:       v.ownerVerified  || false,
+        ownerVerifiedAt:     v.ownerVerifiedAt || null,
+        members:             new Map(Object.entries(v.members || {}).map(([uk, uv]) => [Number(uk), uv])),
+        admins:              new Map(Object.entries(v.admins  || {}).map(([uk, uv]) => [Number(uk), uv])),
+        warns:               new Map(Object.entries(v.warns   || {}).map(([uk, uv]) => [Number(uk), uv])),
+        mutedUsers:          new Set((v.mutedUsers  || []).map(Number)),
+        bannedUsers:         new Set((v.bannedUsers || []).map(Number)),
+        timedMutes:          new Map(Object.entries(v.timedMutes  || {}).map(([uk, uv]) => [Number(uk), uv])),
+        timedBans:           new Map(Object.entries(v.timedBans   || {}).map(([uk, uv]) => [Number(uk), uv])),
+        joinRequests:        new Map(Object.entries(v.joinRequests || {}).map(([uk, uv]) => [Number(uk), uv])),
+        joinRequestCooldown: new Map(Object.entries(v.joinRequestCooldown || {}).map(([uk, uv]) => [Number(uk), uv])),
+        wordViolations:      new Map(Object.entries(v.wordViolations || {}).map(([uk, uv]) => [Number(uk), uv])),
+        topics:              topicsMap,
+        topicSettings:       v.topicSettings || {
+          requireApprovalToJoin: false,
+          autoLockOnCreate:      false,
+          ownerBypassAll:        true,
+        },
+        perms: v.perms || {
+          canSendMessages: true, canSendMedia: true, canSendPolls: true,
+          canAddWebPreviews: true, canInviteUsers: true,
+          canPinMessages: false, canManageTopics: false,
+        },
+        auditLog: v.auditLog || [],
+      });
+    }
+
+    for (const [k, v] of Object.entries(data.channels || {})) {
+      channels.set(Number(k), {
+        ...v,
+        chatId:      Number(k),
+        subscribers: new Map(Object.entries(v.subscribers || {}).map(([uk, uv]) => [Number(uk), uv])),
+      });
+    }
+
+    for (const [k, v] of Object.entries(data.users || {})) {
+      users.set(Number(k), {
+        ...v,
+        userId:   Number(k),
+        groups:   new Set((v.groups   || []).map(Number)),
+        channels: new Set((v.channels || []).map(Number)),
+      });
+    }
+
+    for (const [k, v] of Object.entries(data.communities || {})) {
+      communities.set(Number(k), {
+        ...v,
+        communityId: Number(k),
+        subGroups:   new Set((v.subGroups || []).map(Number)),
+        memberJoins: new Map(
+          Object.entries(v.memberJoins || {}).map(([uk, uv]) => [Number(uk), new Set((uv || []).map(Number))])
+        ),
+        autoBannedUsers: new Map(Object.entries(v.autoBannedUsers || {})),
+      });
+    }
+
+    console.log(`✅ تم تحميل البيانات: ${groups.size} مجموعة، ${users.size} مستخدم`);
+  } catch (e) {
+    console.error('loadData error:', e.message);
+  }
 }
 
-// ═══════════════════════════════════════════
-//  EXPORTS
-// ═══════════════════════════════════════════
+// حفظ تلقائي كل دقيقتين
+setInterval(saveData, 2 * 60 * 1000);
 
 module.exports = {
-  // Core
-  loadData, saveData,
-  scheduleSync,
-  // Groups
   getGroup, getOrCreateGroup, deleteGroup, allGroups,
-  // Channels
   getChannel, getOrCreateChannel, deleteChannel, allChannels,
-  // Members
   trackMember,
-  // Users
   getOrCreateUser, getUser, allUsers, getUserGroups,
-  // Communities
   getOrCreateCommunity, getCommunity, allCommunities, recordCommunityJoin,
-  // Word violations
   recordWordViolation, resetWordViolation,
-  // Audit log
   addAuditLog,
-  // Stats
   getStats,
-  // Delegate everything else to supabase
-  ...supa,
+  saveData, loadData,
 };

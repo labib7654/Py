@@ -1,21 +1,11 @@
-// helpers.js — دوال مساعدة لبوت جامعة v5.0
 const { DEVELOPER_ID } = require('./config');
-const supa = require('./supabase');
 
 function isDeveloper(ctx) { return ctx.from && ctx.from.id === DEVELOPER_ID; }
 
-// كاش مؤقت للتحقق من المشرفين (60 ثانية)
-const adminCache = new Map();
 async function isAdmin(bot, chatId, userId) {
-  if (userId === DEVELOPER_ID) return true;
-  const key = `${chatId}:${userId}`;
-  const cached = adminCache.get(key);
-  if (cached && cached.expires > Date.now()) return cached.result;
   try {
     const m = await bot.telegram.getChatMember(chatId, userId);
-    const result = ['administrator', 'creator'].includes(m.status);
-    adminCache.set(key, { result, expires: Date.now() + 60_000 });
-    return result;
+    return ['administrator', 'creator'].includes(m.status);
   } catch { return false; }
 }
 
@@ -90,17 +80,11 @@ async function muteMemberTimed(bot, chatId, userId, durationSeconds) {
     },
     until_date: untilDate,
   });
-  // حفظ في Supabase
-  await supa.addRestriction(chatId, userId, 'timed_mute',
-    new Date(Date.now() + durationSeconds * 1000).toISOString(), null);
 }
 
 async function banMemberTimed(bot, chatId, userId, durationSeconds) {
   const untilDate = Math.floor(Date.now() / 1000) + durationSeconds;
   await bot.telegram.banChatMember(chatId, userId, { until_date: untilDate });
-  // حفظ في Supabase
-  await supa.addRestriction(chatId, userId, 'timed_ban',
-    new Date(Date.now() + durationSeconds * 1000).toISOString(), null);
 }
 
 async function unmutePerms() {
@@ -168,33 +152,17 @@ async function applyGroupPermissions(bot, chatId, perms) {
   });
 }
 
-// logAction — يكتب في Supabase ويرسل لقناة السجلات
 async function logAction(bot, g, action, by, target, details = '') {
-  const chatId     = g.chatId || g.chat_id;
-  const logChannel = g.logChannelId || g.log_channel_id;
-
-  // سجّل في Supabase
-  await supa.addAuditLog(
-    chatId, action,
-    by.id, by.username || by.first_name || String(by.id),
-    target.id, target.username || target.firstName || String(target.id),
-    details
-  );
-
-  // سجّل في كاش المجموعة إن وُجد
+  const db    = require('./db');
   const entry = {
     action,
     by:     { id: by.id, username: by.username || by.first_name || String(by.id) },
     target: { id: target.id, username: target.username || target.firstName || String(target.id) },
     details,
-    at: new Date(),
   };
-  if (g.auditLog) {
-    g.auditLog.unshift(entry);
-    if (g.auditLog.length > 100) g.auditLog.length = 100;
-  }
+  db.addAuditLog(g.chatId, entry);
 
-  if (!logChannel) return;
+  if (!g.logChannelId) return;
   const text =
     `📋 *سجل إجراء*\n\n` +
     `⚡ الإجراء: *${action}*\n` +
@@ -204,29 +172,34 @@ async function logAction(bot, g, action, by, target, details = '') {
     (details ? `📝 ${details}\n` : '') +
     `🕐 ${new Date().toLocaleString('ar')}`;
   try {
-    await bot.telegram.sendMessage(logChannel, text, { parse_mode: 'Markdown' });
+    await bot.telegram.sendMessage(g.logChannelId, text, { parse_mode: 'Markdown' });
   } catch {}
 }
 
-// setJoinApproval — يضبط setChatPermissions + رابط دعوة
+// ─────────────────────────────────────────────────────────────
+//  setJoinApproval — مُصلَح: يضبط setChatPermissions + رابط دعوة
+// ─────────────────────────────────────────────────────────────
 async function setJoinApproval(bot, chatId, enabled, currentPerms) {
   try {
+    // 1) ضبط صلاحية دعوة الأعضاء
     const permsUpdate = {
       can_send_messages:         currentPerms?.canSendMessages   !== false,
-      can_send_audios:           currentPerms?.canSendMedia       !== false,
-      can_send_documents:        currentPerms?.canSendMedia       !== false,
-      can_send_photos:           currentPerms?.canSendMedia       !== false,
-      can_send_videos:           currentPerms?.canSendMedia       !== false,
-      can_send_video_notes:      currentPerms?.canSendMedia       !== false,
-      can_send_voice_notes:      currentPerms?.canSendMedia       !== false,
-      can_send_polls:            currentPerms?.canSendPolls       !== false,
-      can_send_other_messages:   currentPerms?.canSendMessages    !== false,
-      can_add_web_page_previews: currentPerms?.canAddWebPreviews  !== false,
-      can_invite_users:          !enabled,
-      can_pin_messages:          currentPerms?.canPinMessages     === true,
-      can_manage_topics:         currentPerms?.canManageTopics    === true,
+      can_send_audios:           currentPerms?.canSendMedia      !== false,
+      can_send_documents:        currentPerms?.canSendMedia      !== false,
+      can_send_photos:           currentPerms?.canSendMedia      !== false,
+      can_send_videos:           currentPerms?.canSendMedia      !== false,
+      can_send_video_notes:      currentPerms?.canSendMedia      !== false,
+      can_send_voice_notes:      currentPerms?.canSendMedia      !== false,
+      can_send_polls:            currentPerms?.canSendPolls      !== false,
+      can_send_other_messages:   currentPerms?.canSendMessages   !== false,
+      can_add_web_page_previews: currentPerms?.canAddWebPreviews !== false,
+      can_invite_users:          !enabled, // عند التفعيل نمنع الأعضاء من الدعوة المباشرة
+      can_pin_messages:          currentPerms?.canPinMessages    === true,
+      can_manage_topics:         currentPerms?.canManageTopics   === true,
     };
     await bot.telegram.setChatPermissions(chatId, permsUpdate);
+
+    // 2) إنشاء رابط دعوة رسمي مع/بدون موافقة
     const link = await bot.telegram.callApi('createChatInviteLink', {
       chat_id:              chatId,
       creates_join_request: enabled,
@@ -239,144 +212,73 @@ async function setJoinApproval(bot, chatId, enabled, currentPerms) {
   }
 }
 
-// Topic helpers
+// ─────────────────────────────────────────────────────────────
+//  Topic helpers — قفل وفتح المواضيع
+// ─────────────────────────────────────────────────────────────
 async function lockTopic(bot, chatId, topicId) {
   try {
-    await bot.telegram.callApi('closeForumTopic', { chat_id: chatId, message_thread_id: topicId });
+    await bot.telegram.callApi('closeForumTopic', {
+      chat_id:           chatId,
+      message_thread_id: topicId,
+    });
     return true;
-  } catch (e) { console.error('lockTopic error:', e.message); return false; }
+  } catch (e) {
+    console.error('lockTopic error:', e.message);
+    return false;
+  }
 }
 
 async function unlockTopic(bot, chatId, topicId) {
   try {
-    await bot.telegram.callApi('reopenForumTopic', { chat_id: chatId, message_thread_id: topicId });
+    await bot.telegram.callApi('reopenForumTopic', {
+      chat_id:           chatId,
+      message_thread_id: topicId,
+    });
     return true;
-  } catch (e) { console.error('unlockTopic error:', e.message); return false; }
+  } catch (e) {
+    console.error('unlockTopic error:', e.message);
+    return false;
+  }
 }
 
 async function archiveTopic(bot, chatId, topicId) {
   try {
-    await bot.telegram.callApi('closeForumTopic', { chat_id: chatId, message_thread_id: topicId });
-    await bot.telegram.callApi('hideGeneralForumTopic', { chat_id: chatId }).catch(() => {});
+    // أغلق أولاً ثم أخفِ
+    await bot.telegram.callApi('closeForumTopic', {
+      chat_id: chatId, message_thread_id: topicId,
+    });
+    await bot.telegram.callApi('hideGeneralForumTopic', {
+      chat_id: chatId,
+    }).catch(() => {}); // ليس كل موضوع قابل للإخفاء
     return true;
-  } catch (e) { console.error('archiveTopic error:', e.message); return false; }
+  } catch (e) {
+    console.error('archiveTopic error:', e.message);
+    return false;
+  }
 }
 
-// التحقق من المالك وتسجيله
+// التحقق من المالك الحقيقي عبر Telegram API وتسجيله
 async function verifyAndRegisterOwner(bot, chatId) {
   try {
     const admins  = await bot.telegram.getChatAdministrators(chatId);
     const creator = admins.find(a => a.status === 'creator' && !a.user.is_bot);
     if (!creator) return null;
+
     const db = require('./db');
-    const g  = await db.getGroup(chatId);
+    const g  = db.getGroup(chatId);
     if (g) {
       g.ownerId         = creator.user.id;
       g.ownerUsername   = creator.user.username || creator.user.first_name || String(creator.user.id);
       g.ownerVerified   = true;
       g.ownerVerifiedAt = new Date();
-      db.scheduleSync(g);
     }
-    await db.getOrCreateUser(creator.user.id, creator.user.username || '', creator.user.first_name || '');
+
+    db.getOrCreateUser(creator.user.id, creator.user.username || '', creator.user.first_name || '');
     return creator.user;
-  } catch (e) { console.error(`verifyOwner error for ${chatId}:`, e.message); return null; }
-}
-
-// CAPTCHA — إنشاء تحدي رياضي
-function generateCaptcha() {
-  const a = Math.floor(Math.random() * 9) + 1;
-  const b = Math.floor(Math.random() * 9) + 1;
-  const ops = [
-    { q: `${a} + ${b}`, answer: a + b },
-    { q: `${a} × ${b}`, answer: a * b },
-    { q: `${Math.max(a,b)} - ${Math.min(a,b)}`, answer: Math.abs(a - b) },
-  ];
-  return ops[Math.floor(Math.random() * ops.length)];
-}
-
-// مساعد توجيه المتخصصين
-async function handleSpecialistRouting(bot, ctx, g, matched, originalText) {
-  const { Markup } = require('telegraf');
-  const db = require('./db');
-  const userId    = ctx.from.id;
-  const chatId    = ctx.chat.id;
-  const messageId = ctx.message.message_id;
-
-  // 1. تحديد المتخصص
-  let specialist = null;
-  if (matched.specialist_id) {
-    specialist = await supa.getSpecialist(chatId, matched.specialist_id);
-  } else {
-    const specialists = await supa.getSpecialists(chatId);
-    if (!specialists.length) return;
-    specialist = specialists[0];
+  } catch (e) {
+    console.error(`verifyOwner error for ${chatId}:`, e.message);
+    return null;
   }
-  if (!specialist) return;
-
-  // 2. احذف الرسالة من المجموعة
-  try { await bot.telegram.deleteMessage(chatId, messageId); } catch {}
-
-  const senderName    = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
-  const specialistName = specialist.username ? `@${specialist.username}` : specialist.first_name;
-
-  // 3. أرسل للمتخصص
-  try {
-    await bot.telegram.sendMessage(
-      specialist.user_id,
-      `📩 *طلب مساعدة جديد*\n\n` +
-      `👤 *الشخص:* ${senderName} \`[${userId}]\`\n` +
-      `📌 *المجموعة:* ${g.title}\n` +
-      `🔑 *الكلمة المحفِّزة:* \`${matched.keyword}\`\n\n` +
-      `💬 *الرسالة الأصلية:*\n${originalText}`,
-      {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([
-          [Markup.button.url(`✉️ فتح محادثة مع ${senderName}`, `tg://user?id=${userId}`)],
-          [Markup.button.callback('✅ تم التواصل', `session_done_${userId}`)],
-        ]),
-      }
-    );
-  } catch {
-    const ownerId = g.ownerId || g.owner_id;
-    if (ownerId) {
-      await bot.telegram.sendMessage(
-        ownerId,
-        `⚠️ المتخصص ${specialistName} لم يبدأ محادثة مع البوت\nيرجى إخباره بأن يضغط /start للبوت`
-      ).catch(() => {});
-    }
-    return;
-  }
-
-  // 4. أرسل للشخص المحتاج
-  try {
-    await bot.telegram.sendMessage(
-      userId,
-      `✅ *تم استلام طلبك!*\n\n` +
-      `تم توجيهك إلى المتخصص: *${specialistName}*\n` +
-      (specialist.specialty ? `📋 التخصص: ${specialist.specialty}\n` : '') +
-      `\n🔗 تواصل معه مباشرة:`,
-      {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([
-          [Markup.button.url(`💬 تواصل مع ${specialistName}`, `tg://user?id=${specialist.user_id}`)],
-        ]),
-      }
-    );
-  } catch {
-    try {
-      const tempMsg = await bot.telegram.sendMessage(chatId,
-        `${senderName}، تم توجيه طلبك للمتخصص. تواصل معه: ${specialistName}`);
-      setTimeout(() => bot.telegram.deleteMessage(chatId, tempMsg.message_id).catch(() => {}), 10000);
-    } catch {}
-  }
-
-  // 5. سجّل الجلسة
-  await supa.createSession(chatId, userId, specialist.user_id, matched.keyword, originalText);
-
-  // 6. سجّل في audit log
-  await supa.addAuditLog(chatId, '🎯 توجيه للمتخصص', 0, 'bot',
-    userId, ctx.from.username || ctx.from.first_name,
-    `الكلمة: ${matched.keyword} — المتخصص: ${specialistName}`);
 }
 
 module.exports = {
@@ -391,6 +293,4 @@ module.exports = {
   setJoinApproval,
   lockTopic, unlockTopic, archiveTopic,
   verifyAndRegisterOwner,
-  generateCaptcha,
-  handleSpecialistRouting,
 };

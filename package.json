@@ -1,7 +1,7 @@
 {
   "name": "jamea-bot",
-  "version": "5.0.0",
-  "description": "بوت إدارة المجموعات والقنوات والمجتمعات — جامعة v5.0 + Supabase",
+  "version": "4.0.0",
+  "description": "بوت إدارة المجموعات والقنوات والمجتمعات — جامعة v4.0",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -10,8 +10,7 @@
   "dependencies": {
     "telegraf": "^4.16.3",
     "express": "^4.18.2",
-    "dotenv": "^16.3.1",
-    "@supabase/supabase-js": "^2.45.0"
+    "dotenv": "^16.3.1"
   },
   "engines": {
     "node": ">=18.0.0"
