@@ -1,7 +1,5 @@
-// handler_owner.js — إعدادات المجموعة + نظام المتخصصين — جامعة v5.0
 const { Markup } = require('telegraf');
 const db         = require('./db');
-const supa       = require('./supabase');
 const {
   isDeveloper, isAdmin, isOwner,
   applyGroupPermissions, logAction,
@@ -9,16 +7,12 @@ const {
   lockTopic, unlockTopic, archiveTopic,
 } = require('./helpers');
 
-// ── Map لتتبع جلسات إضافة كلمات محظورة ─────────────────────────
+// ── Map لتتبع جلسات إضافة كلمات محظورة ───────────────────────
 const pendingAddWord = new Map();
-// ── Map لتتبع جلسات إضافة كلمات التوجيه ─────────────────────────
-const pendingAddKeyword = new Map();
-// ── Map لتتبع جلسات إضافة المتخصصين ─────────────────────────────
-const pendingAddSpecialist = new Map();
 
 // ── لوحة الإعدادات الرئيسية ──────────────────────────────────
 function groupSettingsKeyboard(chatId, s) {
-  const com = s.communityId ? db.getCommunity(s.communityId) : null;
+  const com = s.communityId ? require('./db').getCommunity(s.communityId) : null;
   return Markup.inlineKeyboard([
     [
       Markup.button.callback(`${s.joinRequestsEnabled ? '🔒' : '🔓'} موافقة الانضمام`, `toggle_joinreq_${chatId}`),
@@ -36,31 +30,21 @@ function groupSettingsKeyboard(chatId, s) {
       Markup.button.callback(`${s.antiSpam ? '✅' : '❌'} مكافحة سبام`,        `toggle_antispam_${chatId}`),
       Markup.button.callback(`${s.antiBot  ? '✅' : '❌'} منع بوتات`,          `toggle_antibot_${chatId}`),
     ],
-    [
-      Markup.button.callback(`${s.captchaEnabled ? '✅' : '❌'} CAPTCHA`,       `toggle_captcha_${chatId}`),
-    ],
     ...(com ? [[Markup.button.callback(`${com.enabled ? '✅' : '❌'} 🏫 حماية المجتمع`, `toggle_community_${chatId}`)]] : []),
     [Markup.button.callback('🎛️ صلاحيات الأعضاء', `perms_panel_${chatId}`)],
     [
-      Markup.button.callback('✏️ رسالة الترحيب',  `edit_welcome_${chatId}`),
-      Markup.button.callback('📋 القواعد',          `edit_rules_${chatId}`),
+      Markup.button.callback('✏️ رسالة الترحيب', `edit_welcome_${chatId}`),
+      Markup.button.callback('📋 القواعد',        `edit_rules_${chatId}`),
     ],
     [
-      Markup.button.callback('🔤 كلمات محظورة',    `bwords_list_${chatId}`),
-      Markup.button.callback('⚙️ حد التحذيرات',    `set_maxwarns_${chatId}`),
+      Markup.button.callback('🔤 كلمات محظورة', `bwords_list_${chatId}`),
+      Markup.button.callback('⚙️ حد التحذيرات', `set_maxwarns_${chatId}`),
     ],
     [
-      Markup.button.callback('🗂️ إدارة المواضيع',  `topics_panel_${chatId}`),
-      Markup.button.callback('📢 قناة السجلات',    `logchannel_info_${chatId}`),
+      Markup.button.callback('🧵 إدارة المواضيع', `topics_panel_${chatId}`),
+      Markup.button.callback('📊 إحصائيات',       `stats_${chatId}`),
     ],
-    [
-      Markup.button.callback('👨‍💼 المتخصصون',       `specialists_panel_${chatId}`),
-      Markup.button.callback('🔑 كلمات التوجيه',   `routing_panel_${chatId}`),
-    ],
-    [
-      Markup.button.callback('📊 إحصائيات',         `stats_${chatId}`),
-      Markup.button.callback('📋 سجل الإجراءات',   `auditlog_${chatId}`),
-    ],
+    [Markup.button.callback('📋 سجل الإجراءات', `auditlog_${chatId}`)],
     [Markup.button.callback('🔙 رجوع', `group_home_${chatId}`)],
   ]);
 }
@@ -68,47 +52,29 @@ function groupSettingsKeyboard(chatId, s) {
 // ── لوحة صلاحيات الأعضاء ────────────────────────────────────
 function permissionsDashboard(chatId, perms) {
   return Markup.inlineKeyboard([
-    [Markup.button.callback(`${perms.canSendMessages   ? '✅' : '❌'} إرسال رسائل`,     `perm_msg_${chatId}`)],
-    [Markup.button.callback(`${perms.canSendMedia      ? '✅' : '❌'} إرسال وسائط`,     `perm_media_${chatId}`)],
-    [Markup.button.callback(`${perms.canSendPolls      ? '✅' : '❌'} إرسال استطلاعات`, `perm_polls_${chatId}`)],
-    [Markup.button.callback(`${perms.canAddWebPreviews ? '✅' : '❌'} معاينة روابط`,    `perm_preview_${chatId}`)],
-    [Markup.button.callback(`${perms.canInviteUsers    ? '✅' : '❌'} دعوة مستخدمين`,  `perm_invite_${chatId}`)],
-    [Markup.button.callback(`${perms.canPinMessages    ? '✅' : '❌'} تثبيت رسائل`,    `perm_pin_${chatId}`)],
-    [Markup.button.callback(`${perms.canManageTopics   ? '✅' : '❌'} إدارة المواضيع`,  `perm_topics_${chatId}`)],
+    [Markup.button.callback(`${perms.canSendMessages   ? '✅' : '❌'} إرسال رسائل`,    `perm_msg_${chatId}`)],
+    [Markup.button.callback(`${perms.canSendMedia      ? '✅' : '❌'} إرسال وسائط`,    `perm_media_${chatId}`)],
+    [Markup.button.callback(`${perms.canSendPolls      ? '✅' : '❌'} إرسال استطلاعات`,`perm_polls_${chatId}`)],
+    [Markup.button.callback(`${perms.canAddWebPreviews ? '✅' : '❌'} معاينة روابط`,   `perm_preview_${chatId}`)],
+    [Markup.button.callback(`${perms.canInviteUsers    ? '✅' : '❌'} دعوة مستخدمين`, `perm_invite_${chatId}`)],
+    [Markup.button.callback(`${perms.canPinMessages    ? '✅' : '❌'} تثبيت رسائل`,   `perm_pin_${chatId}`)],
+    [Markup.button.callback(`${perms.canManageTopics   ? '✅' : '❌'} إدارة المواضيع`, `perm_topics_${chatId}`)],
     [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
   ]);
 }
 
-// ── لوحة المواضيع ────────────────────────────────────────────
-function topicsPanelKeyboard(chatId, ts) {
-  return Markup.inlineKeyboard([
-    [Markup.button.callback(
-      `${ts?.requireApprovalToJoin ? '✅' : '❌'} موافقة دخول المواضيع`,
-      `toggle_topicapproval_${chatId}`
-    )],
-    [Markup.button.callback(
-      `${ts?.autoLockOnCreate ? '✅' : '❌'} قفل تلقائي للمواضيع الجديدة`,
-      `toggle_autolock_${chatId}`
-    )],
-    [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
-  ]);
-}
-
-module.exports = {
-  groupSettingsKeyboard,
-  setupOwnerHandlers: function setupOwnerHandlers(bot) {
+module.exports = function setupOwnerHandlers(bot) {
 
   // ════════════════════════════════════════════════════════════
   //  الأوامر
   // ════════════════════════════════════════════════════════════
 
-  // ── /settings ─────────────────────────────────────────────
   bot.command('settings', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     const chatId = ctx.chat.id;
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
-    const g = await db.getGroup(chatId);
+    const g = db.getGroup(chatId);
     if (!g) return ctx.reply('❌ بيانات المجموعة غير موجودة!');
     await ctx.replyWithMarkdown(
       `⚙️ *إعدادات ${g.title}*\n\nاضغط لتفعيل/تعطيل:`,
@@ -116,11 +82,10 @@ module.exports = {
     );
   });
 
-  // ── /mybot ─────────────────────────────────────────────────
   bot.command('mybot', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     const chatId = ctx.chat.id;
-    const g = await db.getGroup(chatId);
+    const g = db.getGroup(chatId);
     if (!g) return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
@@ -130,28 +95,32 @@ module.exports = {
         `🔐 *لوحة تحكم ${g.title}*\n\nمرحباً ${ctx.from.first_name}، اضغط أدناه للتحكم:`,
         {
           parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard([[Markup.button.callback(`⚙️ إعدادات ${g.title.slice(0, 20)}`, `owner_panel_${chatId}`)]]),
+          ...Markup.inlineKeyboard([[
+            Markup.button.callback(`⚙️ إعدادات ${g.title.slice(0, 20)}`, `owner_panel_${chatId}`),
+          ]]),
         }
       );
-      await ctx.reply('✅ تم إرسال لوحة التحكم إلى خاصك.', { reply_to_message_id: ctx.message.message_id });
+      await ctx.reply('✅ تم إرسال لوحة التحكم إلى خاصك.',
+        { reply_to_message_id: ctx.message.message_id });
     } catch {
       await ctx.reply(
         '❌ تعذر إرسال الرسالة، ابدأ محادثة مع البوت أولاً.',
-        Markup.inlineKeyboard([[Markup.button.url('🔓 افتح الخاص', `https://t.me/${ctx.botInfo.username}?start=panel_${chatId}`)]])
+        Markup.inlineKeyboard([[
+          Markup.button.url('🔓 افتح الخاص', `https://t.me/${ctx.botInfo.username}?start=panel_${chatId}`),
+        ]])
       );
     }
   });
 
-  // ── /setwelcome ────────────────────────────────────────────
   bot.command('setwelcome', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
     const text = ctx.message.text.replace('/setwelcome', '').trim();
-    if (!text) return ctx.replyWithMarkdown('📝 `/setwelcome نص`\nالمتغيرات: `{name}` `{group}` `{username}`');
-    const g = await db.getGroup(ctx.chat.id); if (!g) return;
+    if (!text)
+      return ctx.replyWithMarkdown('📝 `/setwelcome نص`\nالمتغيرات: `{name}` `{group}` `{username}`');
+    const g = db.getGroup(ctx.chat.id); if (!g) return;
     g.welcomeMessage = text;
-    db.scheduleSync(g);
     const preview = text
       .replace('{name}',     ctx.from.first_name || 'عضو')
       .replace('{group}',    ctx.chat.title       || 'المجموعة')
@@ -159,48 +128,41 @@ module.exports = {
     await ctx.replyWithMarkdown(`✅ *تم تعديل رسالة الترحيب*\n\n*معاينة:*\n${preview}`);
   });
 
-  // ── /setrules ──────────────────────────────────────────────
   bot.command('setrules', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
     const text = ctx.message.text.replace('/setrules', '').trim();
     if (!text) return ctx.reply('📋 مثال: /setrules 1. الاحترام\n2. عدم الإعلانات');
-    const g = await db.getGroup(ctx.chat.id); if (!g) return;
+    const g = db.getGroup(ctx.chat.id); if (!g) return;
     g.rules = text;
-    db.scheduleSync(g);
     await ctx.replyWithMarkdown(`✅ *تم تعيين القواعد*\n\n${text}`);
   });
 
-  // ── /setmaxwarns ───────────────────────────────────────────
   bot.command('setmaxwarns', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     if (!isDeveloper(ctx) && !await isOwner(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمالك فقط!');
     const n = Number(ctx.message.text.split(' ')[1]);
     if (!n || n < 1 || n > 10) return ctx.reply('❌ مثال: /setmaxwarns 3  (النطاق: 1-10)');
-    const g = await db.getGroup(ctx.chat.id); if (!g) return;
+    const g = db.getGroup(ctx.chat.id); if (!g) return;
     g.maxWarns = n;
-    db.scheduleSync(g);
     await ctx.replyWithMarkdown(`✅ الحد الأقصى للتحذيرات: \`${n}\``);
   });
 
-  // ── /setlogchannel ─────────────────────────────────────────
   bot.command('setlogchannel', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     if (!isDeveloper(ctx) && !await isOwner(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمالك فقط!');
     const arg = ctx.message.text.split(' ')[1];
-    const g   = await db.getGroup(ctx.chat.id); if (!g) return;
-    if (!arg) { g.logChannelId = null; db.scheduleSync(g); return ctx.reply('✅ تم إلغاء قناة السجلات.'); }
+    const g   = db.getGroup(ctx.chat.id); if (!g) return;
+    if (!arg) { g.logChannelId = null; return ctx.reply('✅ تم إلغاء قناة السجلات.'); }
     const channelId = Number(arg);
     if (!channelId) return ctx.reply('❌ مثال: /setlogchannel -100123456789');
     g.logChannelId = channelId;
-    db.scheduleSync(g);
     await ctx.replyWithMarkdown(`✅ *قناة السجلات:* \`${channelId}\``);
   });
 
-  // ── /addword ───────────────────────────────────────────────
   bot.command('addword', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
@@ -209,35 +171,34 @@ module.exports = {
     const word      = args[0];
     const action    = (args[1] || 'warn').toLowerCase();
     const threshold = Number(args[2]) || 1;
-    if (!word) return ctx.replyWithMarkdown('📌 `/addword <كلمة> <إجراء> <عدد_مرات>`\n\nالإجراءات: `warn` | `mute` | `kick` | `ban`');
-    if (!['warn', 'mute', 'kick', 'ban'].includes(action)) return ctx.reply('❌ الإجراء غير صحيح!');
-    if (threshold < 1 || threshold > 5) return ctx.reply('❌ عدد المرات بين 1 و 5');
-    const g = await db.getGroup(ctx.chat.id); if (!g) return;
-    if (g.bannedWords.find(bw => bw.word.toLowerCase() === word.toLowerCase())) return ctx.reply('❌ الكلمة موجودة مسبقاً!');
-    g.bannedWords.push({ word, action, threshold, addedBy: ctx.from.id, addedAt: new Date() });
-    await supa.addBannedWord(ctx.chat.id, word, action, threshold, ctx.from.id);
+    if (!word)
+      return ctx.replyWithMarkdown('📌 `/addword <كلمة> <إجراء> <مرات>`\n\nالإجراءات: `warn` | `mute` | `kick` | `ban`\nمثال: `/addword بذيء warn 2`');
+    if (!['warn', 'mute', 'kick', 'ban'].includes(action))
+      return ctx.reply('❌ الإجراء غير صحيح! الخيارات: warn | mute | kick | ban');
+    const g = db.getGroup(ctx.chat.id); if (!g) return;
+    if (g.bannedWords.find(bw => bw.word.toLowerCase() === word.toLowerCase()))
+      return ctx.reply('❌ الكلمة موجودة مسبقاً!');
+    g.bannedWords.push({ word, action, threshold: Math.min(Math.max(threshold, 1), 5), addedBy: ctx.from.id, addedAt: new Date() });
     const arAct = { warn: '⚠️ تحذير', mute: '🔇 كتم', kick: '👢 طرد', ban: '🚫 حظر' };
     await ctx.replyWithMarkdown(`✅ *تمت إضافة الكلمة المحظورة*\n\n🔤 \`${word}\`\n⚡ الإجراء: ${arAct[action]}\n🔁 بعد: \`${threshold}\` مرة`);
   });
 
-  // ── /removeword ────────────────────────────────────────────
   bot.command('removeword', async (ctx) => {
     if (ctx.chat.type === 'private') return;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id)) return ctx.reply('❌ للمشرفين فقط!');
+    if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
     const word = ctx.message.text.split(' ').slice(1).join(' ').trim();
     if (!word) return ctx.reply('📌 مثال: /removeword كلمة');
-    const g = await db.getGroup(ctx.chat.id); if (!g) return;
+    const g = db.getGroup(ctx.chat.id); if (!g) return;
     const before = g.bannedWords.length;
     g.bannedWords = g.bannedWords.filter(bw => bw.word.toLowerCase() !== word.toLowerCase());
     if (g.bannedWords.length === before) return ctx.reply('❌ الكلمة غير موجودة!');
-    await supa.removeBannedWord(ctx.chat.id, word);
     await ctx.replyWithMarkdown(`✅ *تمت الإزالة:* \`${word}\``);
   });
 
-  // ── /words ─────────────────────────────────────────────────
   bot.command('words', async (ctx) => {
     if (ctx.chat.type === 'private') return;
-    const g = await db.getGroup(ctx.chat.id);
+    const g = db.getGroup(ctx.chat.id);
     if (!g || !g.bannedWords.length)
       return ctx.reply('🔤 لا توجد كلمات محظورة.\n\n`/addword` لإضافة كلمة.');
     const ar   = { warn: '⚠️', mute: '🔇', kick: '👢', ban: '🚫' };
@@ -248,585 +209,548 @@ module.exports = {
     await ctx.replyWithMarkdown(text);
   });
 
-  // ══════════════════════════════════════════════════════════════
-  //  🆕 نظام المتخصصين — أوامر
-  // ══════════════════════════════════════════════════════════════
-
-  // /addspecialist @username [وصف التخصص]
-  bot.command('addspecialist', async (ctx) => {
+  bot.command('joinreqs', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     const chatId = ctx.chat.id;
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
-    const args    = ctx.message.text.split(' ').slice(1);
-    const target  = args[0];
-    const specialty = args.slice(1).join(' ').trim() || 'متخصص';
-    if (!target) return ctx.replyWithMarkdown('📌 مثال:\n`/addspecialist @username وصف التخصص`\nأو:\n`/addspecialist 123456789 وصف التخصص`');
-    let userId, username = '', firstName = '';
-    if (target.startsWith('@')) {
-      try {
-        const member = await bot.telegram.getChatMember(chatId, target.replace('@', ''));
-        userId    = member.user.id;
-        username  = member.user.username || '';
-        firstName = member.user.first_name || '';
-      } catch { return ctx.reply('❌ لم أتمكن من إيجاد هذا المستخدم في المجموعة!'); }
-    } else if (/^\d+$/.test(target)) {
-      userId    = Number(target);
-      firstName = target;
-    } else { return ctx.reply('❌ استخدم @username أو user_id'); }
-    await supa.addSpecialist(chatId, userId, username, firstName, specialty, ctx.from.id);
-    await ctx.replyWithMarkdown(
-      `✅ *تمت إضافة المتخصص!*\n\n` +
-      `👨‍💼 ${username ? `@${username}` : firstName} \`[${userId}]\`\n` +
-      `📋 التخصص: ${specialty}\n\n` +
-      `⚠️ تأكد من أن المتخصص قد بدأ محادثة مع البوت (أرسل /start للبوت).`
-    );
-  });
-
-  // /removespecialist @username أو user_id
-  bot.command('removespecialist', async (ctx) => {
-    if (ctx.chat.type === 'private') return;
-    const chatId = ctx.chat.id;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
-      return ctx.reply('❌ للمشرفين فقط!');
-    const target = ctx.message.text.split(' ')[1];
-    if (!target) return ctx.reply('📌 مثال: /removespecialist @username');
-    let userId;
-    if (target.startsWith('@')) {
-      try {
-        const member = await bot.telegram.getChatMember(chatId, target.replace('@', ''));
-        userId = member.user.id;
-      } catch { return ctx.reply('❌ لم أتمكن من إيجاد هذا المستخدم!'); }
-    } else if (/^\d+$/.test(target)) {
-      userId = Number(target);
-    } else { return ctx.reply('❌ استخدم @username أو user_id'); }
-    await supa.removeSpecialist(chatId, userId);
-    await ctx.replyWithMarkdown(`✅ *تمت إزالة المتخصص:* \`${userId}\``);
-  });
-
-  // /specialists — عرض كل المتخصصين
-  bot.command('specialists', async (ctx) => {
-    if (ctx.chat.type === 'private') return;
-    const chatId = ctx.chat.id;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
-      return ctx.reply('❌ للمشرفين فقط!');
-    const specialists = await supa.getSpecialists(chatId);
-    if (!specialists.length) return ctx.reply('👨‍💼 لا يوجد متخصصون بعد.\n\n`/addspecialist @username تخصص` لإضافة.');
-    let text = `👨‍💼 *المتخصصون* (${specialists.length})\n\n`;
-    for (const s of specialists) {
-      text += `• ${s.username ? `@${s.username}` : s.first_name} \`[${s.user_id}]\`\n  📋 ${s.specialty || 'متخصص'}\n`;
-    }
-    await ctx.replyWithMarkdown(text);
-  });
-
-  // ══════════════════════════════════════════════════════════════
-  //  🆕 كلمات التوجيه — أوامر
-  // ══════════════════════════════════════════════════════════════
-
-  // /addkeyword [كلمة] [@متخصص]
-  bot.command('addkeyword', async (ctx) => {
-    if (ctx.chat.type === 'private') return;
-    const chatId = ctx.chat.id;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
-      return ctx.reply('❌ للمشرفين فقط!');
-    const args      = ctx.message.text.split(' ').slice(1);
-    const keyword   = args[0];
-    const specialist = args[1]; // اختياري @username أو user_id
-    if (!keyword) return ctx.replyWithMarkdown('📌 مثال:\n`/addkeyword كلمة` — لأي متخصص متاح\n`/addkeyword كلمة @username` — لمتخصص محدد');
-    let specialistId = null;
-    if (specialist) {
-      if (specialist.startsWith('@')) {
-        try {
-          const member = await bot.telegram.getChatMember(chatId, specialist.replace('@', ''));
-          specialistId = member.user.id;
-        } catch { return ctx.reply('❌ لم أتمكن من إيجاد هذا المستخدم!'); }
-      } else if (/^\d+$/.test(specialist)) {
-        specialistId = Number(specialist);
-      }
-    }
-    await supa.addRoutingKeyword(chatId, keyword, specialistId, ctx.from.id);
-    await ctx.replyWithMarkdown(
-      `✅ *تمت إضافة كلمة التوجيه:* \`${keyword}\`\n` +
-      (specialistId ? `👨‍💼 مرتبطة بمتخصص محدد: \`${specialistId}\`` : '👥 تُوجَّه لأي متخصص متاح')
-    );
-  });
-
-  // /removekeyword [كلمة]
-  bot.command('removekeyword', async (ctx) => {
-    if (ctx.chat.type === 'private') return;
-    const chatId  = ctx.chat.id;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
-      return ctx.reply('❌ للمشرفين فقط!');
-    const keyword = ctx.message.text.split(' ').slice(1).join(' ').trim();
-    if (!keyword) return ctx.reply('📌 مثال: /removekeyword كلمة');
-    await supa.removeRoutingKeyword(chatId, keyword);
-    await ctx.replyWithMarkdown(`✅ *تمت إزالة كلمة التوجيه:* \`${keyword}\``);
-  });
-
-  // /keywords — عرض كل كلمات التوجيه
-  bot.command('keywords', async (ctx) => {
-    if (ctx.chat.type === 'private') return;
-    const chatId   = ctx.chat.id;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
-      return ctx.reply('❌ للمشرفين فقط!');
-    const keywords = await supa.getRoutingKeywords(chatId);
-    if (!keywords.length) return ctx.reply('🔑 لا توجد كلمات توجيه بعد.\n\n`/addkeyword كلمة` لإضافة.');
-    let text = `🔑 *كلمات التوجيه* (${keywords.length})\n\n`;
-    for (const kw of keywords) {
-      text += `• \`${kw.keyword}\` — ${kw.specialist_id ? `متخصص: \`${kw.specialist_id}\`` : 'أي متخصص'}\n`;
-    }
-    await ctx.replyWithMarkdown(text);
+    const g = db.getGroup(chatId); if (!g) return ctx.reply('❌ بيانات غير موجودة!');
+    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
+    if (!pending.length) return ctx.reply('📨 لا توجد طلبات انضمام معلقة.');
+    const btns = pending.slice(0, 8).map(r => [
+      Markup.button.callback(`✅ ${r.firstName.slice(0, 14)}`, `jr_approve_${r.userId}_${chatId}`),
+      Markup.button.callback('❌ رفض', `jr_reject_${r.userId}_${chatId}`),
+    ]);
+    btns.push([Markup.button.callback('✅ قبول الكل', `jr_approveall_${chatId}`), Markup.button.callback('❌ رفض الكل', `jr_rejectall_${chatId}`)]);
+    await ctx.replyWithMarkdown(`📨 *طلبات الانضمام* (${pending.length} معلقة)`, Markup.inlineKeyboard(btns));
   });
 
   // ── أوامر المواضيع ────────────────────────────────────────
   bot.command('locktopic', async (ctx) => {
     if (ctx.chat.type === 'private') return;
-    const chatId  = ctx.chat.id;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.reply('❌ للمشرفين فقط!');
+    const chatId = ctx.chat.id;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+    const g = db.getGroup(chatId); if (!g) return;
     const topicId = ctx.message.message_thread_id || Number(ctx.message.text.split(' ')[1]);
-    if (!topicId) return ctx.reply('❌ مثال: /locktopic [topic_id] أو ارد على رسالة في الموضوع');
-    const ok = await lockTopic(bot, chatId, topicId);
-    if (!ok) return ctx.reply('❌ فشل قفل الموضوع.');
-    const g = await db.getGroup(chatId);
-    if (g) {
-      if (!g.topics.has(topicId)) g.topics.set(topicId, { approvedUsers: new Set() });
+    if (!topicId) return ctx.reply('❌ استخدم في موضوع أو: /locktopic <topic_id>');
+    try {
+      await lockTopic(bot, chatId, topicId);
+      if (!g.topics.has(topicId)) g.topics.set(topicId, { name: String(topicId), locked: false, archived: false, approvedUsers: new Set() });
       g.topics.get(topicId).locked = true;
-    }
-    await ctx.replyWithMarkdown(`🔒 *تم قفل الموضوع* \`${topicId}\``);
+      await ctx.reply(`🔒 تم قفل الموضوع \`${topicId}\``, { parse_mode: 'Markdown' });
+    } catch (e) { await ctx.reply(`❌ فشل: ${e.message}`); }
   });
 
   bot.command('unlocktopic', async (ctx) => {
     if (ctx.chat.type === 'private') return;
-    const chatId  = ctx.chat.id;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.reply('❌ للمشرفين فقط!');
+    const chatId = ctx.chat.id;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+    const g = db.getGroup(chatId); if (!g) return;
     const topicId = ctx.message.message_thread_id || Number(ctx.message.text.split(' ')[1]);
-    if (!topicId) return ctx.reply('❌ مثال: /unlocktopic [topic_id]');
-    const ok = await unlockTopic(bot, chatId, topicId);
-    if (!ok) return ctx.reply('❌ فشل فتح الموضوع.');
-    const g = await db.getGroup(chatId);
-    if (g && g.topics.has(topicId)) g.topics.get(topicId).locked = false;
-    await ctx.replyWithMarkdown(`🔓 *تم فتح الموضوع* \`${topicId}\``);
+    if (!topicId) return ctx.reply('❌ استخدم في موضوع أو: /unlocktopic <topic_id>');
+    try {
+      await unlockTopic(bot, chatId, topicId);
+      if (g.topics.has(topicId)) g.topics.get(topicId).locked = false;
+      await ctx.reply(`🔓 تم فتح الموضوع \`${topicId}\``, { parse_mode: 'Markdown' });
+    } catch (e) { await ctx.reply(`❌ فشل: ${e.message}`); }
   });
 
   bot.command('archivetopic', async (ctx) => {
     if (ctx.chat.type === 'private') return;
-    const chatId  = ctx.chat.id;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.reply('❌ للمشرفين فقط!');
+    const chatId = ctx.chat.id;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+    const g = db.getGroup(chatId); if (!g) return;
     const topicId = ctx.message.message_thread_id || Number(ctx.message.text.split(' ')[1]);
-    if (!topicId) return ctx.reply('❌ مثال: /archivetopic [topic_id]');
-    const ok = await archiveTopic(bot, chatId, topicId);
-    if (!ok) return ctx.reply('❌ فشل أرشفة الموضوع.');
-    const g = await db.getGroup(chatId);
-    if (g) {
-      if (!g.topics.has(topicId)) g.topics.set(topicId, { approvedUsers: new Set() });
+    if (!topicId) return ctx.reply('❌ استخدم في موضوع أو: /archivetopic <topic_id>');
+    try {
+      await archiveTopic(bot, chatId, topicId);
+      if (!g.topics.has(topicId)) g.topics.set(topicId, { name: String(topicId), locked: false, archived: false, approvedUsers: new Set() });
       const t = g.topics.get(topicId);
       t.locked = true; t.archived = true;
-    }
-    await ctx.replyWithMarkdown(`📦 *تم أرشفة الموضوع* \`${topicId}\``);
+      await ctx.reply(`📁 تم أرشفة الموضوع \`${topicId}\``, { parse_mode: 'Markdown' });
+    } catch (e) { await ctx.reply(`❌ فشل: ${e.message}`); }
   });
 
   bot.command('topicrequest', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     const chatId = ctx.chat.id;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.reply('❌ للمشرفين فقط!');
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+    const g = db.getGroup(chatId); if (!g) return;
     const arg = ctx.message.text.split(' ')[1]?.toLowerCase();
-    const g   = await db.getGroup(chatId); if (!g) return;
-    if (!g.topicSettings) g.topicSettings = { requireApprovalToJoin: false, autoLockOnCreate: false, ownerBypassAll: true };
-    if (arg === 'on')  { g.topicSettings.requireApprovalToJoin = true;  await ctx.replyWithMarkdown('✅ *تم تفعيل موافقة دخول المواضيع*'); }
-    else if (arg === 'off') { g.topicSettings.requireApprovalToJoin = false; await ctx.replyWithMarkdown('❌ *تم تعطيل موافقة دخول المواضيع*'); }
-    else { await ctx.replyWithMarkdown(`🗂️ الوضع الحالي: ${g.topicSettings.requireApprovalToJoin ? '✅ مفعّل' : '❌ معطّل'}\n\nاستخدم: \`/topicrequest on\` أو \`/topicrequest off\``); }
-    db.scheduleSync(g);
+    if (!['on', 'off'].includes(arg)) return ctx.reply('❌ مثال: /topicrequest on أو /topicrequest off');
+    g.topicSettings = g.topicSettings || { requireApprovalToJoin: false, autoLockOnCreate: false, ownerBypassAll: true };
+    g.topicSettings.requireApprovalToJoin = arg === 'on';
+    await ctx.replyWithMarkdown(
+      arg === 'on'
+        ? '✅ *طلبات دخول المواضيع مفعّلة* — أي رسالة في موضوع مقفل ستُرسل للمالك طلب موافقة.'
+        : '❌ *طلبات دخول المواضيع معطّلة*'
+    );
   });
 
+  // ── /community_bans ────────────────────────────────────────
   bot.command('community_bans', async (ctx) => {
     if (ctx.chat.type === 'private') return;
-    const g = await db.getGroup(ctx.chat.id);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id)) return ctx.reply('❌ للمشرفين فقط!');
-    if (!g?.communityId) return ctx.reply('❌ هذه المجموعة ليست ضمن مجتمع.');
+    const g = db.getGroup(ctx.chat.id); if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+    if (!g.communityId) return ctx.reply('❌ المجموعة ليست في مجتمع.');
     const com = db.getCommunity(g.communityId);
-    if (!com || !com.autoBannedUsers?.size) return ctx.reply('✅ لا يوجد محظورون تلقائياً في المجتمع.');
-    let text = `🚫 *المحظورون تلقائياً — مجتمع ${com.title}*\n\n`;
-    let count = 0;
-    for (const [uid, info] of com.autoBannedUsers) {
-      if (count >= 20) { text += `\n_... والمزيد_`; break; }
-      text += `👤 \`${uid}\`\n📝 ${info.reason}\n🕐 ${new Date(info.bannedAt).toLocaleDateString('ar')}\n\n`;
-      count++;
-    }
+    if (!com || !com.autoBannedUsers?.size)
+      return ctx.replyWithMarkdown('🔍 *لا يوجد محظورون تلقائياً في المجتمع.*');
+    let text = `🚫 *المحظورون تلقائياً — ${com.title}*\n\n`;
+    [...com.autoBannedUsers.entries()].slice(0, 15).forEach(([uid, data]) => {
+      const u = db.getUser(uid);
+      text += `👤 ${u?.username ? `@${u.username}` : uid} \`[${uid}]\`\n`;
+      text += `   السبب: ${data.reason}\n`;
+      text += `   المجموعات: ${(data.groups || []).map(id => { const gr = db.getGroup(id); return gr?.title || id; }).join('، ')}\n\n`;
+    });
     await ctx.replyWithMarkdown(text);
   });
 
+  bot.command('top', async (ctx) => {
+    if (ctx.chat.type === 'private') return;
+    const g = db.getGroup(ctx.chat.id); if (!g) return;
+    const sorted = [...g.members.values()].filter(m => (m.score || 0) > 0).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 10);
+    if (!sorted.length) return ctx.reply('📊 لا توجد بيانات نشاط بعد.');
+    const medals = ['🥇', '🥈', '🥉'];
+    let text = `🏆 *أنشط أعضاء ${ctx.chat.title}*\n\n`;
+    sorted.forEach((m, i) => { text += `${medals[i] || `${i + 1}.`} ${m.username ? `@${m.username}` : m.firstName} — \`${m.score || 0}\` نقطة\n`; });
+    await ctx.replyWithMarkdown(text);
+  });
+
+  bot.command('myscore', async (ctx) => {
+    if (ctx.chat.type === 'private') return;
+    const g     = db.getGroup(ctx.chat.id);
+    const m     = g?.members.get(ctx.from.id);
+    const score = m?.score || 0;
+    const rank  = m ? [...g.members.values()].sort((a, b) => (b.score || 0) - (a.score || 0)).findIndex(x => x.userId === ctx.from.id) + 1 : 0;
+    const name  = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+    await ctx.replyWithMarkdown(`⭐ *نقاط ${name}*\n\n🔢 النقاط: \`${score}\`\n🏅 الترتيب: \`${rank || '—'}\``);
+  });
+
+  bot.command('broadcast', async (ctx) => {
+    if (ctx.chat.type !== 'private') return ctx.reply('🔒 هذا الأمر في الخاص فقط!');
+    if (!isDeveloper(ctx)) {
+      const userGroups = db.getUserGroups(ctx.from.id);
+      if (!userGroups.length) return ctx.reply('❌ لا توجد مجموعات تملكها أو تشرف عليها.');
+      const text = ctx.message.text.replace('/broadcast', '').trim();
+      if (!text) return ctx.reply('📢 اكتب: /broadcast النص');
+      let success = 0, fail = 0;
+      for (const chatId of userGroups) {
+        try { await bot.telegram.sendMessage(chatId, `📢 *إعلان*\n\n${text}`, { parse_mode: 'Markdown' }); success++; } catch { fail++; }
+      }
+      return ctx.reply(`✅ أُرسل إلى ${success} مجموعة\n❌ فشل في ${fail}`);
+    }
+    const text = ctx.message.text.replace('/broadcast', '').trim();
+    if (!text) return ctx.reply('❌ مثال: /broadcast نص الرسالة');
+    const groups = db.allGroups();
+    await ctx.reply(`📢 جاري الإرسال لـ ${groups.length} مجموعة...`);
+    let sent = 0, failed = 0;
+    for (const g of groups) {
+      try { await bot.telegram.sendMessage(g.chatId, `📢 *رسالة إدارة البوت*\n\n${text}`, { parse_mode: 'Markdown' }); sent++; } catch { failed++; }
+    }
+    await ctx.replyWithMarkdown(`✅ *اكتمل البث*\n• أُرسل: \`${sent}\`\n• فشل: \`${failed}\``);
+  });
+
   // ════════════════════════════════════════════════════════════
-  //  Toggle Callbacks
+  //  Callbacks
   // ════════════════════════════════════════════════════════════
 
-  bot.action(/^toggle_protect_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    g.protectContent = !g.protectContent;
-    try {
-      await bot.telegram.callApi('setChatProtectContent', { chat_id: chatId, protect_content: g.protectContent });
-      db.scheduleSync(g);
-    } catch (e) { g.protectContent = !g.protectContent; return ctx.answerCbQuery(`❌ فشل: ${e.message}`, { show_alert: true }); }
-    try { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.protectContent ? '🔒 تفعيل' : '🔓 تعطيل'} حماية المحتوى`, { show_alert: true });
-  });
-
-  bot.action(/^toggle_joinreq_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    g.joinRequestsEnabled = !g.joinRequestsEnabled;
-    const link = await setJoinApproval(bot, chatId, g.joinRequestsEnabled, g.perms);
-    db.scheduleSync(g);
-    if (link?.invite_link && g.ownerId) {
-      try { await bot.telegram.sendMessage(g.ownerId, `🔗 رابط دعوة جديد:\n${link.invite_link}`, { parse_mode: 'Markdown' }); } catch {}
-    }
-    try { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.joinRequestsEnabled ? '🔒 تفعيل' : '🔓 تعطيل'} موافقة الانضمام`, { show_alert: true });
-  });
-
-  bot.action(/^toggle_welcome_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    g.welcomeEnabled = !g.welcomeEnabled;
-    db.scheduleSync(g);
-    try { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.welcomeEnabled ? '✅ تفعيل' : '❌ تعطيل'} رسالة الترحيب`, { show_alert: true });
-  });
-
-  bot.action(/^toggle_mutenew_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    g.muteNewMembers = !g.muteNewMembers;
-    db.scheduleSync(g);
-    try { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.muteNewMembers ? '✅ تفعيل' : '❌ تعطيل'} كتم الجدد`, { show_alert: true });
-  });
-
-  bot.action(/^toggle_antispam_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    g.antiSpam = !g.antiSpam;
-    db.scheduleSync(g);
-    try { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.antiSpam ? '✅ تفعيل' : '❌ تعطيل'} مكافحة السبام`, { show_alert: true });
-  });
-
-  bot.action(/^toggle_antilinks_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    g.antiLinks = !g.antiLinks;
-    db.scheduleSync(g);
-    try { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.antiLinks ? '✅ تفعيل' : '❌ تعطيل'} منع الروابط`, { show_alert: true });
-  });
-
-  bot.action(/^toggle_antibot_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    g.antiBot = !g.antiBot;
-    db.scheduleSync(g);
-    try { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.antiBot ? '✅ تفعيل' : '❌ تعطيل'} منع البوتات`, { show_alert: true });
-  });
-
-  bot.action(/^toggle_captcha_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    g.captchaEnabled = !g.captchaEnabled;
-    db.scheduleSync(g);
-    try { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.captchaEnabled ? '✅ تفعيل' : '❌ تعطيل'} CAPTCHA`, { show_alert: true });
-  });
-
-  bot.action(/^toggle_community_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g || !g.communityId) return;
-    const com = db.getCommunity(g.communityId); if (!com) return;
-    com.enabled = !com.enabled;
-    try { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${com.enabled ? '✅ تفعيل' : '❌ تعطيل'} حماية المجتمع`, { show_alert: true });
-  });
-
-  // ── لوحة صلاحيات الأعضاء ────────────────────────────────
-  bot.action(/^perms_panel_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    try { await ctx.editMessageText(`🎛️ *صلاحيات الأعضاء — ${g.title}*`, { parse_mode: 'Markdown', ...permissionsDashboard(chatId, g.perms) }); } catch {}
-  });
-
-  async function togglePerm(ctx, chatId, permKey, label) {
-    await ctx.answerCbQuery();
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    g.perms[permKey] = !g.perms[permKey];
-    try {
-      await applyGroupPermissions(bot, chatId, g.perms);
-      db.scheduleSync(g);
-      await ctx.editMessageReplyMarkup(permissionsDashboard(chatId, g.perms).reply_markup);
-      await ctx.answerCbQuery(`${g.perms[permKey] ? '✅' : '❌'} ${label}`, { show_alert: true });
-    } catch (e) { g.perms[permKey] = !g.perms[permKey]; await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
-  }
-
-  bot.action(/^perm_msg_(-?\d+)$/,     (ctx) => togglePerm(ctx, Number(ctx.match[1]), 'canSendMessages',   'إرسال رسائل'));
-  bot.action(/^perm_media_(-?\d+)$/,   (ctx) => togglePerm(ctx, Number(ctx.match[1]), 'canSendMedia',      'إرسال وسائط'));
-  bot.action(/^perm_polls_(-?\d+)$/,   (ctx) => togglePerm(ctx, Number(ctx.match[1]), 'canSendPolls',      'إرسال استطلاعات'));
-  bot.action(/^perm_preview_(-?\d+)$/, (ctx) => togglePerm(ctx, Number(ctx.match[1]), 'canAddWebPreviews', 'معاينة روابط'));
-  bot.action(/^perm_invite_(-?\d+)$/,  (ctx) => togglePerm(ctx, Number(ctx.match[1]), 'canInviteUsers',    'دعوة مستخدمين'));
-  bot.action(/^perm_pin_(-?\d+)$/,     (ctx) => togglePerm(ctx, Number(ctx.match[1]), 'canPinMessages',    'تثبيت رسائل'));
-  bot.action(/^perm_topics_(-?\d+)$/,  (ctx) => togglePerm(ctx, Number(ctx.match[1]), 'canManageTopics',   'إدارة المواضيع'));
-
-  // ── لوحة المواضيع ────────────────────────────────────────
-  bot.action(/^topics_panel_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    try { await ctx.editMessageText(
-      `🗂️ *إدارة المواضيع — ${g.title}*\n\nالأوامر:\n/locktopic — قفل\n/unlocktopic — فتح\n/archivetopic — أرشفة\n/topicrequest on/off — موافقة الدخول`,
-      { parse_mode: 'Markdown', ...topicsPanelKeyboard(chatId, g.topicSettings) }
-    ); } catch {}
-  });
-
-  bot.action(/^toggle_topicapproval_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    if (!g.topicSettings) g.topicSettings = { requireApprovalToJoin: false, autoLockOnCreate: false, ownerBypassAll: true };
-    g.topicSettings.requireApprovalToJoin = !g.topicSettings.requireApprovalToJoin;
-    db.scheduleSync(g);
-    try { await ctx.editMessageReplyMarkup(topicsPanelKeyboard(chatId, g.topicSettings).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.topicSettings.requireApprovalToJoin ? '✅ تفعيل' : '❌ تعطيل'} موافقة المواضيع`, { show_alert: true });
-  });
-
-  bot.action(/^toggle_autolock_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    if (!g.topicSettings) g.topicSettings = { requireApprovalToJoin: false, autoLockOnCreate: false, ownerBypassAll: true };
-    g.topicSettings.autoLockOnCreate = !g.topicSettings.autoLockOnCreate;
-    db.scheduleSync(g);
-    try { await ctx.editMessageReplyMarkup(topicsPanelKeyboard(chatId, g.topicSettings).reply_markup); } catch {}
-    await ctx.answerCbQuery(`${g.topicSettings.autoLockOnCreate ? '✅ تفعيل' : '❌ تعطيل'} القفل التلقائي`, { show_alert: true });
-  });
-
-  // ── لوحة قناة السجلات ───────────────────────────────────
-  bot.action(/^logchannel_info_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    const g = await db.getGroup(chatId); if (!g) return;
-    const info = g.logChannelId
-      ? `✅ قناة السجلات: \`${g.logChannelId}\`\n\nلتغييرها: \`/setlogchannel -100...\`\nلإلغائها: \`/setlogchannel\``
-      : '❌ لا توجد قناة سجلات.\n\nلتعيينها: `/setlogchannel -100123456789`';
-    await ctx.replyWithMarkdown(info);
-  });
-
-  // ══════════════════════════════════════════════════════════════
-  //  🆕 لوحة المتخصصين — callback
-  // ══════════════════════════════════════════════════════════════
-
-  bot.action(/^specialists_panel_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    const specialists = await supa.getSpecialists(chatId);
-    let text = `👨‍💼 *المتخصصون في ${g.title}*\n\n`;
-    if (specialists.length) {
-      for (const s of specialists) {
-        text += `• ${s.username ? `@${s.username}` : s.first_name} — ${s.specialty || 'متخصص'}\n`;
-      }
-    } else { text += '_لا يوجد متخصصون بعد._\n'; }
-    text += `\n📝 لإضافة: \`/addspecialist @username تخصص\`\n📝 لإزالة: \`/removespecialist @username\``;
-    const btns = [
-      [Markup.button.callback('📋 عرض الكلمات المرتبطة', `routing_panel_${chatId}`)],
-      [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
-    ];
-    if (specialists.length > 0) {
-      for (const s of specialists.slice(0, 5)) {
-        const name = (s.username ? `@${s.username}` : s.first_name)?.slice(0, 15);
-        btns.unshift([Markup.button.callback(`❌ إزالة ${name}`, `remove_specialist_${s.user_id}_${chatId}`)]);
-      }
-    }
-    try { await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }); } catch {}
-  });
-
-  bot.action(/^remove_specialist_(\d+)_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const uid    = Number(ctx.match[1]);
-    const chatId = Number(ctx.match[2]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ ممنوع', { show_alert: true });
-    await supa.removeSpecialist(chatId, uid);
-    await ctx.answerCbQuery('✅ تمت إزالة المتخصص!', { show_alert: true });
-    // إعادة عرض اللوحة
-    const g = await db.getGroup(chatId); if (!g) return;
-    const specialists = await supa.getSpecialists(chatId);
-    let text = `👨‍💼 *المتخصصون في ${g.title}*\n\n`;
-    if (specialists.length) {
-      for (const s of specialists) text += `• ${s.username ? `@${s.username}` : s.first_name} — ${s.specialty || 'متخصص'}\n`;
-    } else { text += '_لا يوجد متخصصون بعد._\n'; }
-    const btns = [
-      [Markup.button.callback('📋 عرض الكلمات المرتبطة', `routing_panel_${chatId}`)],
-      [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
-    ];
-    for (const s of specialists.slice(0, 5)) {
-      const name = (s.username ? `@${s.username}` : s.first_name)?.slice(0, 15);
-      btns.unshift([Markup.button.callback(`❌ إزالة ${name}`, `remove_specialist_${s.user_id}_${chatId}`)]);
-    }
-    try { await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }); } catch {}
-  });
-
-  // ══════════════════════════════════════════════════════════════
-  //  🆕 لوحة كلمات التوجيه — callback
-  // ══════════════════════════════════════════════════════════════
-
-  bot.action(/^routing_panel_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    const keywords = await supa.getRoutingKeywords(chatId);
-    let text = `🔑 *كلمات التوجيه في ${g.title}*\n\n`;
-    if (keywords.length) {
-      for (const kw of keywords) {
-        text += `• \`${kw.keyword}\` → ${kw.specialist_id ? `\`${kw.specialist_id}\`` : 'أي متخصص'}\n`;
-      }
-    } else { text += '_لا توجد كلمات توجيه بعد._\n'; }
-    text += `\n📝 لإضافة: \`/addkeyword كلمة [@متخصص]\`\n📝 لإزالة: \`/removekeyword كلمة\``;
-    const btns = [
-      [Markup.button.callback('👨‍💼 المتخصصون', `specialists_panel_${chatId}`)],
-      [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
-    ];
-    if (keywords.length > 0) {
-      for (const kw of keywords.slice(0, 5)) {
-        btns.unshift([Markup.button.callback(`❌ إزالة: ${kw.keyword.slice(0,15)}`, `remove_keyword_${chatId}_${Buffer.from(kw.keyword).toString('base64').slice(0,20)}`)]);
-      }
-    }
-    try { await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }); } catch {}
-  });
-
-  // ── لوحة الكلمات المحظورة ────────────────────────────────────
-  bot.action(/^bwords_list_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    if (!g.bannedWords.length) {
-      return ctx.answerCbQuery('📭 لا توجد كلمات محظورة', { show_alert: true });
-    }
-    const ar = { warn: '⚠️', mute: '🔇', kick: '👢', ban: '🚫' };
-    let text = `🔤 *الكلمات المحظورة* (${g.bannedWords.length})\n\n`;
-    g.bannedWords.slice(0, 20).forEach((bw, i) => {
-      text += `${i + 1}. \`${bw.word}\` ${ar[bw.action] || ''} — بعد ${bw.threshold || 1} مرة\n`;
-    });
-    await ctx.replyWithMarkdown(text, Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]]));
-  });
-
-  // ── owner_panel / settings callbacks ───────────────────────────
   bot.action(/^owner_panel_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
-    const g = await db.getGroup(chatId);
-    if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة', { show_alert: true });
-    const canAccess = isDeveloper(ctx) || g.ownerId === ctx.from.id || g.admins.has(ctx.from.id);
-    if (!canAccess) return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
-    try {
-      await ctx.editMessageText(`⚙️ *إعدادات ${g.title}*\n\nاضغط لتفعيل/تعطيل:`, { parse_mode: 'Markdown', ...groupSettingsKeyboard(chatId, g) });
-    } catch {
-      await ctx.replyWithMarkdown(`⚙️ *إعدادات ${g.title}*\n\nاضغط لتفعيل/تعطيل:`, groupSettingsKeyboard(chatId, g));
-    }
+    const g = db.getGroup(chatId);
+    if (!g) return ctx.answerCbQuery('❌ المجموعة غير موجودة!', { show_alert: true });
+    const isMine = isDeveloper(ctx) || g.ownerId === ctx.from.id || g.admins.has(ctx.from.id);
+    if (!isMine) return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
+    await ctx.editMessageText(
+      `⚙️ *إعدادات ${g.title}*\n\nاضغط لتفعيل/تعطيل:`,
+      { parse_mode: 'Markdown', ...groupSettingsKeyboard(chatId, g) }
+    );
   });
 
   bot.action(/^settings_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = await db.getGroup(chatId); if (!g) return;
-    try { await ctx.editMessageText(`⚙️ *إعدادات ${g.title}*\n\nاضغط لتفعيل/تعطيل:`, { parse_mode: 'Markdown', ...groupSettingsKeyboard(chatId, g) }); } catch {}
+    const g = db.getGroup(chatId);
+    if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    await ctx.editMessageText(
+      `⚙️ *إعدادات ${g.title}*\n\nاضغط لتفعيل/تعطيل:`,
+      { parse_mode: 'Markdown', ...groupSettingsKeyboard(chatId, g) }
+    );
   });
 
-  bot.action(/^group_home_(-?\d+)$/, async (ctx) => {
+  // ── Toggles البسيطة ───────────────────────────────────────
+  const toggles = [
+    ['toggle_welcome',   'welcomeEnabled', 'رسالة الترحيب'],
+    ['toggle_antispam',  'antiSpam',       'مكافحة السبام'],
+    ['toggle_mutenew',   'muteNewMembers', 'كتم الأعضاء الجدد'],
+    ['toggle_antilinks', 'antiLinks',      'منع الروابط'],
+    ['toggle_antibot',   'antiBot',        'منع البوتات'],
+  ];
+
+  for (const [prefix, field, label] of toggles) {
+    bot.action(new RegExp(`^${prefix}_(-?\\d+)$`), async (ctx) => {
+      await ctx.answerCbQuery();
+      const chatId = Number(ctx.match[1]);
+      const g = db.getGroup(chatId); if (!g) return;
+      if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+        return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+      g[field] = !g[field];
+      await ctx.answerCbQuery(`${g[field] ? '✅ تم تفعيل' : '❌ تم تعطيل'} ${label}!`);
+      await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+    });
+  }
+
+  // ── تبديل حماية المجتمع ──────────────────────────────────
+  bot.action(/^toggle_community_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
-    const g = await db.getGroup(chatId); if (!g) return;
-    try {
-      await ctx.editMessageText(`🏠 *${g.title}*\n\nاختر ما تريد:`, {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([
-          [Markup.button.callback('⚙️ الإعدادات', `settings_${chatId}`), Markup.button.callback('📊 إحصائيات', `stats_${chatId}`)],
-          [Markup.button.callback('📨 طلبات الانضمام', `joinreqs_${chatId}`)],
-        ]),
-      });
-    } catch {}
+    const g = db.getGroup(chatId); if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    if (!g.communityId) return ctx.answerCbQuery('❌ المجموعة ليست في مجتمع!', { show_alert: true });
+    const com = db.getCommunity(g.communityId);
+    if (!com) return ctx.answerCbQuery('❌ المجتمع غير موجود!', { show_alert: true });
+    com.enabled = !com.enabled;
+    await ctx.answerCbQuery(com.enabled ? '✅ حماية المجتمع مفعّلة!' : '❌ حماية المجتمع معطّلة!', { show_alert: true });
+    await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
   });
 
-  // ── edit_welcome / edit_rules callbacks ─────────────────────
+  // ── تبديل Join Requests ───────────────────────────────────
+  bot.action(/^toggle_joinreq_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId); if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    g.joinRequestsEnabled = !g.joinRequestsEnabled;
+    const link = await setJoinApproval(bot, chatId, g.joinRequestsEnabled);
+    const msg  = g.joinRequestsEnabled
+      ? `🔒 موافقة الانضمام مفعّلة — أي شخص يحاول الدخول سيُرسل طلب انضمام${link ? '\n🔗 ' + link.invite_link : ''}`
+      : '🔓 موافقة الانضمام معطّلة — انضمام مباشر';
+    await ctx.answerCbQuery(msg, { show_alert: true });
+    // إرسال الرابط للمالك في الخاص إن وجد
+    if (link?.invite_link && g.ownerId) {
+      try {
+        await bot.telegram.sendMessage(g.ownerId,
+          `🔗 *رابط الدعوة الجديد*\n\n${link.invite_link}\n\n_الرابط ${g.joinRequestsEnabled ? 'يشترط الموافقة' : 'للدخول المباشر'}_`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch {}
+    }
+    await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+  });
+
+  // ── تبديل حماية المحتوى ──────────────────────────────────
+  bot.action(/^toggle_protect_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId); if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    g.protectContent = !g.protectContent;
+    try {
+      await bot.telegram.callApi('setChatProtectContent', {
+        chat_id:         chatId,
+        protect_content: g.protectContent,
+      });
+      await ctx.answerCbQuery(
+        g.protectContent
+          ? '🔒 حماية المحتوى مفعّلة — لا يمكن نسخ الرسائل!'
+          : '🔓 حماية المحتوى معطّلة',
+        { show_alert: true }
+      );
+    } catch (e) {
+      g.protectContent = !g.protectContent;
+      await ctx.answerCbQuery(`❌ فشل: ${e.message}`, { show_alert: true });
+      return;
+    }
+    await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+  });
+
+  // ── لوحة الصلاحيات ───────────────────────────────────────
+  bot.action(/^perms_panel_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId); if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    await ctx.editMessageText(
+      `🎛️ *صلاحيات أعضاء ${g.title}*\n\nاضغط لتفعيل/تعطيل:`,
+      { parse_mode: 'Markdown', ...permissionsDashboard(chatId, g.perms) }
+    );
+  });
+
+  const permMap = {
+    msg:     { key: 'canSendMessages',   label: 'إرسال رسائل' },
+    media:   { key: 'canSendMedia',      label: 'إرسال وسائط' },
+    polls:   { key: 'canSendPolls',      label: 'إرسال استطلاعات' },
+    preview: { key: 'canAddWebPreviews', label: 'معاينة روابط' },
+    invite:  { key: 'canInviteUsers',    label: 'دعوة مستخدمين' },
+    pin:     { key: 'canPinMessages',    label: 'تثبيت رسائل' },
+    topics:  { key: 'canManageTopics',   label: 'إدارة المواضيع' },
+  };
+
+  bot.action(/^perm_(\w+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const permKey = ctx.match[1];
+    const chatId  = Number(ctx.match[2]);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const g = db.getGroup(chatId); if (!g) return;
+    const def = permMap[permKey]; if (!def) return;
+    g.perms[def.key] = !g.perms[def.key];
+    try { await applyGroupPermissions(bot, chatId, g.perms); } catch {}
+    await ctx.answerCbQuery(`${g.perms[def.key] ? '✅' : '❌'} ${def.label}`);
+    await ctx.editMessageReplyMarkup(permissionsDashboard(chatId, g.perms).reply_markup);
+  });
+
+  // ── لوحة المواضيع ─────────────────────────────────────────
+  bot.action(/^topics_panel_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId); if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const ts = g.topicSettings || {};
+    let text = `🧵 *إدارة المواضيع — ${g.title}*\n\n`;
+    text += `🔒 طلبات دخول المواضيع: ${ts.requireApprovalToJoin ? '✅ مفعّل' : '❌ معطّل'}\n\n`;
+    if (g.topics.size) {
+      text += `*المواضيع المسجّلة (${g.topics.size}):*\n`;
+      for (const [tid, t] of g.topics.entries()) {
+        text += `• \`${tid}\` ${t.name ? `(${t.name})` : ''} ${t.locked ? '🔒' : '🔓'} ${t.archived ? '📁' : ''}\n`;
+      }
+    } else {
+      text += '_لا توجد مواضيع مسجّلة حتى الآن._\n';
+    }
+    text += `\n*الأوامر المتاحة:*\n\`/locktopic\` | \`/unlocktopic\` | \`/archivetopic\`\n\`/topicrequest on|off\``;
+    await ctx.editMessageText(text, {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.callback(
+          `${ts.requireApprovalToJoin ? '✅' : '❌'} طلبات دخول المواضيع`,
+          `toggle_topicreq_${chatId}`
+        )],
+        [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
+      ]),
+    });
+  });
+
+  bot.action(/^toggle_topicreq_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId); if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    g.topicSettings = g.topicSettings || { requireApprovalToJoin: false, autoLockOnCreate: false, ownerBypassAll: true };
+    g.topicSettings.requireApprovalToJoin = !g.topicSettings.requireApprovalToJoin;
+    await ctx.answerCbQuery(
+      g.topicSettings.requireApprovalToJoin ? '✅ طلبات دخول المواضيع مفعّلة!' : '❌ طلبات دخول المواضيع معطّلة!'
+    );
+    // أعد عرض اللوحة
+    const ts   = g.topicSettings;
+    let text   = `🧵 *إدارة المواضيع — ${g.title}*\n\n`;
+    text += `🔒 طلبات دخول المواضيع: ${ts.requireApprovalToJoin ? '✅ مفعّل' : '❌ معطّل'}\n`;
+    await ctx.editMessageText(text, {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.callback(`${ts.requireApprovalToJoin ? '✅' : '❌'} طلبات دخول المواضيع`, `toggle_topicreq_${chatId}`)],
+        [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
+      ]),
+    });
+  });
+
+  // ── سجل الإجراءات ─────────────────────────────────────────
+  bot.action(/^auditlog_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    if (!g || !g.auditLog.length)
+      return ctx.editMessageText('📋 *سجل الإجراءات فارغ.*', { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]]) });
+    let text = `📋 *آخر الإجراءات — ${g.title}*\n\n`;
+    g.auditLog.slice(0, 10).forEach(e => {
+      text += `${e.action} | @${e.by.username} → @${e.target.username}\n🕐 ${new Date(e.at).toLocaleString('ar')}${e.details ? `\n📝 ${e.details}` : ''}\n\n`;
+    });
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]]) });
+  });
+
   bot.action(/^edit_welcome_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    pendingAddWord.set(`welcome_${chatId}_${ctx.from.id}`, { chatId, type: 'welcome' });
-    await ctx.replyWithMarkdown(
-      `✏️ *تعديل رسالة الترحيب*\n\nأرسل النص الجديد:\nالمتغيرات: \`{name}\` \`{group}\` \`{username}\`\n\n*للإلغاء:* أرسل /cancel`
-    );
+    await ctx.reply('✏️ أرسل: `/setwelcome نص`\nالمتغيرات: `{name}` `{group}` `{username}`', { parse_mode: 'Markdown' });
   });
 
   bot.action(/^edit_rules_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    pendingAddWord.set(`rules_${chatId}_${ctx.from.id}`, { chatId, type: 'rules' });
-    await ctx.replyWithMarkdown(`📋 *تعديل القواعد*\n\nأرسل القواعد الجديدة:\n\n*للإلغاء:* أرسل /cancel`);
+    await ctx.reply('📋 أرسل: `/setrules نص القواعد`', { parse_mode: 'Markdown' });
   });
 
-  // ── معالج الرسائل في الخاص (لمتابعة welcome/rules) ──────────
+  bot.action(/^set_maxwarns_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    await ctx.reply(`⚙️ الحد الحالي: \`${db.getGroup(chatId)?.maxWarns || 3}\`\n\nأرسل: \`/setmaxwarns <عدد>\``, { parse_mode: 'Markdown' });
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  الكلمات المحظورة — بالزر
+  // ════════════════════════════════════════════════════════════
+
+  bot.action(/^bwords_list_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId); if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const ar = { warn: '⚠️', mute: '🔇', kick: '👢', ban: '🚫' };
+    if (!g.bannedWords.length) {
+      return ctx.editMessageText('🔤 *لا توجد كلمات محظورة.*', {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('➕ إضافة كلمة', `add_word_start_${chatId}`)],
+          [Markup.button.callback('🔙 رجوع',        `settings_${chatId}`)],
+        ]),
+      });
+    }
+    let text   = `🔤 *الكلمات المحظورة* (${g.bannedWords.length})\n\n`;
+    const btns = g.bannedWords.map((bw, i) => {
+      text += `${i + 1}. \`${bw.word}\` ${ar[bw.action] || ''} — بعد ${bw.threshold || 1} مرة\n`;
+      return [Markup.button.callback(`🗑️ حذف: ${bw.word.slice(0, 16)}`, `del_word_${i}_${chatId}`)];
+    });
+    btns.push([Markup.button.callback('➕ إضافة كلمة', `add_word_start_${chatId}`)]);
+    btns.push([Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]);
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  bot.action(/^del_word_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const idx    = Number(ctx.match[1]);
+    const chatId = Number(ctx.match[2]);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const g = db.getGroup(chatId);
+    if (!g || !g.bannedWords[idx]) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
+    const removed = g.bannedWords.splice(idx, 1)[0];
+    await ctx.answerCbQuery(`✅ حُذفت: ${removed.word}`, { show_alert: true });
+    const ar = { warn: '⚠️', mute: '🔇', kick: '👢', ban: '🚫' };
+    if (!g.bannedWords.length) {
+      return ctx.editMessageText('🔤 *لا توجد كلمات محظورة.*', {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('➕ إضافة كلمة', `add_word_start_${chatId}`)],
+          [Markup.button.callback('🔙 رجوع',        `settings_${chatId}`)],
+        ]),
+      });
+    }
+    let text   = `🔤 *الكلمات المحظورة* (${g.bannedWords.length})\n\n`;
+    const btns = g.bannedWords.map((bw, i) => {
+      text += `${i + 1}. \`${bw.word}\` ${ar[bw.action] || ''} — بعد ${bw.threshold || 1} مرة\n`;
+      return [Markup.button.callback(`🗑️ حذف: ${bw.word.slice(0, 16)}`, `del_word_${i}_${chatId}`)];
+    });
+    btns.push([Markup.button.callback('➕ إضافة كلمة', `add_word_start_${chatId}`)]);
+    btns.push([Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]);
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  bot.action(/^add_word_start_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    pendingAddWord.set(ctx.from.id, { chatId, step: 'word' });
+    await ctx.editMessageText('🔤 *إضافة كلمة محظورة*\n\nأرسل الكلمة المراد حظرها (في محادثة الخاص):', {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', `bwords_list_${chatId}`)]]),
+    });
+  });
+
   bot.on('message', async (ctx, next) => {
-    if (ctx.chat?.type !== 'private' || !ctx.from) return next();
-    const userId = ctx.from.id;
-    // فحص pending welcome/rules
-    for (const [key, data] of pendingAddWord) {
-      if (key.endsWith(`_${userId}`) && (key.startsWith('welcome_') || key.startsWith('rules_'))) {
-        pendingAddWord.delete(key);
-        const { chatId, type } = data;
-        const text = ctx.message.text;
-        if (!text || text === '/cancel') return ctx.reply('❌ تم الإلغاء.');
-        const g = await db.getGroup(chatId); if (!g) return ctx.reply('❌ المجموعة غير موجودة!');
-        if (type === 'welcome') {
-          g.welcomeMessage = text;
-          const preview = text.replace('{name}', ctx.from.first_name || 'عضو').replace('{group}', 'المجموعة').replace('{username}', ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name);
-          db.scheduleSync(g);
-          await ctx.replyWithMarkdown(`✅ *تم تحديث رسالة الترحيب*\n\n*معاينة:*\n${preview}`);
-        } else if (type === 'rules') {
-          g.rules = text;
-          db.scheduleSync(g);
-          await ctx.replyWithMarkdown(`✅ *تم تحديث القواعد*\n\n${text}`);
-        }
-        return;
-      }
+    if (!ctx.from) return next();
+    const state = pendingAddWord.get(ctx.from.id);
+    if (!state) return next();
+    if (ctx.chat.type !== 'private') return next();
+    const text = ctx.message.text?.trim();
+    if (!text) return next();
+    if (state.step === 'word') {
+      state.word = text;
+      state.step = 'action';
+      pendingAddWord.set(ctx.from.id, state);
+      await ctx.reply(`✅ الكلمة: \`${text}\`\n\nاختر الإجراء عند اكتشافها:`, {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('⚠️ تحذير', `aw_action_${ctx.from.id}_warn`), Markup.button.callback('🔇 كتم', `aw_action_${ctx.from.id}_mute`)],
+          [Markup.button.callback('👢 طرد',   `aw_action_${ctx.from.id}_kick`), Markup.button.callback('🚫 حظر', `aw_action_${ctx.from.id}_ban`)],
+        ]),
+      });
+      return;
     }
     return next();
   });
 
-  } // end setupOwnerHandlers
+  bot.action(/^aw_action_(\d+)_(warn|mute|kick|ban)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const userId = Number(ctx.match[1]);
+    const action = ctx.match[2];
+    if (ctx.from.id !== userId) return ctx.answerCbQuery('❌', { show_alert: true });
+    const state = pendingAddWord.get(userId);
+    if (!state) return ctx.answerCbQuery('❌ انتهت الجلسة!', { show_alert: true });
+    state.action = action; state.step = 'threshold';
+    pendingAddWord.set(userId, state);
+    const arAct = { warn: '⚠️ تحذير', mute: '🔇 كتم', kick: '👢 طرد', ban: '🚫 حظر' };
+    await ctx.editMessageText(`✅ الكلمة: \`${state.word}\`\nالإجراء: ${arAct[action]}\n\nكم مرة قبل تطبيق الإجراء؟`, {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.callback('1 مرة', `aw_thresh_${userId}_1`), Markup.button.callback('2 مرة', `aw_thresh_${userId}_2`), Markup.button.callback('3 مرات', `aw_thresh_${userId}_3`)],
+        [Markup.button.callback('4 مرات', `aw_thresh_${userId}_4`), Markup.button.callback('5 مرات', `aw_thresh_${userId}_5`)],
+      ]),
+    });
+  });
+
+  bot.action(/^aw_thresh_(\d+)_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const userId    = Number(ctx.match[1]);
+    const threshold = Number(ctx.match[2]);
+    if (ctx.from.id !== userId) return ctx.answerCbQuery('❌', { show_alert: true });
+    const state = pendingAddWord.get(userId);
+    if (!state) return ctx.answerCbQuery('❌ انتهت الجلسة!', { show_alert: true });
+    pendingAddWord.delete(userId);
+    const g = db.getGroup(state.chatId);
+    if (!g) return ctx.answerCbQuery('❌ المجموعة غير موجودة!', { show_alert: true });
+    if (g.bannedWords.find(bw => bw.word.toLowerCase() === state.word.toLowerCase()))
+      return ctx.answerCbQuery('⚠️ الكلمة موجودة مسبقاً!', { show_alert: true });
+    g.bannedWords.push({ word: state.word, action: state.action, threshold, addedBy: userId, addedAt: new Date() });
+    const arAct = { warn: '⚠️ تحذير', mute: '🔇 كتم', kick: '👢 طرد', ban: '🚫 حظر' };
+    await ctx.editMessageText(
+      `✅ *تمت إضافة الكلمة المحظورة*\n\n🔤 \`${state.word}\`\nالإجراء: ${arAct[state.action]}\nبعد: \`${threshold}\` مرة`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 قائمة الكلمات', `bwords_list_${state.chatId}`)]]) }
+    );
+  });
+
+  // طلبات الانضمام (callback)
+  bot.action(/^joinreqs_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
+    if (!pending.length)
+      return ctx.editMessageText('📨 *لا توجد طلبات معلقة.*', { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `group_home_${chatId}`)]]) });
+    const btns = pending.slice(0, 8).map(r => [
+      Markup.button.callback(`✅ ${r.firstName.slice(0, 14)}`, `jr_approve_${r.userId}_${chatId}`),
+      Markup.button.callback('❌ رفض', `jr_reject_${r.userId}_${chatId}`),
+    ]);
+    btns.push([Markup.button.callback('✅ قبول الكل', `jr_approveall_${chatId}`), Markup.button.callback('❌ رفض الكل', `jr_rejectall_${chatId}`)]);
+    btns.push([Markup.button.callback('🔙 رجوع', `group_home_${chatId}`)]);
+    await ctx.editMessageText(`📨 *طلبات الانضمام* (${pending.length} معلقة)`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
 };
