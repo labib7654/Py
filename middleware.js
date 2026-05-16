@@ -17,9 +17,8 @@ async function globalMiddleware(ctx, next) {
   if (!ctx.from) return next();
   const from = ctx.from;
 
-  // تسجيل / تحديث بيانات المستخدم في الكاش
   const user = await db.getOrCreateUser(from.id, from.username || '', from.first_name || '');
-  if (from.username   && user.username   !== from.username)   { user.username   = from.username;   supa.upsertUser(from.id, from.username, from.first_name || '').catch(() => {}); }
+  if (from.username   && user.username   !== from.username)   { user.username   = from.username;   supa.upsertUser(from.id, from.username, from.first_name || '').catch(e => console.error('upsertUser:', e.message)); }
   if (from.first_name && user.firstName  !== from.first_name) { user.firstName  = from.first_name; }
   user.lastSeen = new Date();
 
@@ -27,7 +26,6 @@ async function globalMiddleware(ctx, next) {
     user.groups?.add(ctx.chat.id);
   }
 
-  // فحص الحظر العالمي في المجموعات
   if (user.globalBanned && ctx.chat && ctx.chat.type !== 'private') {
     try { await ctx.telegram.banChatMember(ctx.chat.id, from.id); } catch {}
     return;
@@ -44,7 +42,6 @@ async function messageTrackingMiddleware(ctx, next) {
   const from   = ctx.from;
   const chatId = ctx.chat.id;
 
-  // تتبع تلقائي للمجموعة إذا لم تكن مسجّلة
   let g = await db.getGroup(chatId);
   if (!g) {
     g = await db.getOrCreateGroup(chatId, ctx.chat.title || 'مجموعة', ctx.chat.type, 0, 'unknown');
@@ -52,7 +49,7 @@ async function messageTrackingMiddleware(ctx, next) {
       const admins = await ctx.telegram.getChatAdministrators(chatId);
       const owner  = admins.find(a => a.status === 'creator');
       if (owner && g) {
-        g.ownerId      = owner.user.id;
+        g.ownerId       = owner.user.id;
         g.ownerUsername = owner.user.username || owner.user.first_name;
         db.scheduleSync(g);
       }
@@ -60,7 +57,6 @@ async function messageTrackingMiddleware(ctx, next) {
   }
 
   if (g) {
-    // تحديث كاش الأعضاء
     if (!g.members.has(from.id)) {
       g.members.set(from.id, {
         userId: from.id,
@@ -81,9 +77,9 @@ async function messageTrackingMiddleware(ctx, next) {
       if (from.username)   m.username  = from.username;
       if (from.first_name) m.firstName = from.first_name;
     }
-    // مزامنة مع Supabase — incrementMessageCount يضمن داخلياً وجود المجموعة أولاً
+    // تحديث المخزن — بدون إعاقة
     supa.incrementMessageCount(chatId, from.id, from.username || '', from.first_name || '')
-      .catch(e => console.error('incrementMessageCount failed:', e.message));
+      .catch(e => console.error('incrementMessageCount:', e.message));
   }
 
   return next();
