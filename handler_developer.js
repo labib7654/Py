@@ -15,6 +15,7 @@ function devMainKeyboard() {
     [Markup.button.callback('📣 بث رسالة',           'dev_broadcast'),   Markup.button.callback('🚫 حظر عالمي',     'dev_ban_menu')],
     [Markup.button.callback('✅ رفع حظر عالمي',      'dev_unban_menu'),  Markup.button.callback('📋 المحظورون',     'dev_banned_list')],
     [Markup.button.callback('💾 نسخ احتياطي',         'dev_backup'),      Markup.button.callback('🔄 مزامنة',        'dev_sync')],
+    [Markup.button.callback('📥 استعادة نسخة',         'dev_restore')],
   ]);
 }
 
@@ -323,44 +324,230 @@ module.exports = function setupDeveloperHandlers(bot) {
     await performBackup(bot, ctx.from.id);
   });
 
+  // ══════════════════════════════════════════════════════════════
+  //  💾 BACKUP — يجمع كل البيانات ويرسلها كملف JSON
+  // ══════════════════════════════════════════════════════════════
   async function performBackup(bot, devId) {
     try {
-      const [groups, users, warns, specialists, keywords, auditLog] = await Promise.all([
-        supa.getAllGroups(),
-        supa.getAllUsers(),
-        supa.supabase.from('warns').select('*').then(r => r.data || []),
-        supa.supabase.from('specialists').select('*').then(r => r.data || []),
-        supa.supabase.from('routing_keywords').select('*').then(r => r.data || []),
-        supa.supabase.from('audit_log').select('*').order('created_at', { ascending: false }).limit(500).then(r => r.data || []),
-      ]);
+      await bot.telegram.sendMessage(devId, '⏳ جاري تجميع البيانات من Supabase...');
+
+      const tables = [
+        'groups', 'group_members', 'group_admins',
+        'warns', 'restrictions', 'banned_words', 'word_violations',
+        'join_requests', 'join_request_cooldowns',
+        'users', 'channels',
+        'communities', 'community_groups', 'community_member_joins',
+        'specialists', 'routing_keywords', 'specialist_sessions',
+        'pending_captcha', 'reports',
+      ];
+
+      const data = {};
+      for (const table of tables) {
+        const { data: rows } = await supa.supabase.from(table).select('*');
+        data[table] = rows || [];
+      }
+
       const backup = {
         generated_at: new Date().toISOString(),
         version: '5.0',
-        stats: {
-          groups:      groups.length,
-          users:       users.length,
-          warns:       warns.length,
-          specialists: specialists.length,
-          keywords:    keywords.length,
-          auditLog:    auditLog.length,
-        },
-        data: { groups, users, warns, specialists, keywords, auditLog: auditLog.slice(0, 100) },
+        stats: Object.fromEntries(tables.map(t => [t, data[t].length])),
+        data,
       };
+
       const json = JSON.stringify(backup, null, 2);
-      const filename = `backup_jamea_v5_${new Date().toISOString().replace(/:/g, '-').slice(0, 19)}.json`;
+      const filename = `backup_jamea_v5_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}.json`;
       const buf = Buffer.from(json, 'utf8');
-      await bot.telegram.sendDocument(devId, {
-        source: buf,
-        filename,
-      }, {
-        caption: `💾 *نسخة احتياطية — جامعة v5.0*\n\n📊 ${groups.length} مجموعة | ${users.length} مستخدم | ${warns.length} تحذير\n👨‍💼 ${specialists.length} متخصص | 🔑 ${keywords.length} كلمة توجيه\n📅 ${new Date().toLocaleString('ar')}`,
-        parse_mode: 'Markdown',
-      });
+
+      const statsText = tables
+        .filter(t => data[t].length > 0)
+        .map(t => `• ${t}: \`${data[t].length}\``)
+        .join('\n');
+
+      await bot.telegram.sendDocument(devId,
+        { source: buf, filename },
+        {
+          caption:
+            `💾 *نسخة احتياطية كاملة — جامعة v5.0*\n\n` +
+            `${statsText}\n\n` +
+            `📅 ${new Date().toLocaleString('ar')}\n\n` +
+            `⚠️ احتفظ بهذا الملف — يمكنك استعادته بأمر /restore`,
+          parse_mode: 'Markdown',
+        }
+      );
     } catch (e) {
       console.error('backup error:', e.message);
-      await bot.telegram.sendMessage(devId, `❌ فشل إنشاء النسخة الاحتياطية: ${e.message}`);
+      await bot.telegram.sendMessage(devId, `❌ فشل إنشاء النسخة الاحتياطية:\n${e.message}`);
     }
   }
+
+  // ══════════════════════════════════════════════════════════════
+  //  🔄 RESTORE — استعادة البيانات من ملف JSON
+  // ══════════════════════════════════════════════════════════════
+
+  const pendingRestore    = new Set();
+  const pendingRestoreData = new Map();
+
+  // زر dev_restore من لوحة المطور
+  bot.action('dev_restore', async (ctx) => {
+    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    await ctx.answerCbQuery();
+    pendingRestore.add(ctx.from.id);
+    try {
+      await bot.telegram.sendMessage(ctx.from.id,
+        `🔄 *استعادة النسخة الاحتياطية*\n\n` +
+        `⚠️ *تحذير:* هذه العملية ستُعيد كتابة جميع البيانات!\n\n` +
+        `أرسل ملف JSON الخاص بالنسخة الاحتياطية الآن.\n` +
+        `للإلغاء أرسل: /cancel`,
+        { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', 'cancel_restore')]]) }
+      );
+      await ctx.answerCbQuery('📥 أرسل الملف في الخاص', { show_alert: true });
+    } catch {
+      await ctx.answerCbQuery('⚠️ افتح محادثة مع البوت أولاً', { show_alert: true });
+    }
+  });
+
+  bot.command('restore', async (ctx) => {
+    if (!isDeveloper(ctx)) return;
+    if (ctx.chat.type !== 'private') return ctx.reply('⚠️ أرسل هذا الأمر في الخاص فقط.');
+    pendingRestore.add(ctx.from.id);
+    await ctx.replyWithMarkdown(
+      `🔄 *استعادة النسخة الاحتياطية*\n\n` +
+      `⚠️ *تحذير:* هذه العملية ستُعيد كتابة جميع البيانات!\n\n` +
+      `أرسل ملف JSON الخاص بالنسخة الاحتياطية الآن.\n` +
+      `للإلغاء أرسل: /cancel`,
+      Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', 'cancel_restore')]])
+    );
+  });
+
+  bot.action('cancel_restore', async (ctx) => {
+    await ctx.answerCbQuery();
+    pendingRestore.delete(ctx.from.id);
+    try { await ctx.editMessageText('❌ تم إلغاء الاستعادة.'); } catch {}
+  });
+
+  // استقبال ملف JSON للـ restore
+  bot.on('document', async (ctx) => {
+    if (!isDeveloper(ctx)) return;
+    if (ctx.chat.type !== 'private') return;
+    if (!pendingRestore.has(ctx.from.id)) return;
+
+    const doc = ctx.message.document;
+    if (!doc.file_name?.endsWith('.json')) {
+      return ctx.reply('❌ الملف يجب أن يكون بصيغة .json');
+    }
+    if (doc.file_size > 50 * 1024 * 1024) {
+      return ctx.reply('❌ الملف كبير جداً (الحد الأقصى 50MB)');
+    }
+
+    pendingRestore.delete(ctx.from.id);
+    const statusMsg = await ctx.replyWithMarkdown('⏳ *جاري قراءة الملف...*');
+
+    try {
+      const fileLink = await bot.telegram.getFileLink(doc.file_id);
+      const res      = await fetch(fileLink.href);
+      const raw      = await res.text();
+      const backup   = JSON.parse(raw);
+
+      if (!backup.data || !backup.version) {
+        return bot.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, null,
+          '❌ الملف غير صالح — تأكد أنه نسخة احتياطية من جامعة v5.0');
+      }
+
+      const totalRecords = Object.values(backup.data).reduce((a, v) => a + (v?.length || 0), 0);
+
+      await bot.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, null,
+        `📋 *معلومات النسخة الاحتياطية*\n\n` +
+        `📅 التاريخ: \`${backup.generated_at || 'غير معروف'}\`\n` +
+        `🗂️ الإصدار: \`${backup.version}\`\n` +
+        `📊 إجمالي السجلات: \`${totalRecords}\`\n\n` +
+        `⚠️ سيتم الكتابة فوق البيانات الحالية!\nهل أنت متأكد؟`,
+        {
+          parse_mode: 'Markdown',
+          ...Markup.inlineKeyboard([
+            [Markup.button.callback('✅ نعم، استعادة الكل', `do_restore_${doc.file_id}`)],
+            [Markup.button.callback('❌ إلغاء', 'cancel_restore')],
+          ]),
+        }
+      );
+
+      pendingRestoreData.set(doc.file_id, backup);
+      // تنظيف تلقائي بعد 10 دقائق
+      setTimeout(() => pendingRestoreData.delete(doc.file_id), 10 * 60 * 1000);
+
+    } catch (e) {
+      console.error('restore read error:', e.message);
+      await bot.telegram.editMessageText(ctx.chat.id, statusMsg.message_id, null,
+        `❌ فشل قراءة الملف:\n${e.message}`);
+    }
+  });
+
+  bot.action(/^do_restore_(.+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    if (!isDeveloper(ctx)) return;
+
+    const fileId = ctx.match[1];
+    const backup = pendingRestoreData.get(fileId);
+    if (!backup) return ctx.editMessageText('❌ انتهت صلاحية البيانات — أعد إرسال الملف وحاول مرة أخرى.');
+    pendingRestoreData.delete(fileId);
+
+    try { await ctx.editMessageText('⏳ جاري استعادة البيانات... قد يستغرق هذا دقيقة، لا تغلق البوت.'); } catch {}
+
+    // ترتيب الاستعادة: الجداول المستقلة أولاً
+    const restoreOrder = [
+      'users', 'channels', 'communities',
+      'groups',
+      'community_groups', 'community_member_joins',
+      'group_members', 'group_admins',
+      'warns', 'restrictions', 'banned_words', 'word_violations',
+      'join_requests', 'join_request_cooldowns',
+      'specialists', 'routing_keywords', 'specialist_sessions',
+      'pending_captcha', 'reports',
+    ];
+
+    const results = [];
+    const { data } = backup;
+
+    for (const table of restoreOrder) {
+      const rows = data[table];
+      if (!rows || rows.length === 0) {
+        results.push(`⚪ ${table}: فارغ`);
+        continue;
+      }
+      try {
+        const batchSize = 100;
+        let total = 0;
+        for (let i = 0; i < rows.length; i += batchSize) {
+          const batch = rows.slice(i, i + batchSize);
+          const { error } = await supa.supabase
+            .from(table)
+            .upsert(batch, { ignoreDuplicates: false });
+          if (error) throw new Error(error.message);
+          total += batch.length;
+        }
+        results.push(`✅ ${table}: ${total}`);
+      } catch (e) {
+        results.push(`❌ ${table}: ${e.message.slice(0, 50)}`);
+        console.error(`restore ${table} error:`, e.message);
+      }
+    }
+
+    // إعادة تحميل الكاش من Supabase
+    await db.loadData();
+
+    const summary = results.join('\n');
+    const successCount = results.filter(r => r.startsWith('✅')).length;
+    const failCount    = results.filter(r => r.startsWith('❌')).length;
+
+    try {
+      await bot.telegram.sendMessage(ctx.from.id,
+        `${failCount === 0 ? '✅' : '⚠️'} *اكتملت الاستعادة!*\n\n` +
+        `✅ نجح: \`${successCount}\` | ❌ فشل: \`${failCount}\`\n\n` +
+        `${summary}\n\n` +
+        `🔄 تم إعادة تحميل الكاش تلقائياً.`,
+        { parse_mode: 'Markdown' }
+      );
+    } catch {}
+  });
 
   // ── 🆕 مزامنة ─────────────────────────────────────────────────
   bot.action('dev_sync', async (ctx) => {
