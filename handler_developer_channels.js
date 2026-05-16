@@ -7,12 +7,11 @@ const ITEMS_PER_PAGE = 5;
 
 module.exports = function setupChannelsHandlers(bot) {
 
-  // ── قائمة القنوات (FIX: القنوات فقط، بدون مجموعات) ─────────────────
+  // ── قائمة القنوات ─────────────────────────────────────────────────────
   bot.action(/^dev_channels(?:_page_(\d+))?$/, async (ctx) => {
     await ctx.answerCbQuery();
     if (!isDeveloper(ctx)) return;
     const page     = Number(ctx.match[1] || 0);
-    // FIX: استخدام allChannels() فقط
     const channels = db.allChannels();
     const total    = channels.length;
     const slice    = channels.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
@@ -41,7 +40,6 @@ module.exports = function setupChannelsHandlers(bot) {
     await ctx.answerCbQuery();
     if (!isDeveloper(ctx)) return;
     const chatId  = Number(ctx.match[1]);
-    // FIX: البحث في allChannels()
     const ch = db.getChannel(chatId);
     if (!ch) return ctx.answerCbQuery('❌ القناة غير موجودة!', { show_alert: true });
     await ctx.editMessageText(buildChannelText(ch), {
@@ -50,7 +48,7 @@ module.exports = function setupChannelsHandlers(bot) {
     });
   });
 
-  // ── التحقق من مالك القناة (FEATURE 8) ────────────────────────────────
+  // ── التحقق من مالك القناة ────────────────────────────────────────────
   bot.action(/^ch_verify_owner_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     if (!isDeveloper(ctx)) return;
@@ -100,18 +98,10 @@ module.exports = function setupChannelsHandlers(bot) {
     });
   });
 
+  // FIX 11: setChatSlowModeDelay لا يعمل على القنوات — نُظهر رسالة واضحة
   bot.action(/^ch_sm_(-?\d+)_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    if (!isDeveloper(ctx)) return;
-    const [chatId, seconds] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    const ch = db.getChannel(chatId);
-    if (!ch) return;
-    try {
-      await bot.telegram.callApi('setChatSlowModeDelay', { chat_id: chatId, slow_mode_delay: seconds });
-      ch.slowMode = seconds;
-      await ctx.answerCbQuery(`✅ السلو موو: ${seconds ? seconds + 'ث' : 'معطّل'}`, { show_alert: true });
-      await ctx.editMessageText(buildChannelText(ch), { parse_mode: 'Markdown', ...buildChannelKeyboard(chatId, ch) });
-    } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
+    if (!isDeveloper(ctx)) return ctx.answerCbQuery('❌', { show_alert: true });
+    await ctx.answerCbQuery('⚠️ الـ Slow Mode لا يدعمه Bot API للقنوات حالياً.', { show_alert: true });
   });
 
   // ── تثبيت آخر منشور ────────────────────────────────────────────────

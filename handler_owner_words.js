@@ -51,16 +51,26 @@ module.exports = function setupWordsHandlers(bot) {
     await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
   });
 
+  // FIX 12: إرسال رسالة جديدة في الخاص بدل editMessageText حتى يستقبل البوت الرسالة صح
   bot.action(/^add_word_start_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     pendingAddWord.set(ctx.from.id, { chatId, step: 'word', type: 'banned' });
-    await ctx.editMessageText('🔤 *إضافة كلمة محظورة*\n\nأرسل الكلمة المراد حظرها (في محادثة الخاص):', {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', `bwords_list_${chatId}`)]]),
-    });
+    // FIX 12: إرسال في الخاص دائماً
+    try {
+      await bot.telegram.sendMessage(
+        ctx.from.id,
+        '🔤 *إضافة كلمة محظورة*\n\nأرسل الكلمة المراد حظرها:',
+        { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', `bwords_list_${chatId}`)]]) }
+      );
+      await ctx.answerCbQuery('✅ تحقق من محادثة الخاص');
+    } catch {
+      // إذا لم يبدأ المستخدم محادثة خاص مع البوت
+      await ctx.answerCbQuery('❌ افتح محادثة خاص مع البوت أولاً!', { show_alert: true });
+      pendingAddWord.delete(ctx.from.id);
+    }
   });
 
   bot.action(/^aw_action_(\d+)_(warn|mute|kick|ban)$/, async (ctx) => {
@@ -137,7 +147,6 @@ module.exports = function setupWordsHandlers(bot) {
     const g = db.getGroup(chatId); if (!g || !g.allowedWords) return;
     const removed = g.allowedWords.splice(idx, 1);
     await ctx.answerCbQuery(`🗑️ حُذفت: ${removed[0]?.word || ''}`, { show_alert: true });
-    // إعادة عرض القائمة
     let text   = `🟢 *الكلمات المسموحة* (${g.allowedWords.length})\n\n`;
     const btns = g.allowedWords.map((aw, i) => {
       text += `${i + 1}. \`${aw.word}\`${aw.hasSpecialist ? ` 👤 @${aw.specialistUsername}` : ''}\n`;
@@ -149,19 +158,27 @@ module.exports = function setupWordsHandlers(bot) {
     await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
   });
 
+  // FIX 12: نفس الإصلاح للكلمات المسموحة
   bot.action(/^add_aword_start_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     pendingAddAllowed.set(ctx.from.id, { chatId, step: 'word' });
-    await ctx.editMessageText('🟢 *إضافة كلمة مسموحة*\n\nأرسل الكلمة التي تريد الترحيب بها (في محادثة الخاص):', {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', `awords_list_${chatId}`)]]),
-    });
+    try {
+      await bot.telegram.sendMessage(
+        ctx.from.id,
+        '🟢 *إضافة كلمة مسموحة*\n\nأرسل الكلمة التي تريد الترحيب بها:',
+        { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', `awords_list_${chatId}`)]]) }
+      );
+      await ctx.answerCbQuery('✅ تحقق من محادثة الخاص');
+    } catch {
+      await ctx.answerCbQuery('❌ افتح محادثة خاص مع البوت أولاً!', { show_alert: true });
+      pendingAddAllowed.delete(ctx.from.id);
+    }
   });
 
-  // ── message handler للحالتين (banned + allowed pending) ────────────
+  // ── message handler للحالتين ────────────────────────────────────────
   bot.on('message', async (ctx, next) => {
     if (!ctx.from) return next();
     if (ctx.chat.type !== 'private') return next();

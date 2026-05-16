@@ -52,7 +52,8 @@ function muteDurationKeyboard(userId, chatId) {
       Markup.button.callback('24س',   `mutet_${userId}_${chatId}_86400`),
       Markup.button.callback('7أيام', `mutet_${userId}_${chatId}_604800`),
     ],
-    [Markup.button.callback('🔙 إلغاء', `cancel`)],
+    // FIX 4: تمرير chatId لزر الإلغاء
+    [Markup.button.callback('🔙 إلغاء', `cancel_${chatId}`)],
   ]);
 }
 
@@ -68,7 +69,8 @@ function banDurationKeyboard(userId, chatId) {
       Markup.button.callback('7أيام', `bant_${userId}_${chatId}_604800`),
       Markup.button.callback('30يوم', `bant_${userId}_${chatId}_2592000`),
     ],
-    [Markup.button.callback('🔙 إلغاء', `cancel`)],
+    // FIX 4: تمرير chatId لزر الإلغاء
+    [Markup.button.callback('🔙 إلغاء', `cancel_${chatId}`)],
   ]);
 }
 
@@ -153,7 +155,8 @@ module.exports = function setupAdminHandlers(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.reply('❌ للمشرفين فقط!');
     const target = await getTargetUser(ctx); if (!target) return ctx.reply('❌ ارد على رسالة المستخدم أو اذكره!');
     try {
-      const perms = await unmutePerms();
+      // FIX 17: تمرير bot وchatId لـ unmutePerms
+      const perms = await unmutePerms(bot, chatId);
       await bot.telegram.restrictChatMember(chatId, target.id, { permissions: perms });
       const g = db.getGroup(chatId);
       if (g) { g.mutedUsers.delete(target.id); await logAction(bot, g, '🔊 رفع كتم', ctx.from, target, ''); }
@@ -262,7 +265,8 @@ module.exports = function setupAdminHandlers(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     try {
-      const perms = await unmutePerms();
+      // FIX 17: تمرير bot وcid لـ unmutePerms
+      const perms = await unmutePerms(bot, cid);
       await bot.telegram.restrictChatMember(cid, uid, { permissions: perms });
       const g = db.getGroup(cid);
       if (g) g.mutedUsers.delete(uid);
@@ -316,6 +320,7 @@ module.exports = function setupAdminHandlers(bot) {
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
+  // FIX 24: إرسال رسالة في المجموعة بعد التحذير
   bot.action(/^warn_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
@@ -330,6 +335,13 @@ module.exports = function setupAdminHandlers(bot) {
       await ctx.answerCbQuery(`🚫 حظر تلقائي بعد ${g.maxWarns} تحذيرات!`, { show_alert: true });
     } else {
       await ctx.answerCbQuery(`⚠️ تحذير ${warns.length}/${g.maxWarns}`, { show_alert: true });
+      // FIX 24: إرسال رسالة إعلامية في المجموعة
+      try {
+        await bot.telegram.sendMessage(cid,
+          `⚠️ *تحذير*\n\n🆔 \`${uid}\`\n⚠️ التحذير ${warns.length}/${g.maxWarns}\n👮 بواسطة: ${ctx.from.username ? '@' + ctx.from.username : ctx.from.first_name}`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch {}
     }
   });
 
@@ -394,7 +406,6 @@ module.exports = function setupAdminHandlers(bot) {
     );
   });
 
-  // ── /jr_ban — حظر من طلب الانضمام (FEATURE 7) ───────────────────────────
   bot.action(/^jr_ban_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];

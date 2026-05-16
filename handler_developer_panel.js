@@ -2,6 +2,8 @@
 const { Markup }   = require('telegraf');
 const db           = require('./db');
 const { isDeveloper } = require('./helpers_permissions');
+// FIX 22+23: مسح جلسات الانتظار عند الرجوع للقائمة الرئيسية
+const sharedState  = require('./shared_state');
 
 const ITEMS_PER_PAGE = 6;
 
@@ -18,6 +20,10 @@ module.exports = function setupPanelHandlers(bot) {
   bot.action('dev_home', async (ctx) => {
     await ctx.answerCbQuery();
     if (!isDeveloper(ctx)) return;
+    // FIX 22: مسح جلسة البث المعلّقة
+    sharedState.pendingBroadcast.delete(ctx.from.id);
+    // FIX 23: مسح جلسة الاستعادة المعلّقة
+    sharedState.pendingRestore.delete(ctx.from.id);
     const stats = db.getStats();
     await ctx.editMessageText(buildDevHomeText(stats), { parse_mode: 'Markdown', ...buildDevHomeKeyboard() });
   });
@@ -46,7 +52,6 @@ module.exports = function setupPanelHandlers(bot) {
     await ctx.answerCbQuery();
     if (!isDeveloper(ctx)) return;
     const page   = Number(ctx.match[1] || 0);
-    // FIX: عرض المجموعات فقط (بدون قنوات)
     const groups  = db.allGroups();
     const total   = groups.length;
     const slice   = groups.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);

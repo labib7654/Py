@@ -4,11 +4,18 @@ const { isDeveloper, isAdmin } = require('./helpers_permissions');
 const { muteMember, promoteUser, logAction } = require('./helpers_actions');
 const { DEVELOPER_ID } = require('./config');
 
+// FIX 26: تعريف spamTracker هنا
+const spamTracker = new Map();
+
+// FIX 30: تنظيف spamTracker دورياً كل دقيقة
+setInterval(() => spamTracker.clear(), 60000);
+
+// FIX 21: إضافة زر إدارة عضو في لوحة المجموعة
 function groupHomeKeyboard(chatId) {
   return Markup.inlineKeyboard([
     [Markup.button.callback('⚙️ إعدادات المجموعة', `settings_${chatId}`), Markup.button.callback('👥 المشرفون', `admins_${chatId}`)],
     [Markup.button.callback('📋 القواعد',           `rules_${chatId}`),    Markup.button.callback('📊 إحصائيات', `stats_${chatId}`)],
-    [Markup.button.callback('📨 طلبات الانضمام',    `joinreqs_${chatId}`)],
+    [Markup.button.callback('📨 طلبات الانضمام',    `joinreqs_${chatId}`), Markup.button.callback('👤 إدارة عضو', `manage_menu_${chatId}`)],
   ]);
 }
 
@@ -86,7 +93,7 @@ module.exports = function setupGroupHandlers(bot) {
     if (newM.status === 'administrator' && oldM.status !== 'administrator') { if (g) g.admins.set(u.id, { username: u.username || u.first_name || String(u.id), promotedBy: by.id, promotedByUsername: by.username || by.first_name || String(by.id), promotedAt: new Date() }); db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'admin'); }
     if (oldM.status === 'administrator' && newM.status === 'member') { if (g) g.admins.delete(u.id); db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'member'); }
 
-    // ── فحص منع البوتات (محسّن) ──────────────────────────────────────
+    // ── فحص منع البوتات ──────────────────────────────────────────────
     if (g?.antiBot && u.is_bot) {
       try { await bot.telegram.banChatMember(chat.id, u.id); } catch {}
       const adderName = by.username ? `@${by.username}` : by.first_name;
@@ -155,7 +162,7 @@ module.exports = function setupGroupHandlers(bot) {
     }
   });
 
-  // ── طلبات الانضمام (FEATURE 7 — handler شامل) ───────────────────────────
+  // ── طلبات الانضمام ───────────────────────────────────────────────────
   bot.on('chat_join_request', async (ctx) => {
     const req  = ctx.chatJoinRequest;
     const { chat } = req;
@@ -166,7 +173,6 @@ module.exports = function setupGroupHandlers(bot) {
 
     const urec = db.getOrCreateUser(u.id, u.username || '', u.first_name || '');
 
-    // FEATURE 7: سجّل الطلب في تاريخ المستخدم
     if (!urec.joinRequestHistory) urec.joinRequestHistory = [];
     urec.joinRequestHistory.unshift({
       chatId:      chat.id,
@@ -176,7 +182,6 @@ module.exports = function setupGroupHandlers(bot) {
     });
     if (urec.joinRequestHistory.length > 50) urec.joinRequestHistory.length = 50;
 
-    // فحص فترة الحظر من إعادة الطلب
     const cooldown = g.joinRequestCooldown.get(u.id);
     if (cooldown && cooldown > Date.now()) {
       try { await bot.telegram.declineChatJoinRequest(chat.id, u.id); } catch {}
@@ -193,7 +198,6 @@ module.exports = function setupGroupHandlers(bot) {
       inviteLink:  req.invite_link?.invite_link || '',
     });
 
-    // فحص المجتمع
     if (g.communityId) {
       const exceeded = db.recordCommunityJoin(g.communityId, u.id, chat.id);
       if (exceeded) {
@@ -208,7 +212,6 @@ module.exports = function setupGroupHandlers(bot) {
       }
     }
 
-    // FEATURE 7: تحليل السلوك — هل طلب في مجموعات متعددة؟
     const allPending    = urec.joinRequestHistory.filter(r => r.status === 'pending');
     const isSuspicious  = allPending.length >= 3;
     const historyText   = urec.joinRequestHistory.slice(0, 5).map(r => `• ${r.chatTitle} — ${new Date(r.requestedAt).toLocaleDateString('ar')} (${r.status === 'pending' ? '⏳' : r.status === 'approved' ? '✅' : '❌'})`).join('\n');
@@ -229,6 +232,7 @@ module.exports = function setupGroupHandlers(bot) {
       Markup.button.callback('🔍 تحقق',   `jr_check_${u.id}_${chat.id}`),
     ], [
       Markup.button.callback('🚫 حظر',     `jr_ban_${u.id}_${chat.id}`),
+      // FIX 6: زر تاريخ الطلبات موجود والـ action معرّف الآن
       Markup.button.callback('📋 تاريخ',   `jr_history_${u.id}`),
     ]]);
 
@@ -237,7 +241,6 @@ module.exports = function setupGroupHandlers(bot) {
       try { await bot.telegram.sendMessage(adminId, notifyText, { parse_mode: 'Markdown', ...actionBtns }); } catch {}
     }
 
-    // للمطور: تنبيه شامل إذا كان مشبوهاً
     if (isSuspicious) {
       try {
         await bot.telegram.sendMessage(DEVELOPER_ID,
@@ -259,9 +262,12 @@ module.exports = function setupGroupHandlers(bot) {
       return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
     try {
       await bot.telegram.approveChatJoinRequest(cid, uid);
-      if (g?.joinRequests.has(uid)) { const r = g.joinRequests.get(uid); r.status = 'approved'; r.handledAt = new Date(); r.handledBy = ctx.from.id; }
+      if (g && g.joinRequests.has(uid)) g.joinRequests.get(uid).status = 'approved';
       const urec = db.getUser(uid);
-      if (urec?.joinRequestHistory) { const rr = urec.joinRequestHistory.find(r => r.chatId === cid && r.status === 'pending'); if (rr) { rr.status = 'approved'; rr.handledAt = new Date(); } }
+      if (urec?.joinRequestHistory) {
+        const req = urec.joinRequestHistory.find(r => r.chatId === cid && r.status === 'pending');
+        if (req) req.status = 'approved';
+      }
       await ctx.answerCbQuery('✅ تم القبول!', { show_alert: true });
       await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n✅ *تم القبول*', { parse_mode: 'Markdown' });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
@@ -276,156 +282,91 @@ module.exports = function setupGroupHandlers(bot) {
       return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
     try {
       await bot.telegram.declineChatJoinRequest(cid, uid);
-      if (g?.joinRequests.has(uid)) { g.joinRequests.get(uid).status = 'rejected'; g.joinRequestCooldown.set(uid, Date.now() + 24 * 3600 * 1000); }
+      if (g && g.joinRequests.has(uid)) {
+        g.joinRequests.get(uid).status = 'rejected';
+        g.joinRequestCooldown.set(uid, Date.now() + 24 * 60 * 60 * 1000);
+      }
       const urec = db.getUser(uid);
-      if (urec?.joinRequestHistory) { const rr = urec.joinRequestHistory.find(r => r.chatId === cid && r.status === 'pending'); if (rr) { rr.status = 'rejected'; rr.handledAt = new Date(); } }
+      if (urec?.joinRequestHistory) {
+        const req = urec.joinRequestHistory.find(r => r.chatId === cid && r.status === 'pending');
+        if (req) req.status = 'rejected';
+      }
       await ctx.answerCbQuery('❌ تم الرفض!', { show_alert: true });
       await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n❌ *تم الرفض*', { parse_mode: 'Markdown' });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
-  // تحقق من الطالب
+  // تحقق من المستخدم
   bot.action(/^jr_check_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    const g  = db.getGroup(cid);
-    const r  = g?.joinRequests.get(uid);
-    const gu = db.getUser(uid);
-    if (!r) return ctx.answerCbQuery('❌ الطلب غير موجود!', { show_alert: true });
-    const info =
-      `🔍 *معلومات الطالب*\n\n👤 ${r.firstName}${r.username ? ` (@${r.username})` : ''}\n🆔 \`${uid}\`\n🌍 محظور عالمياً: ${gu?.globalBanned ? `✅ — ${gu.bannedReason}` : '❌'}\n📅 أول ظهور: ${gu?.firstSeen ? new Date(gu.firstSeen).toLocaleDateString('ar') : 'غير معروف'}\n` +
-      (r.bio ? `📝 النبذة: ${r.bio}\n` : '') +
-      (r.inviteLink ? `🔗 الرابط: ${r.inviteLink}\n` : '');
-    await ctx.reply(info, { parse_mode: 'Markdown' });
-  });
-
-  // تاريخ طلبات مستخدم (FEATURE 7)
-  bot.action(/^jr_history_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const uid  = Number(ctx.match[1]);
     const urec = db.getUser(uid);
-    if (!urec) return ctx.reply('❌ مستخدم غير موجود!');
-    const hist = urec.joinRequestHistory || [];
-    let text = `📋 *تاريخ طلبات الانضمام*\n👤 \`${uid}\`\n\n`;
-    hist.slice(0, 10).forEach((r, i) => {
-      const icon = r.status === 'approved' ? '✅' : r.status === 'rejected' ? '❌' : '⏳';
-      text += `${i + 1}. ${icon} *${r.chatTitle}*\n   📅 ${new Date(r.requestedAt).toLocaleDateString('ar')}\n`;
-    });
-    await ctx.reply(text, { parse_mode: 'Markdown' });
+    if (!urec) return ctx.answerCbQuery('❌ مستخدم غير موجود في قاعدة البيانات!', { show_alert: true });
+    const warns = [...(db.getGroup(cid)?.warns.values() || [])].flat().filter(w => w && w.warnedBy !== uid).length;
+    const groupsList = [...urec.groups].map(id => db.getGroup(id)?.title || String(id)).join('، ') || '—';
+    await ctx.reply(
+      `🔍 *فحص المستخدم*\n\n🆔 \`${uid}\`\n👤 ${urec.firstName || '—'}\n@${urec.username || '—'}\n🌍 محظور عالمياً: ${urec.globalBanned ? '✅' : '❌'}\n👥 مجموعاته: ${groupsList}\n📨 طلبات سابقة: \`${urec.joinRequestHistory?.length || 0}\``,
+      { parse_mode: 'Markdown' }
+    );
   });
 
   // قبول الكل
   bot.action(/^jr_approveall_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const cid = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+    const g = db.getGroup(cid);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !(ctx.from.id === g.ownerId) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
-    const g = db.getGroup(cid); if (!g) return;
     const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
-    let done = 0;
-    for (const r of pending) { try { await bot.telegram.approveChatJoinRequest(cid, r.userId); r.status = 'approved'; done++; } catch {} }
-    await ctx.answerCbQuery(`✅ تم قبول ${done} طلب!`, { show_alert: true });
-    await ctx.deleteMessage().catch(() => {});
+    let count = 0;
+    for (const r of pending) {
+      try { await bot.telegram.approveChatJoinRequest(cid, r.userId); r.status = 'approved'; count++; } catch {}
+    }
+    await ctx.answerCbQuery(`✅ تم قبول ${count} طلب`, { show_alert: true });
+    await ctx.editMessageText(ctx.callbackQuery.message.text + `\n\n✅ *تم قبول ${count} طلب*`, { parse_mode: 'Markdown' });
   });
 
   // رفض الكل
   bot.action(/^jr_rejectall_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const cid = Number(ctx.match[1]);
-    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+    const g = db.getGroup(cid);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !(ctx.from.id === g.ownerId) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
-    const g = db.getGroup(cid); if (!g) return;
     const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
-    let done = 0;
+    let count = 0;
     for (const r of pending) {
-      try { await bot.telegram.declineChatJoinRequest(cid, r.userId); r.status = 'rejected'; g.joinRequestCooldown.set(r.userId, Date.now() + 24 * 3600 * 1000); done++; } catch {}
+      try { await bot.telegram.declineChatJoinRequest(cid, r.userId); r.status = 'rejected'; count++; } catch {}
     }
-    await ctx.answerCbQuery(`❌ تم رفض ${done} طلب!`, { show_alert: true });
-    await ctx.deleteMessage().catch(() => {});
+    await ctx.answerCbQuery(`❌ تم رفض ${count} طلب`, { show_alert: true });
+    await ctx.editMessageText(ctx.callbackQuery.message.text + `\n\n❌ *تم رفض ${count} طلب*`, { parse_mode: 'Markdown' });
   });
 
-  // ── فلتر الروابط ─────────────────────────────────────────────────────
-  bot.on('message', async (ctx, next) => {
-    if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
-    const g = db.getGroup(ctx.chat.id);
-
-    // تتبع تلقائي للمجموعات غير المسجّلة
-    if (!g && ctx.chat.type !== 'private') {
-      const newG = db.getOrCreateGroup(ctx.chat.id, ctx.chat.title || 'مجموعة', ctx.chat.type, 0, 'unknown');
-      try {
-        const admins = await bot.telegram.getChatAdministrators(ctx.chat.id);
-        const owner  = admins.find(a => a.status === 'creator');
-        if (owner && newG) { newG.ownerId = owner.user.id; newG.ownerUsername = owner.user.username || owner.user.first_name; }
-      } catch {}
+  // FIX 6: إضافة action لتاريخ طلبات الانضمام
+  bot.action(/^jr_history_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const uid  = Number(ctx.match[1]);
+    const user = db.getUser(uid);
+    if (!user) return ctx.answerCbQuery('❌ مستخدم غير موجود!', { show_alert: true });
+    const history = user.joinRequestHistory?.slice(0, 10) || [];
+    let text = `📋 *تاريخ طلبات الانضمام*\n🆔 \`${uid}\`\n\n`;
+    if (!history.length) {
+      text += '_لا يوجد تاريخ._';
+    } else {
+      history.forEach((r, i) => {
+        const icon = r.status === 'approved' ? '✅' : r.status === 'rejected' ? '❌' : '⏳';
+        text += `${i + 1}. ${icon} *${r.chatTitle || r.chatId}*\n   🕐 ${new Date(r.requestedAt).toLocaleDateString('ar')}\n`;
+      });
     }
-    db.trackMember(ctx.chat.id, ctx.from.id, ctx.from.username || '', ctx.from.first_name || '', 'member');
-
-    if (!g?.antiLinks) return next();
-    if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
-
-    const text     = ctx.message.text || ctx.message.caption || '';
-    const entities = ctx.message.entities || ctx.message.caption_entities || [];
-    const hasLink  = entities.some(e => ['url', 'text_link'].includes(e.type)) || /https?:\/\/|t\.me\//i.test(text);
-    if (!hasLink) return next();
-
-    try { await ctx.deleteMessage(); } catch {}
-    const name = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
-    await ctx.reply(`🔗 ${name} — الروابط ممنوعة في هذه المجموعة!`);
-    return next();
+    await ctx.reply(text, { parse_mode: 'Markdown' });
   });
 
-  // ── فحص رسائل المواضيع المقفلة (FEATURE 2) ───────────────────────────────────
-  bot.on('message', async (ctx, next) => {
-    if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
-    if (!ctx.message?.message_thread_id) return next();
-    const g = db.getGroup(ctx.chat.id);
-    if (!g?.topicSettings?.requireApprovalToJoin) return next();
-
-    const topicId = ctx.message.message_thread_id;
-    const topic   = g.topics.get(topicId);
-    if (!topic?.locked) return next();
-
-    const isApproved     = topic.approvedUsers?.has(ctx.from.id);
-    const isAdminOrOwner = await isAdmin(bot, ctx.chat.id, ctx.from.id);
-    if (isAdminOrOwner || isApproved) return next();
-
-    try { await ctx.deleteMessage(); } catch {}
-
-    // FEATURE 2: إرسال رسالة في الموضوع نفسه مع زر طلب الانضمام
-    try {
-      await bot.telegram.sendMessage(ctx.chat.id,
-        `🔒 هذا الموضوع "${topic.name || topicId}" يتطلب طلب انضمام.\n\nالضغط على الزر للانضمام:`,
-        {
-          message_thread_id: topicId,
-          ...Markup.inlineKeyboard([[
-            Markup.button.callback('📩 طلب الانضمام', `topic_join_req_${ctx.from.id}_${ctx.chat.id}_${topicId}`)
-          ]])
-        }
-      );
-    } catch {}
-
-    if (g.ownerId) {
-      try {
-        await bot.telegram.sendMessage(g.ownerId,
-          `📨 *طلب دخول موضوع*\n\n👤 ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''} يريد المشاركة في موضوع "${topic.name || topicId}"\n🆔 \`${ctx.from.id}\``,
-          {
-            parse_mode: 'Markdown',
-            ...Markup.inlineKeyboard([[
-              Markup.button.callback('✅ سماح', `topic_allow_${ctx.from.id}_${ctx.chat.id}_${topicId}`),
-              Markup.button.callback('❌ رفض',  `topic_deny_${ctx.from.id}_${ctx.chat.id}_${topicId}`),
-            ]]),
-          }
-        );
-      } catch {}
-    }
-    return;
-  });
-
-  // ── زر طلب الانضمام للموضوع (FEATURE 2) ──────────────────────────────
+  // ── زر طلب الانضمام للموضوع ──────────────────────────────────────────
   bot.action(/^topic_join_req_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
     await ctx.answerCbQuery('تم إرسال طلبك!');
     const [uid, chatId, topicId] = [Number(ctx.match[1]), Number(ctx.match[2]), Number(ctx.match[3])];
-    // تأكد أن المستخدم هو صاحب الطلب
     if (ctx.from.id !== uid) return;
     const g = db.getGroup(chatId); if (!g) return;
     const topic = g.topics.get(topicId);
@@ -447,7 +388,6 @@ module.exports = function setupGroupHandlers(bot) {
     }
   });
 
-  // ── قبول/رفض طلب دخول موضوع ──────────────────────────────────────────
   bot.action(/^topic_allow_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const [uid, chatId, topicId] = [Number(ctx.match[1]), Number(ctx.match[2]), Number(ctx.match[3])];
@@ -465,7 +405,7 @@ module.exports = function setupGroupHandlers(bot) {
     await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n❌ *تم الرفض*', { parse_mode: 'Markdown' });
   });
 
-  // ── فلتر الكلمات المحظورة + FEATURE 3 (allowedWords) + FEATURE 4 (specialist) ─
+  // ── فلتر الرسائل (كلمات محظورة + antiLinks + antiSpam) ──────────────
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private') return next();
     const text = ctx.message.text || ctx.message.caption || '';
@@ -474,14 +414,13 @@ module.exports = function setupGroupHandlers(bot) {
     if (!g) return next();
     if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
 
-    const lower     = text.toLowerCase();
-    const topicId   = ctx.message?.message_thread_id; // FIX: فحص topic context
+    const lower   = text.toLowerCase();
+    const topicId = ctx.message?.message_thread_id;
 
     // FEATURE 3: فحص الكلمات المسموحة أولاً
     if (g.allowedWords?.length) {
       const foundAllowed = g.allowedWords.find(aw => lower.includes(aw.word.toLowerCase()));
       if (foundAllowed) {
-        // FEATURE 4: إذا كانت الكلمة لها متخصص
         if (foundAllowed.hasSpecialist && foundAllowed.specialistUserId) {
           const specialistId = foundAllowed.specialistUserId;
           const requesterId  = ctx.from.id;
@@ -505,7 +444,6 @@ module.exports = function setupGroupHandlers(bot) {
           return next();
         }
 
-        // بدون متخصص: highlight الكلمة
         const highlighted = text.replace(
           new RegExp(foundAllowed.word, 'gi'),
           `【✅ ${foundAllowed.word.toUpperCase()} ✅】`
@@ -515,6 +453,22 @@ module.exports = function setupGroupHandlers(bot) {
           `🟢 *رسالة معتمدة من* ${ctx.from.first_name}:\n\n${highlighted}`,
           { parse_mode: 'Markdown', message_thread_id: topicId }
         ).catch(() => {});
+        return next();
+      }
+    }
+
+    // FIX 19: تطبيق فعلي لـ antiSpam
+    if (g?.antiSpam) {
+      const userId = ctx.from.id;
+      const key    = `${ctx.chat.id}_${userId}`;
+      const now    = Date.now();
+      if (!spamTracker.has(key)) spamTracker.set(key, []);
+      const times  = spamTracker.get(key).filter(t => now - t < 10000); // آخر 10 ثوان
+      times.push(now);
+      spamTracker.set(key, times);
+      if (times.length >= 5) { // 5 رسائل في 10 ثواني
+        try { await ctx.deleteMessage(); } catch {}
+        await ctx.reply(`⚠️ ${ctx.from.username ? '@' + ctx.from.username : ctx.from.first_name} — لا تسرع في الإرسال!`);
         return next();
       }
     }
@@ -609,6 +563,19 @@ module.exports = function setupGroupHandlers(bot) {
     await ctx.reply(`📋 *قواعد المجموعة*\n\n${rulesText}`, { parse_mode: 'Markdown' });
   });
 
+  // FIX 21: إضافة زر manage_menu
+  bot.action(/^manage_menu_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    await ctx.editMessageText(
+      `👤 *إدارة عضو*\n\nاستخدم الأمر /manage داخل المجموعة والرد على رسالة العضو.`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `group_home_${chatId}`)]]) }
+    );
+  });
+
+  // FIX 4: cancel مع أو بدون chatId
   bot.action(/^cancel(_-?\d+)?$/, async (ctx) => {
     await ctx.answerCbQuery('✅');
     await ctx.deleteMessage().catch(() => {});

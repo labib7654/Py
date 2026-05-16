@@ -24,23 +24,34 @@ bot.use(globalMiddleware);
 bot.use(messageTrackingMiddleware);
 
 // ── تسجيل الـ handlers بالترتيب الصحيح ───────────────────────
-// 1. المطور أولاً (أعلى أولوية)
 setupDeveloperHandlers(bot);
-// 2. المالك/الإعدادات
 setupOwnerHandlers(bot);
-// 3. المشرف
 setupAdminHandlers(bot);
-// 4. المجموعات (الأعضاء + انضمام + فلاتر)
 setupGroupHandlers(bot);
 
 // ── /start ────────────────────────────────────────────────────
+// FIX 20: تحسين UI بأزرار بدل النص الطويل
 bot.command('start', async (ctx) => {
-  const isDev = ctx.from.id === DEVELOPER_ID;
   if (ctx.chat.type !== 'private') return;
+  const isDev = ctx.from.id === DEVELOPER_ID;
   await ctx.replyWithMarkdown(
     `👋 *مرحباً ${ctx.from.first_name}!*\n\n` +
     `🤖 أنا *جامعة v4.0* — بوت إدارة مجموعات تليغرام الشامل.\n\n` +
-    `*الأوامر المتاحة:*\n` +
+    `اختر ما تريد من الأزرار أدناه:`,
+    Markup.inlineKeyboard([
+      [Markup.button.callback('⚙️ إعداداتي',           'open_my_settings')],
+      [Markup.button.callback('📋 الأوامر المتاحة',     'show_commands')],
+      ...(isDev ? [[Markup.button.callback('👑 لوحة المطور', 'dev_home')]] : []),
+    ])
+  );
+});
+
+// FIX 20: عرض قائمة الأوامر عبر زر منفصل
+bot.action('show_commands', async (ctx) => {
+  await ctx.answerCbQuery();
+  const isDev = ctx.from.id === DEVELOPER_ID;
+  await ctx.reply(
+    `📋 *الأوامر المتاحة:*\n\n` +
     `⚙️ /settings — إعدادات المجموعة\n` +
     `👮 /admins — قائمة المشرفين\n` +
     `📋 /rules — القواعد\n` +
@@ -55,18 +66,39 @@ bot.command('start', async (ctx) => {
     `🔓 /unlocktopic — فتح موضوع\n` +
     `📁 /archivetopic — أرشفة موضوع\n` +
     (isDev
-      ? `\n👑 *أوامر المطور:*\n/dev — لوحة تحكم المطور\n/gban — حظر عالمي\n/ungban — رفع حظر عالمي\n/userinfo — معلومات مستخدم\n/broadcast — بث رسالة\n/backup — نسخ احتياطي\n/restore — استعادة\n/chatinfo — معلومات شات\n/forcejoin — إلزام الانضمام\n/devmanage — إدارة مطور`
+      ? `\n👑 *أوامر المطور:*\n/dev /gban /ungban /userinfo /broadcast /backup /restore /chatinfo /forcejoin /devmanage`
       : ''),
-    Markup.inlineKeyboard([
-      [Markup.button.callback('⚙️ إعداداتي', 'open_my_settings')],
-      ...(isDev ? [[Markup.button.callback('👑 لوحة المطور', 'dev_home')]] : []),
-    ])
+    { parse_mode: 'Markdown' }
   );
 });
 
+// FIX 16: open_my_settings يزامن قائمة المشرفين من تيليغرام أولاً
 bot.action('open_my_settings', async (ctx) => {
   await ctx.answerCbQuery();
-  const userGroups = db.allGroups().filter(g =>
+  // مزامنة المشرفين أولاً
+  const allGroups = db.allGroups();
+  for (const g of allGroups) {
+    try {
+      const admins = await bot.telegram.getChatAdministrators(g.chatId);
+      for (const a of admins) {
+        if (a.user.is_bot) continue;
+        if (a.status === 'creator') {
+          g.ownerId       = a.user.id;
+          g.ownerUsername = a.user.username || a.user.first_name || String(a.user.id);
+        } else if (a.status === 'administrator') {
+          if (!g.admins.has(a.user.id)) {
+            g.admins.set(a.user.id, {
+              username:           a.user.username || a.user.first_name || String(a.user.id),
+              promotedBy:         0,
+              promotedByUsername: 'تيليغرام',
+              promotedAt:         new Date(),
+            });
+          }
+        }
+      }
+    } catch { /* المجموعة ليست متاحة */ }
+  }
+  const userGroups = allGroups.filter(g =>
     g.ownerId === ctx.from.id ||
     g.admins.has(ctx.from.id) ||
     ctx.from.id === DEVELOPER_ID
@@ -97,7 +129,6 @@ async function main() {
 
   const WEBHOOK_URL = process.env.WEBHOOK_URL;
   if (WEBHOOK_URL) {
-    // ── وضع Webhook للإنتاج ──────────────────────────────────
     const secretToken = process.env.SESSION_SECRET || undefined;
     await bot.telegram.setWebhook(`${WEBHOOK_URL}/webhook`, { secret_token: secretToken });
     app.post('/webhook', (req, res) => {
@@ -109,13 +140,11 @@ async function main() {
     });
     console.log(`✅ Webhook: ${WEBHOOK_URL}/webhook`);
   } else {
-    // ── وضع Long Polling للتطوير ─────────────────────────────
     await bot.telegram.deleteWebhook({ drop_pending_updates: false });
     bot.launch();
     console.log('✅ Bot running (long polling)');
   }
 
-  // إعلام المطور بالبدء
   try {
     const stats = db.getStats();
     await bot.telegram.sendMessage(DEVELOPER_ID,

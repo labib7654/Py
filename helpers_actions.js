@@ -41,18 +41,22 @@ async function banMemberTimed(bot, chatId, userId, durationSeconds) {
   await bot.telegram.banChatMember(chatId, userId, { until_date: untilDate });
 }
 
-async function unmutePerms() {
+// FIX 17: unmutePerms تراعي إعدادات المجموعة الفعلية
+async function unmutePerms(bot, chatId) {
+  const db = require('./db');
+  const g  = db.getGroup(chatId);
+  const p  = g?.perms || {};
   return {
-    can_send_messages:         true,
-    can_send_audios:           true,
-    can_send_documents:        true,
-    can_send_photos:           true,
-    can_send_videos:           true,
-    can_send_video_notes:      true,
-    can_send_voice_notes:      true,
-    can_send_polls:            true,
-    can_send_other_messages:   true,
-    can_add_web_page_previews: true,
+    can_send_messages:         p.canSendMessages   ?? true,
+    can_send_audios:           p.canSendMedia       ?? true,
+    can_send_documents:        p.canSendMedia       ?? true,
+    can_send_photos:           p.canSendMedia       ?? true,
+    can_send_videos:           p.canSendMedia       ?? true,
+    can_send_video_notes:      p.canSendMedia       ?? true,
+    can_send_voice_notes:      p.canSendMedia       ?? true,
+    can_send_polls:            p.canSendPolls       ?? true,
+    can_send_other_messages:   p.canSendMessages    ?? true,
+    can_add_web_page_previews: p.canAddWebPreviews  ?? true,
   };
 }
 
@@ -130,20 +134,23 @@ async function logAction(bot, g, action, by, target, details = '') {
   } catch {}
 }
 
-// ── إنشاء/تحديث رابط الدعوة + ضبط صلاحية الدعوة ─────────────
+// FIX 13: setJoinApproval تراعي إعدادات صلاحيات المجموعة الفعلية
 async function setJoinApproval(bot, chatId, enabled) {
+  const db = require('./db');
+  const g  = db.getGroup(chatId);
+  const p  = g?.perms || {};
   try {
     await bot.telegram.setChatPermissions(chatId, {
-      can_invite_users:          !enabled,
-      can_send_messages:         true,
-      can_send_audios:           true,
-      can_send_documents:        true,
-      can_send_photos:           true,
-      can_send_videos:           true,
-      can_send_voice_notes:      true,
-      can_send_polls:            true,
-      can_send_other_messages:   true,
-      can_add_web_page_previews: true,
+      can_send_messages:         p.canSendMessages   ?? true,
+      can_send_audios:           p.canSendMedia       ?? true,
+      can_send_documents:        p.canSendMedia       ?? true,
+      can_send_photos:           p.canSendMedia       ?? true,
+      can_send_videos:           p.canSendMedia       ?? true,
+      can_send_voice_notes:      p.canSendMedia       ?? true,
+      can_send_polls:            p.canSendPolls       ?? true,
+      can_send_other_messages:   p.canSendMessages    ?? true,
+      can_add_web_page_previews: p.canAddWebPreviews  ?? true,
+      can_invite_users:          enabled ? false : (p.canInviteUsers ?? true),
     });
   } catch {}
 
@@ -199,11 +206,18 @@ async function unlockTopic(bot, chatId, topicId) {
   });
 }
 
+// FIX 10: archiveTopic تستخدم hideForumTopic للأرشفة الفعلية
 async function archiveTopic(bot, chatId, topicId) {
+  // أغلق الموضوع أولاً
   await bot.telegram.callApi('closeForumTopic', {
     chat_id:           chatId,
     message_thread_id: topicId,
   });
+  // ثم أخفه (الأرشفة الفعلية)
+  await bot.telegram.callApi('hideForumTopic', {
+    chat_id:           chatId,
+    message_thread_id: topicId,
+  }).catch(() => {}); // hideForumTopic للموضوع العام فقط
 }
 
 module.exports = {

@@ -4,8 +4,9 @@ const fs         = require('fs');
 const path       = require('path');
 const db         = require('./db');
 const { isDeveloper } = require('./helpers_permissions');
-
-const pendingRestore = new Map(); // userId -> true (ينتظر ملف JSON)
+// FIX 23: استخدام الحالة المشتركة
+const sharedState = require('./shared_state');
+const pendingRestore = sharedState.pendingRestore;
 
 module.exports = function setupBackupHandlers(bot) {
 
@@ -56,7 +57,7 @@ module.exports = function setupBackupHandlers(bot) {
     if (!doc.file_name.endsWith('.json') && doc.mime_type !== 'application/json') {
       return ctx.reply('❌ الملف يجب أن يكون بصيغة JSON!');
     }
-    if (doc.file_size > 10 * 1024 * 1024) { // 10 MB
+    if (doc.file_size > 10 * 1024 * 1024) {
       return ctx.reply('❌ الملف أكبر من 10 ميجابايت!');
     }
 
@@ -68,20 +69,16 @@ module.exports = function setupBackupHandlers(bot) {
       const res      = await fetch(fileLink.href);
       const json     = await res.text();
 
-      // التحقق من صحة JSON
-      JSON.parse(json);
+      JSON.parse(json); // التحقق من صحة JSON
 
-      // حفظ نسخة احتياطية من الحالي
+      // FIX 14: إصلاح مسار data.json — مستوى واحد فقط للأعلى
       const DATA_FILE = process.env.DATA_FILE
         ? path.resolve(process.env.DATA_FILE)
-        : path.join(__dirname, '../../../data.json');
+        : path.join(__dirname, '..', 'data.json');
       const BAK_FILE  = DATA_FILE.replace('.json', `.bak_${Date.now()}.json`);
       if (fs.existsSync(DATA_FILE)) fs.copyFileSync(DATA_FILE, BAK_FILE);
 
-      // كتابة الملف الجديد
       fs.writeFileSync(DATA_FILE, json, 'utf-8');
-
-      // إعادة تحميل البيانات
       db.loadData();
 
       const stats = db.getStats();
@@ -107,15 +104,16 @@ module.exports = function setupBackupHandlers(bot) {
 };
 
 async function performBackup(bot, ctx) {
+  // FIX 14: إصلاح مسار data.json
   const DATA_FILE = process.env.DATA_FILE
     ? path.resolve(process.env.DATA_FILE)
-    : path.join(__dirname, '../../../data.json');
+    : path.join(__dirname, '..', 'data.json');
 
-  // حفظ أولاً
   db.saveData();
 
+  // FIX 15: استخدام ctx.reply مباشرةً
   if (!fs.existsSync(DATA_FILE)) {
-    return (ctx.reply || ctx.editMessageText)('❌ لا يوجد ملف بيانات!');
+    return await ctx.reply('❌ لا يوجد ملف بيانات!');
   }
 
   const stats = db.getStats();
@@ -139,7 +137,6 @@ async function performBackup(bot, ctx) {
       try { await ctx.editMessageText('✅ *تم إرسال النسخ الاحتياطي!*', { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', 'dev_home')]]) }); } catch {}
     }
   } catch (e) {
-    const reply = ctx.reply || (t => bot.telegram.sendMessage(ctx.from.id, t));
-    await reply(`❌ فشل الإرسال: ${e.message}`);
+    await ctx.reply(`❌ فشل الإرسال: ${e.message}`);
   }
 }

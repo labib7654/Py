@@ -91,7 +91,6 @@ module.exports = function setupSettingsHandlers(bot) {
     await ctx.editMessageText(buildSettingsText(g), { parse_mode: 'Markdown', ...buildSettingsKeyboard(g) });
   });
 
-  // FIX: حماية المحتوى — تطبيق API فعلياً
   bot.action(/^toggle_protect_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
@@ -173,13 +172,13 @@ module.exports = function setupSettingsHandlers(bot) {
     });
   });
 
+  // FIX 1: إزالة answerCbQuery المزدوج — الصحيح أولاً editMessageText ثم answerCbQuery واحد فقط
   bot.action(/^mw_set_(-?\d+)_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
     const [chatId, maxWarns] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    const g = db.getGroup(chatId); if (!g) return;
+    const g = db.getGroup(chatId); if (!g) return ctx.answerCbQuery();
     g.maxWarns = maxWarns;
-    await ctx.answerCbQuery(`✅ الحد الأقصى: ${maxWarns} تحذيرات`, { show_alert: true });
     await ctx.editMessageText(buildSettingsText(g), { parse_mode: 'Markdown', ...buildSettingsKeyboard(g) });
+    await ctx.answerCbQuery(`✅ الحد الأقصى: ${maxWarns} تحذيرات`, { show_alert: true });
   });
 
   // ── لوحة صلاحيات الأعضاء ──────────────────────────────────────────
@@ -278,14 +277,16 @@ module.exports = function setupSettingsHandlers(bot) {
     if (!pending.length)
       return ctx.editMessageText('📨 *لا توجد طلبات معلقة.*', {
         parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `group_home_${chatId}`)]]),
+        // FIX 5: الرجوع للإعدادات لا لـ group_home (يعمل من الخاص أيضاً)
+        ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]]),
       });
     const btns = pending.slice(0, 8).map(r => [
       Markup.button.callback(`✅ ${r.firstName.slice(0, 14)}`, `jr_approve_${r.userId}_${chatId}`),
       Markup.button.callback('❌ رفض', `jr_reject_${r.userId}_${chatId}`),
     ]);
     btns.push([Markup.button.callback('✅ قبول الكل', `jr_approveall_${chatId}`), Markup.button.callback('❌ رفض الكل', `jr_rejectall_${chatId}`)]);
-    btns.push([Markup.button.callback('🔙 رجوع', `group_home_${chatId}`)]);
+    // FIX 5: الرجوع للإعدادات
+    btns.push([Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]);
     await ctx.editMessageText(`📨 *طلبات الانضمام* (${pending.length} معلقة)`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
   });
 

@@ -2,8 +2,10 @@
 const { Markup }   = require('telegraf');
 const db           = require('./db');
 const { isDeveloper, getTargetUser, getReason } = require('./helpers_permissions');
+const sharedState  = require('./shared_state');
 
-const pendingBroadcast = new Map();   // userId -> { text }
+// FIX 22: استخدام الحالة المشتركة بدل Map محلي
+const pendingBroadcast = sharedState.pendingBroadcast;
 
 module.exports = function setupModerationHandlers(bot) {
 
@@ -98,7 +100,7 @@ module.exports = function setupModerationHandlers(bot) {
     );
   });
 
-  // ── /chatinfo — معلومات شات (FEATURE من MASTER_PROMPT) ────────────────
+  // ── /chatinfo ─────────────────────────────────────────────────────────
   bot.command('chatinfo', async (ctx) => {
     if (!isDeveloper(ctx) && ctx.chat.type === 'private') return ctx.reply('❌ مطور فقط!');
     const arg    = ctx.message.text.split(' ')[1];
@@ -115,13 +117,12 @@ module.exports = function setupModerationHandlers(bot) {
         `🧵 يدعم المواضيع: ${chat.is_forum ? '✅' : '❌'}\n` +
         `🔗 مرتبط بقناة: ${chat.linked_chat_id ? `\`${chat.linked_chat_id}\`` : '❌'}\n` +
         `👥 الأعضاء: \`${chat.members_count || '—'}\`\n` +
-        `📝 الوصف: ${chat.description || '—'}\n` +
-        `🔒 محظور: ${chat.permissions ? '—' : '—'}`
+        `📝 الوصف: ${chat.description || '—'}`
       );
     } catch (e) { await ctx.reply(`❌ فشل جلب بيانات الشات: ${e.message}`); }
   });
 
-  // ── /forcejoin — إلزام الانضمام ───────────────────────────────────────
+  // ── /forcejoin ────────────────────────────────────────────────────────
   bot.command('forcejoin', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.reply('❌ مطور فقط!');
     const args   = ctx.message.text.split(' ').slice(1);
@@ -139,13 +140,12 @@ module.exports = function setupModerationHandlers(bot) {
     } catch (e) { await ctx.reply(`❌ ${e.message}`); }
   });
 
-  // ── /devmanage — إدارة مجموعة من المطور ──────────────────────────────
+  // ── /devmanage ────────────────────────────────────────────────────────
   bot.command('devmanage', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.reply('❌ مطور فقط!');
     const arg    = ctx.message.text.split(' ')[1];
     const chatId = arg ? Number(arg) : null;
     if (!chatId || isNaN(chatId)) {
-      // عرض اختيار المجموعة
       const groups = db.allGroups();
       if (!groups.length) return ctx.reply('❌ لا توجد مجموعات!');
       const btns = groups.slice(0, 8).map(g => [Markup.button.callback(`📌 ${g.title}`, `devmanage_${g.chatId}`)]);
@@ -157,7 +157,8 @@ module.exports = function setupModerationHandlers(bot) {
       `🔧 *إدارة مطور — ${g.title}*\n\n🆔 \`${chatId}\`\n👑 المالك: ${g.ownerUsername || 'غير محدد'}\n👥 الأعضاء: \`${g.members.size}\``,
       Markup.inlineKeyboard([
         [Markup.button.callback('⚙️ الإعدادات', `settings_${chatId}`), Markup.button.callback('🚫 حذف المجموعة', `devmanage_delete_${chatId}`)],
-        [Markup.button.callback('📊 إحصائيات', `stats_${chatId}`)],
+        // FIX 3: استخدام devmanage_stats_ بدل stats_
+        [Markup.button.callback('📊 إحصائيات', `devmanage_stats_${chatId}`)],
       ])
     );
   });
@@ -174,6 +175,8 @@ module.exports = function setupModerationHandlers(bot) {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
           [Markup.button.callback('⚙️ الإعدادات', `settings_${chatId}`), Markup.button.callback('🚫 حذف', `devmanage_delete_${chatId}`)],
+          // FIX 3: استخدام devmanage_stats_ بدل stats_
+          [Markup.button.callback('📊 إحصائيات', `devmanage_stats_${chatId}`)],
           [Markup.button.callback('🔙 رجوع', 'dev_home')],
         ]),
       }
@@ -186,6 +189,20 @@ module.exports = function setupModerationHandlers(bot) {
     const chatId = Number(ctx.match[1]);
     db.deleteGroup(chatId);
     await ctx.editMessageText('✅ تم حذف المجموعة من قاعدة البيانات.');
+  });
+
+  // FIX 3: action مستقل لإحصائيات المطور يستخدم editMessageText
+  bot.action(/^devmanage_stats_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    if (!isDeveloper(ctx)) return;
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!g) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
+    const warns = [...g.warns.values()].reduce((a, w) => a + w.length, 0);
+    await ctx.editMessageText(
+      `📊 *إحصائيات ${g.title}*\n\n👥 الأعضاء: ${g.members.size}\n👮 المشرفون: ${g.admins.size}\n⚠️ التحذيرات: ${warns}\n🔇 المكتومون: ${g.mutedUsers.size}\n🚫 المحظورون: ${g.bannedUsers.size}`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `devmanage_${chatId}`)]]) }
+    );
   });
 
   // ── بث الرسائل ───────────────────────────────────────────────────────
@@ -223,19 +240,16 @@ module.exports = function setupModerationHandlers(bot) {
     return next();
   });
 
-  // ── حماية المحتوى العالمية (FEATURE 6) ───────────────────────────────
+  // FIX 2: إزالة answerCbQuery الأول المزدوج — الثاني فقط مع show_alert
   bot.action('dev_global_protect', async (ctx) => {
-    await ctx.answerCbQuery();
-    if (!isDeveloper(ctx)) return;
+    if (!isDeveloper(ctx)) return ctx.answerCbQuery('❌', { show_alert: true });
     db.botSettings.globalProtectContent = !db.botSettings.globalProtectContent;
     const enabled = db.botSettings.globalProtectContent;
     if (enabled) {
-      // تطبيق على جميع المجموعات
       for (const g of db.allGroups()) {
         try { await bot.telegram.setChatProtectContent(g.chatId, { is_protected: true }); } catch {}
       }
     }
-    await ctx.answerCbQuery(enabled ? '✅ حماية عالمية مفعّلة!' : '❌ حماية عالمية معطّلة!', { show_alert: true });
     await ctx.editMessageText(
       `🔒 *حماية المحتوى العالمية*\n\nالحالة: ${enabled ? '✅ مفعّلة' : '❌ معطّلة'}\n\n_${enabled ? 'تم تطبيقها على جميع المجموعات.' : 'كل مجموعة تتحكم بإعدادها الخاص.'}_`,
       {
@@ -246,6 +260,7 @@ module.exports = function setupModerationHandlers(bot) {
         ]),
       }
     );
+    await ctx.answerCbQuery(enabled ? '✅ حماية عالمية مفعّلة!' : '❌ حماية عالمية معطّلة!', { show_alert: true });
   });
 
 };
