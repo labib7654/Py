@@ -3,6 +3,10 @@
 --  نفِّذ هذا الملف في Supabase SQL Editor قبل تشغيل البوت
 -- ═══════════════════════════════════════════════════════════════════════
 
+-- ══ إذا كانت قاعدة البيانات موجودة مسبقاً، نفّذ هذا أولاً لإزالة FK القديم ══
+-- ALTER TABLE group_members DROP CONSTRAINT IF EXISTS group_members_chat_id_fkey;
+-- ═════════════════════════════════════════════════════════════════════════════
+
 -- ── تفعيل pg_cron (اختياري — من Dashboard → Database → Extensions)
 -- SELECT cron.schedule('cleanup-expired-captcha', '* * * * *',
 --   $$DELETE FROM pending_captcha WHERE expires_at < NOW()$$
@@ -57,7 +61,7 @@ CREATE TABLE IF NOT EXISTS groups (
 -- ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS group_members (
   id              BIGSERIAL   PRIMARY KEY,
-  chat_id         BIGINT      NOT NULL REFERENCES groups(chat_id) ON DELETE CASCADE,
+  chat_id         BIGINT      NOT NULL,
   user_id         BIGINT      NOT NULL,
   username        TEXT        DEFAULT '',
   first_name      TEXT        DEFAULT '',

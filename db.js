@@ -77,11 +77,13 @@ function hydrateGroup(g) {
 async function loadData() {
   console.log('📥 تحميل البيانات من Supabase...');
   try {
-    const [groups, users, channels, communities] = await Promise.all([
+    const [groups, users, channels, communities, allBannedWords, allWarns] = await Promise.all([
       supa.getAllGroups(),
       supa.getAllUsers(),
       supa.getAllChannels(),
       supa.getAllCommunities(),
+      supa.getAllBannedWords(),
+      supa.getAllWarns(),
     ]);
 
     for (const g of groups) {
@@ -129,29 +131,27 @@ async function loadData() {
       });
     }
 
-    // [FIX #2] تحميل الكلمات المحظورة لكل مجموعة من Supabase
-    const allBannedWords = await supa.getAllBannedWords();
+    // ── تحميل الكلمات المحظورة لكل مجموعة ──
     for (const bw of allBannedWords) {
       const g = cache.groups.get(bw.chat_id);
       if (g) {
         g.bannedWords.push({
           word:      bw.word,
-          action:    bw.action    || 'warn',
+          action:    bw.action || 'warn',
           threshold: bw.threshold || 1,
-          addedBy:   bw.added_by  || 0,
-          addedAt:   bw.added_at  ? new Date(bw.added_at) : new Date(),
+          addedBy:   bw.added_by || 0,
+          addedAt:   bw.added_at ? new Date(bw.added_at) : new Date(),
         });
       }
     }
 
-    // [FIX #2] تحميل التحذيرات لكل مجموعة من Supabase
-    const allWarns = await supa.getAllWarns();
+    // ── تحميل التحذيرات لكل مجموعة ──
     for (const w of allWarns) {
       const g = cache.groups.get(w.chat_id);
       if (g) {
         if (!g.warns.has(w.user_id)) g.warns.set(w.user_id, []);
         g.warns.get(w.user_id).push({
-          reason:    w.reason    || '',
+          reason:    w.reason || '',
           warnedBy:  w.warned_by || 0,
           warnedAt:  w.warned_at ? new Date(w.warned_at) : new Date(),
         });
@@ -213,7 +213,7 @@ function allGroups() {
   return [...cache.groups.values()];
 }
 
-// [FIX #3] حفظ تغييرات المجموعة في Supabase — تشمل الآن owner_verified_at
+// حفظ تغييرات المجموعة في Supabase (غير مُعيق)
 async function _syncGroup(g) {
   try {
     await supa.upsertGroup(g.chat_id || g.chatId, {
@@ -222,7 +222,6 @@ async function _syncGroup(g) {
       owner_id:               g.ownerId || g.owner_id || null,
       owner_username:         g.ownerUsername || g.owner_username || '',
       owner_verified:         g.ownerVerified || false,
-      owner_verified_at:      g.ownerVerifiedAt ? new Date(g.ownerVerifiedAt).toISOString() : null, // [FIX #3]
       added_by:               g.addedBy || g.added_by || 0,
       added_by_username:      g.addedByUsername || g.added_by_username || '',
       max_warns:              g.maxWarns || 3,
@@ -318,7 +317,13 @@ async function trackMember(chatId, userId, username, firstName, role) {
     if (username)  m.username  = username;
     if (firstName) m.firstName = firstName;
   }
-  // مزامنة مع Supabase
+  // تأكد من وجود المجموعة في Supabase أولاً قبل إضافة العضو (تجنب Foreign Key violation)
+  await supa.upsertGroup(chatId, {
+    title:      g.title || 'مجموعة',
+    type:       g.type  || 'group',
+    updated_at: new Date().toISOString(),
+  }).catch(e => console.error('trackMember upsertGroup error:', e.message));
+  // الآن أضف العضو بأمان
   await supa.upsertMember(chatId, userId, {
     username:   username  || '',
     first_name: firstName || '',
@@ -346,7 +351,7 @@ async function getOrCreateUser(userId, username, firstName) {
     };
     cache.users.set(userId, u);
     // مزامنة مع Supabase
-    supa.upsertUser(userId, username || '', firstName || '').catch(e => console.error('upsertUser catch:', e.message));
+    supa.upsertUser(userId, username || '', firstName || '').catch(() => {});
   }
   return cache.users.get(userId);
 }
