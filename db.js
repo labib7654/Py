@@ -1,23 +1,27 @@
-// @ts-nocheck
-import fs   from 'fs';
-import path from 'path';
+const fs   = require('fs');
+const path = require('path');
 
-const DATA_FILE = process.env['DATA_FILE']
-  ? path.resolve(process.env['DATA_FILE'])
-  : path.join(process.cwd(), 'data.json');
+const DATA_FILE = process.env.DATA_FILE
+  ? path.resolve(process.env.DATA_FILE)
+  : path.join(__dirname, '..', 'data.json');
 
 const groups      = new Map();
 const channels    = new Map();
 const users       = new Map();
 const communities = new Map();
 
+// ── إعدادات البوت العامة (FEATURE 6 — global protect) ────────
+const botSettings = {
+  globalProtectContent: false,
+};
+
 // ═══════════════════════════════════════════════════════════════
 //  Groups
 // ═══════════════════════════════════════════════════════════════
 
-export function getGroup(chatId) { return groups.get(chatId) || null; }
+function getGroup(chatId) { return groups.get(chatId) || null; }
 
-export function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
+function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
   if (!groups.has(chatId)) {
     groups.set(chatId, {
       chatId, title, type,
@@ -35,6 +39,7 @@ export function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) 
       mutedUsers:          new Set(),
       bannedUsers:         new Set(),
       bannedWords:         [],
+      allowedWords:        [],   // FEATURE 3: الكلمات المسموحة
       wordViolations:      new Map(),
       joinRequests:        new Map(),
       joinRequestsEnabled: false,
@@ -47,7 +52,8 @@ export function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) 
       timedMutes:          new Map(),
       timedBans:           new Map(),
       joinRequestCooldown: new Map(),
-      topics:       new Map(),
+      // المواضيع — FEATURE 2 (هيكل موسّع)
+      topics:       new Map(),   // topicId -> { name, locked, archived, requireJoinRequest, isPrivateTopic, specialization, approvedUsers, pendingRequests, specialistUserId, specialistUsername }
       topicSettings: {
         requireApprovalToJoin: false,
         autoLockOnCreate:      false,
@@ -63,20 +69,22 @@ export function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) 
         canManageTopics:   false,
       },
       auditLog: [],
+      // FEATURE 1: نوع الكيان
+      chatTypeInfo: null,
     });
   }
   return groups.get(chatId);
 }
 
-export function deleteGroup(chatId) { groups.delete(chatId); }
-export function allGroups()         { return [...groups.values()]; }
+function deleteGroup(chatId) { groups.delete(chatId); }
+function allGroups()         { return [...groups.values()]; }
 
 // ═══════════════════════════════════════════════════════════════
 //  Channels
 // ═══════════════════════════════════════════════════════════════
 
-export function getChannel(chatId) { return channels.get(chatId) || null; }
-export function getOrCreateChannel(chatId, title, username, addedBy, addedByUsername) {
+function getChannel(chatId) { return channels.get(chatId) || null; }
+function getOrCreateChannel(chatId, title, username, addedBy, addedByUsername) {
   if (!channels.has(chatId)) {
     channels.set(chatId, {
       chatId, title,
@@ -87,18 +95,27 @@ export function getOrCreateChannel(chatId, title, username, addedBy, addedByUser
       subscribers:      new Map(),
       ownerId:          null,
       ownerUsername:    '',
+      ownerVerified:    false,      // FEATURE 8
+      ownerVerifiedAt:  null,       // FEATURE 8
+      // FEATURE 8: إدارة القنوات الشاملة
+      protectContent:    false,
+      slowMode:          0,
+      pinnedMessageId:   null,
+      linkedGroupId:     null,
+      discussionEnabled: false,
+      postHistory:       [],
     });
   }
   return channels.get(chatId);
 }
-export function deleteChannel(chatId) { channels.delete(chatId); }
-export function allChannels()         { return [...channels.values()]; }
+function deleteChannel(chatId) { channels.delete(chatId); }
+function allChannels()         { return [...channels.values()]; }
 
 // ═══════════════════════════════════════════════════════════════
 //  Members
 // ═══════════════════════════════════════════════════════════════
 
-export function trackMember(chatId, userId, username, firstName, role) {
+function trackMember(chatId, userId, username, firstName, role) {
   const g = groups.get(chatId);
   if (!g) return;
   if (!g.members.has(userId)) {
@@ -124,7 +141,7 @@ export function trackMember(chatId, userId, username, firstName, role) {
 //  Users
 // ═══════════════════════════════════════════════════════════════
 
-export function getOrCreateUser(userId, username, firstName) {
+function getOrCreateUser(userId, username, firstName) {
   if (!users.has(userId)) {
     users.set(userId, {
       userId,
@@ -137,14 +154,15 @@ export function getOrCreateUser(userId, username, firstName) {
       lastSeen:     new Date(),
       groups:       new Set(),
       channels:     new Set(),
+      joinRequestHistory: [],   // FEATURE 7: تتبع تاريخ طلبات الانضمام
     });
   }
   return users.get(userId);
 }
-export function getUser(userId) { return users.get(userId) || null; }
-export function allUsers()      { return [...users.values()]; }
+function getUser(userId) { return users.get(userId) || null; }
+function allUsers()      { return [...users.values()]; }
 
-export function getUserGroups(userId) {
+function getUserGroups(userId) {
   return [...groups.values()]
     .filter(g => g.ownerId === userId || g.admins.has(userId))
     .map(g => g.chatId);
@@ -154,7 +172,7 @@ export function getUserGroups(userId) {
 //  Communities
 // ═══════════════════════════════════════════════════════════════
 
-export function getOrCreateCommunity(communityId, title) {
+function getOrCreateCommunity(communityId, title) {
   if (!communities.has(communityId)) {
     communities.set(communityId, {
       communityId, title,
@@ -162,15 +180,19 @@ export function getOrCreateCommunity(communityId, title) {
       memberJoins:      new Map(),
       maxGroupJoins:    1,
       enabled:          true,
-      autoBannedUsers:  new Map(),
+      autoBannedUsers:  new Map(), // userId -> { reason, groups[], bannedAt }
+      // FEATURE — community enhancements
+      ownerId:          null,
+      ownerUsername:    '',
+      topics:           new Map(),
     });
   }
   return communities.get(communityId);
 }
-export function getCommunity(communityId) { return communities.get(communityId) || null; }
-export function allCommunities()          { return [...communities.values()]; }
+function getCommunity(communityId) { return communities.get(communityId) || null; }
+function allCommunities()          { return [...communities.values()]; }
 
-export function recordCommunityJoin(communityId, userId, chatId) {
+function recordCommunityJoin(communityId, userId, chatId) {
   const c = communities.get(communityId);
   if (!c || !c.enabled) return false;
   if (!c.memberJoins.has(userId)) c.memberJoins.set(userId, new Set());
@@ -183,20 +205,20 @@ export function recordCommunityJoin(communityId, userId, chatId) {
 //  Word violations & Audit log
 // ═══════════════════════════════════════════════════════════════
 
-export function recordWordViolation(chatId, userId, word) {
+function recordWordViolation(chatId, userId, word) {
   const g = groups.get(chatId); if (!g) return 0;
   if (!g.wordViolations.has(userId)) g.wordViolations.set(userId, {});
   const vio = g.wordViolations.get(userId);
   vio[word] = (vio[word] || 0) + 1;
   return vio[word];
 }
-export function resetWordViolation(chatId, userId, word) {
+function resetWordViolation(chatId, userId, word) {
   const g = groups.get(chatId); if (!g) return;
   const vio = g.wordViolations.get(userId);
   if (vio) delete vio[word];
 }
 
-export function addAuditLog(chatId, entry) {
+function addAuditLog(chatId, entry) {
   const g = groups.get(chatId); if (!g) return;
   g.auditLog.unshift({ ...entry, at: new Date() });
   if (g.auditLog.length > 100) g.auditLog.length = 100;
@@ -206,7 +228,7 @@ export function addAuditLog(chatId, entry) {
 //  Stats
 // ═══════════════════════════════════════════════════════════════
 
-export function getStats() {
+function getStats() {
   return {
     totalGroups:   groups.size,
     totalChannels: channels.size,
@@ -222,7 +244,7 @@ export function getStats() {
 //  Persistence — save / load data.json
 // ═══════════════════════════════════════════════════════════════
 
-export function saveData() {
+function saveData() {
   try {
     const data = {
       savedAt: new Date().toISOString(),
@@ -242,7 +264,8 @@ export function saveData() {
           topics:              Object.fromEntries(
             [...v.topics.entries()].map(([tid, tv]) => [tid, {
               ...tv,
-              approvedUsers: tv.approvedUsers ? [...tv.approvedUsers] : [],
+              approvedUsers:   tv.approvedUsers   ? [...tv.approvedUsers]   : [],
+              pendingRequests: tv.pendingRequests  ? Object.fromEntries(tv.pendingRequests) : {},
             }])
           ),
         }])
@@ -258,6 +281,7 @@ export function saveData() {
           ...v,
           groups:   [...v.groups],
           channels: [...v.channels],
+          joinRequestHistory: v.joinRequestHistory || [],
         }])
       ),
       communities: Object.fromEntries(
@@ -268,27 +292,42 @@ export function saveData() {
             [...v.memberJoins.entries()].map(([uk, uv]) => [uk, [...uv]])
           ),
           autoBannedUsers: Object.fromEntries(v.autoBannedUsers || new Map()),
+          topics:          Object.fromEntries(v.topics || new Map()),
         }])
       ),
+      botSettings,
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (e) {
-    process.stderr.write('saveData error: ' + e.message + '\n');
+    console.error('saveData error:', e.message);
   }
 }
 
-export function loadData() {
+function loadData() {
   if (!fs.existsSync(DATA_FILE)) return;
   try {
     const raw  = fs.readFileSync(DATA_FILE, 'utf-8');
     const data = JSON.parse(raw);
 
+    // استعادة botSettings
+    if (data.botSettings) {
+      Object.assign(botSettings, data.botSettings);
+    }
+
     for (const [k, v] of Object.entries(data.groups || {})) {
+      // إعادة بناء topics بالهيكل الجديد
       const topicsMap = new Map();
       for (const [tid, tv] of Object.entries(v.topics || {})) {
         topicsMap.set(Number(tid), {
           ...tv,
-          approvedUsers: new Set((tv.approvedUsers || []).map(Number)),
+          approvedUsers:   new Set((tv.approvedUsers || []).map(Number)),
+          pendingRequests: new Map(Object.entries(tv.pendingRequests || {}).map(([uk, uv]) => [Number(uk), uv])),
+          // قيم افتراضية للحقول الجديدة
+          requireJoinRequest: tv.requireJoinRequest || false,
+          isPrivateTopic:     tv.isPrivateTopic     || false,
+          specialization:     tv.specialization     || '',
+          specialistUserId:   tv.specialistUserId   || null,
+          specialistUsername: tv.specialistUsername  || '',
         });
       }
 
@@ -308,6 +347,7 @@ export function loadData() {
         joinRequestCooldown: new Map(Object.entries(v.joinRequestCooldown || {}).map(([uk, uv]) => [Number(uk), uv])),
         wordViolations:      new Map(Object.entries(v.wordViolations || {}).map(([uk, uv]) => [Number(uk), uv])),
         topics:              topicsMap,
+        allowedWords:        v.allowedWords || [],
         topicSettings: v.topicSettings || {
           requireApprovalToJoin: false,
           autoLockOnCreate:      false,
@@ -318,25 +358,38 @@ export function loadData() {
           canAddWebPreviews: true, canInviteUsers: true,
           canPinMessages: false, canManageTopics: false,
         },
-        auditLog: v.auditLog || [],
+        auditLog:     v.auditLog     || [],
+        chatTypeInfo: v.chatTypeInfo || null,
       });
     }
 
+    // FIX: استعادة صحيحة للقنوات مع ownerId وownerUsername
     for (const [k, v] of Object.entries(data.channels || {})) {
       channels.set(Number(k), {
         ...v,
-        chatId:      Number(k),
-        subscribers: new Map(Object.entries(v.subscribers || {}).map(([uk, uv]) => [Number(uk), uv])),
+        chatId:            Number(k),
+        ownerId:           v.ownerId           || null,
+        ownerUsername:     v.ownerUsername      || '',
+        ownerVerified:     v.ownerVerified      || false,
+        ownerVerifiedAt:   v.ownerVerifiedAt    || null,
+        protectContent:    v.protectContent     || false,
+        slowMode:          v.slowMode           || 0,
+        pinnedMessageId:   v.pinnedMessageId    || null,
+        linkedGroupId:     v.linkedGroupId      || null,
+        discussionEnabled: v.discussionEnabled  || false,
+        postHistory:       v.postHistory        || [],
+        subscribers:       new Map(Object.entries(v.subscribers || {}).map(([uk, uv]) => [Number(uk), uv])),
       });
     }
 
     for (const [k, v] of Object.entries(data.users || {})) {
       users.set(Number(k), {
         ...v,
-        userId:   Number(k),
-        lastSeen: v.lastSeen || v.firstSeen || new Date(),
-        groups:   new Set((v.groups   || []).map(Number)),
-        channels: new Set((v.channels || []).map(Number)),
+        userId:             Number(k),
+        lastSeen:           v.lastSeen || v.firstSeen || new Date(),
+        groups:             new Set((v.groups   || []).map(Number)),
+        channels:           new Set((v.channels || []).map(Number)),
+        joinRequestHistory: v.joinRequestHistory || [],
       });
     }
 
@@ -344,6 +397,8 @@ export function loadData() {
       communities.set(Number(k), {
         ...v,
         communityId:     Number(k),
+        ownerId:         v.ownerId         || null,
+        ownerUsername:   v.ownerUsername   || '',
         subGroups:       new Set((v.subGroups || []).map(Number)),
         memberJoins:     new Map(
           Object.entries(v.memberJoins || {}).map(([uk, uv]) => [Number(uk), new Set((uv || []).map(Number))])
@@ -351,12 +406,13 @@ export function loadData() {
         autoBannedUsers: new Map(
           Object.entries(v.autoBannedUsers || {}).map(([uk, uv]) => [Number(uk), uv])
         ),
+        topics: new Map(Object.entries(v.topics || {})),
       });
     }
 
-    process.stdout.write(`✅ تم استعادة البيانات: ${groups.size} مجموعة، ${users.size} مستخدم\n`);
+    console.log(`✅ تم استعادة البيانات: ${groups.size} مجموعة، ${users.size} مستخدم`);
   } catch (e) {
-    process.stderr.write('loadData error: ' + e.message + '\n');
+    console.error('loadData error:', e.message);
   }
 }
 
@@ -378,6 +434,20 @@ setInterval(() => {
 
 loadData();
 setInterval(saveData, 5 * 60 * 1000);
-process.on('SIGINT',  () => { saveData(); });
-process.on('SIGTERM', () => { saveData(); });
+process.on('SIGINT',  () => { saveData(); process.exit(0); });
+process.on('SIGTERM', () => { saveData(); process.exit(0); });
 process.on('exit',    () => { saveData(); });
+
+module.exports = {
+  getGroup, getOrCreateGroup, deleteGroup, allGroups,
+  getChannel, getOrCreateChannel, deleteChannel, allChannels,
+  trackMember,
+  getOrCreateUser, getUser, allUsers, getUserGroups,
+  getOrCreateCommunity, getCommunity, allCommunities, recordCommunityJoin,
+  recordWordViolation, resetWordViolation,
+  addAuditLog,
+  getStats,
+  saveData,
+  loadData,   // FEATURE 5: مطلوب لاستعادة البيانات
+  botSettings, // FEATURE 6: حماية عالمية
+};
