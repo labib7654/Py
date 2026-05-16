@@ -3,7 +3,7 @@ const path = require('path');
 
 const DATA_FILE = process.env.DATA_FILE
   ? path.resolve(process.env.DATA_FILE)
-  : path.join(__dirname, 'data.json');
+  : path.join(__dirname, '..', 'data.json');
 
 const groups      = new Map();
 const channels    = new Map();
@@ -46,8 +46,8 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
       timedMutes:          new Map(),
       timedBans:           new Map(),
       joinRequestCooldown: new Map(),
-      // المواضيع
-      topics:       new Map(),   // topicId -> { name, locked, archived, approvedUsers: Set }
+      // ميزة المواضيع (Topics) - جديدة
+      topics: new Map(),
       topicSettings: {
         requireApprovalToJoin: false,
         autoLockOnCreate:      false,
@@ -158,11 +158,12 @@ function getOrCreateCommunity(communityId, title) {
   if (!communities.has(communityId)) {
     communities.set(communityId, {
       communityId, title,
-      subGroups:        new Set(),
-      memberJoins:      new Map(),
-      maxGroupJoins:    1,
-      enabled:          true,
-      autoBannedUsers:  new Map(), // userId -> { reason, groups[], bannedAt }
+      subGroups:      new Set(),
+      memberJoins:    new Map(),
+      maxGroupJoins:  1,
+      enabled:        true,
+      // جديد: سجل المحظورين تلقائياً
+      autoBannedUsers: new Map(),
     });
   }
   return communities.get(communityId);
@@ -239,8 +240,9 @@ function saveData() {
           joinRequests:        Object.fromEntries(v.joinRequests),
           joinRequestCooldown: Object.fromEntries(v.joinRequestCooldown),
           wordViolations:      Object.fromEntries(v.wordViolations),
-          topics:              Object.fromEntries(
-            [...v.topics.entries()].map(([tid, tv]) => [tid, {
+          // مواضيع
+          topics: Object.fromEntries(
+            [...v.topics.entries()].map(([tk, tv]) => [tk, {
               ...tv,
               approvedUsers: tv.approvedUsers ? [...tv.approvedUsers] : [],
             }])
@@ -263,8 +265,8 @@ function saveData() {
       communities: Object.fromEntries(
         [...communities.entries()].map(([k, v]) => [k, {
           ...v,
-          subGroups:       [...v.subGroups],
-          memberJoins:     Object.fromEntries(
+          subGroups:   [...v.subGroups],
+          memberJoins: Object.fromEntries(
             [...v.memberJoins.entries()].map(([uk, uv]) => [uk, [...uv]])
           ),
           autoBannedUsers: Object.fromEntries(v.autoBannedUsers || new Map()),
@@ -284,10 +286,10 @@ function loadData() {
     const data = JSON.parse(raw);
 
     for (const [k, v] of Object.entries(data.groups || {})) {
-      // إعادة بناء topics
+      // إعادة بناء topics مع approvedUsers كـ Set
       const topicsMap = new Map();
-      for (const [tid, tv] of Object.entries(v.topics || {})) {
-        topicsMap.set(Number(tid), {
+      for (const [tk, tv] of Object.entries(v.topics || {})) {
+        topicsMap.set(Number(tk), {
           ...tv,
           approvedUsers: new Set((tv.approvedUsers || []).map(Number)),
         });
@@ -309,7 +311,7 @@ function loadData() {
         joinRequestCooldown: new Map(Object.entries(v.joinRequestCooldown || {}).map(([uk, uv]) => [Number(uk), uv])),
         wordViolations:      new Map(Object.entries(v.wordViolations || {}).map(([uk, uv]) => [Number(uk), uv])),
         topics:              topicsMap,
-        topicSettings: v.topicSettings || {
+        topicSettings:       v.topicSettings || {
           requireApprovalToJoin: false,
           autoLockOnCreate:      false,
           ownerBypassAll:        true,
@@ -335,7 +337,6 @@ function loadData() {
       users.set(Number(k), {
         ...v,
         userId:   Number(k),
-        lastSeen: v.lastSeen || v.firstSeen || new Date(),
         groups:   new Set((v.groups   || []).map(Number)),
         channels: new Set((v.channels || []).map(Number)),
       });
@@ -344,44 +345,23 @@ function loadData() {
     for (const [k, v] of Object.entries(data.communities || {})) {
       communities.set(Number(k), {
         ...v,
-        communityId:     Number(k),
-        subGroups:       new Set((v.subGroups || []).map(Number)),
-        memberJoins:     new Map(
+        communityId: Number(k),
+        subGroups:   new Set((v.subGroups || []).map(Number)),
+        memberJoins: new Map(
           Object.entries(v.memberJoins || {}).map(([uk, uv]) => [Number(uk), new Set((uv || []).map(Number))])
         ),
-        autoBannedUsers: new Map(
-          Object.entries(v.autoBannedUsers || {}).map(([uk, uv]) => [Number(uk), uv])
-        ),
+        autoBannedUsers: new Map(Object.entries(v.autoBannedUsers || {})),
       });
     }
 
-    console.log(`✅ تم استعادة البيانات: ${groups.size} مجموعة، ${users.size} مستخدم`);
+    console.log(`✅ تم تحميل البيانات: ${groups.size} مجموعة، ${users.size} مستخدم`);
   } catch (e) {
     console.error('loadData error:', e.message);
   }
 }
 
-// تنظيف الكتم/الحظر المنتهي كل دقيقة
-setInterval(() => {
-  const now = Date.now();
-  for (const g of groups.values()) {
-    for (const [uid, expiry] of g.timedBans.entries()) {
-      if (expiry <= now) g.timedBans.delete(uid);
-    }
-    for (const [uid, expiry] of g.timedMutes.entries()) {
-      if (expiry <= now) {
-        g.timedMutes.delete(uid);
-        g.mutedUsers.delete(uid);
-      }
-    }
-  }
-}, 60 * 1000);
-
-loadData();
-setInterval(saveData, 5 * 60 * 1000);
-process.on('SIGINT',  () => { saveData(); process.exit(0); });
-process.on('SIGTERM', () => { saveData(); process.exit(0); });
-process.on('exit',    () => { saveData(); });
+// حفظ تلقائي كل دقيقتين
+setInterval(saveData, 2 * 60 * 1000);
 
 module.exports = {
   getGroup, getOrCreateGroup, deleteGroup, allGroups,
@@ -392,5 +372,5 @@ module.exports = {
   recordWordViolation, resetWordViolation,
   addAuditLog,
   getStats,
-  saveData,
+  saveData, loadData,
 };
