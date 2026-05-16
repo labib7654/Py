@@ -7,10 +7,10 @@ const db                  = require('./db');
 const { globalMiddleware, messageTrackingMiddleware } = require('./middleware');
 
 // ── Handlers ─────────────────────────────────────────────────
-const setupDeveloperHandlers = require('./handlers/developer/index');
-const setupOwnerHandlers     = require('./handlers/owner/index');
-const setupAdminHandlers     = require('./handlers/admin');
-const setupGroupHandlers     = require('./handlers/groups');
+const setupDeveloperHandlers = require('./handler_developer');
+const setupOwnerHandlers     = require('./handler_owner');
+const setupAdminHandlers     = require('./handler_admin');
+const setupGroupHandlers     = require('./handler_groups');
 
 // ────────────────────────────────────────────────────────────
 if (!BOT_TOKEN) { console.error('❌ BOT_TOKEN غير محدد في .env'); process.exit(1); }
