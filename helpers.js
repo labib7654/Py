@@ -1,22 +1,24 @@
-const { DEVELOPER_ID } = require('./config');
+// @ts-nocheck
+import * as db from './db';
+import { DEVELOPER_ID } from './config';
 
-function isDeveloper(ctx) { return ctx.from && ctx.from.id === DEVELOPER_ID; }
+export function isDeveloper(ctx) { return ctx.from && ctx.from.id === DEVELOPER_ID; }
 
-async function isAdmin(bot, chatId, userId) {
+export async function isAdmin(bot, chatId, userId) {
   try {
     const m = await bot.telegram.getChatMember(chatId, userId);
     return ['administrator', 'creator'].includes(m.status);
   } catch { return false; }
 }
 
-async function isOwner(bot, chatId, userId) {
+export async function isOwner(bot, chatId, userId) {
   try {
     const m = await bot.telegram.getChatMember(chatId, userId);
     return m.status === 'creator';
   } catch { return false; }
 }
 
-async function checkBotPermissions(bot, chatId, permission) {
+export async function checkBotPermissions(bot, chatId, permission) {
   try {
     const botId  = (await bot.telegram.getMe()).id;
     const member = await bot.telegram.getChatMember(chatId, botId);
@@ -25,7 +27,7 @@ async function checkBotPermissions(bot, chatId, permission) {
   } catch { return false; }
 }
 
-async function getTargetUser(ctx) {
+export async function getTargetUser(ctx) {
   const msg = ctx.message;
   if (msg?.reply_to_message?.from) {
     const u = msg.reply_to_message.from;
@@ -42,11 +44,11 @@ async function getTargetUser(ctx) {
   return null;
 }
 
-function getReason(text, offset = 1) {
+export function getReason(text, offset = 1) {
   return text.split(' ').slice(offset).join(' ').trim() || 'لا يوجد سبب';
 }
 
-async function muteMember(bot, chatId, userId) {
+export async function muteMember(bot, chatId, userId) {
   await bot.telegram.restrictChatMember(chatId, userId, {
     permissions: {
       can_send_messages:         false,
@@ -63,7 +65,7 @@ async function muteMember(bot, chatId, userId) {
   });
 }
 
-async function muteMemberTimed(bot, chatId, userId, durationSeconds) {
+export async function muteMemberTimed(bot, chatId, userId, durationSeconds) {
   const untilDate = Math.floor(Date.now() / 1000) + durationSeconds;
   await bot.telegram.restrictChatMember(chatId, userId, {
     permissions: {
@@ -82,12 +84,12 @@ async function muteMemberTimed(bot, chatId, userId, durationSeconds) {
   });
 }
 
-async function banMemberTimed(bot, chatId, userId, durationSeconds) {
+export async function banMemberTimed(bot, chatId, userId, durationSeconds) {
   const untilDate = Math.floor(Date.now() / 1000) + durationSeconds;
   await bot.telegram.banChatMember(chatId, userId, { until_date: untilDate });
 }
 
-async function unmutePerms() {
+export async function unmutePerms() {
   return {
     can_send_messages:         true,
     can_send_audios:           true,
@@ -102,7 +104,7 @@ async function unmutePerms() {
   };
 }
 
-async function promoteUser(bot, chatId, userId) {
+export async function promoteUser(bot, chatId, userId) {
   try {
     await bot.telegram.promoteChatMember(chatId, userId, {
       can_manage_chat:        true,
@@ -118,7 +120,7 @@ async function promoteUser(bot, chatId, userId) {
   } catch { return false; }
 }
 
-async function demoteUser(bot, chatId, userId) {
+export async function demoteUser(bot, chatId, userId) {
   try {
     await bot.telegram.promoteChatMember(chatId, userId, {
       can_manage_chat:        false,
@@ -134,7 +136,7 @@ async function demoteUser(bot, chatId, userId) {
   } catch { return false; }
 }
 
-async function applyGroupPermissions(bot, chatId, perms) {
+export async function applyGroupPermissions(bot, chatId, perms) {
   await bot.telegram.setChatPermissions(chatId, {
     can_send_messages:         perms.canSendMessages,
     can_send_audios:           perms.canSendMedia,
@@ -152,8 +154,7 @@ async function applyGroupPermissions(bot, chatId, perms) {
   });
 }
 
-async function logAction(bot, g, action, by, target, details = '') {
-  const db    = require('./db');
+export async function logAction(bot, g, action, by, target, details = '') {
   const entry = {
     action,
     by:     { id: by.id, username: by.username || by.first_name || String(by.id) },
@@ -176,12 +177,10 @@ async function logAction(bot, g, action, by, target, details = '') {
   } catch {}
 }
 
-// ── إنشاء/تحديث رابط الدعوة + ضبط صلاحية الدعوة ─────────────
-async function setJoinApproval(bot, chatId, enabled) {
+export async function setJoinApproval(bot, chatId, enabled) {
   try {
-    // 1. تعطيل/تفعيل قدرة الأعضاء على دعوة آخرين مباشرة
     await bot.telegram.setChatPermissions(chatId, {
-      can_invite_users:          !enabled, // عند تفعيل الموافقة: امنع الأعضاء من الدعوة المباشرة
+      can_invite_users:          !enabled,
       can_send_messages:         true,
       can_send_audios:           true,
       can_send_documents:        true,
@@ -194,7 +193,6 @@ async function setJoinApproval(bot, chatId, enabled) {
     });
   } catch {}
 
-  // 2. إنشاء رابط دعوة رسمي يشترط الموافقة (أو لا)
   try {
     const link = await bot.telegram.callApi('createChatInviteLink', {
       chat_id:              chatId,
@@ -202,21 +200,18 @@ async function setJoinApproval(bot, chatId, enabled) {
       name: enabled ? 'رابط رسمي - موافقة مطلوبة' : 'رابط رسمي - دخول مباشر',
     });
     return link;
-  } catch (e) {
-    console.error('setJoinApproval (createLink) error:', e.message);
+  } catch {
     return null;
   }
 }
 
-// ── التحقق من المالك الحقيقي ─────────────────────────────────
-async function verifyAndRegisterOwner(bot, chatId) {
+export async function verifyAndRegisterOwner(bot, chatId) {
   try {
     const admins  = await bot.telegram.getChatAdministrators(chatId);
     const creator = admins.find(a => a.status === 'creator' && !a.user.is_bot);
     if (!creator) return null;
 
-    const db = require('./db');
-    const g  = db.getGroup(chatId);
+    const g = db.getGroup(chatId);
     if (g) {
       g.ownerId         = creator.user.id;
       g.ownerUsername   = creator.user.username || creator.user.first_name || String(creator.user.id);
@@ -226,45 +221,28 @@ async function verifyAndRegisterOwner(bot, chatId) {
 
     db.getOrCreateUser(creator.user.id, creator.user.username || '', creator.user.first_name || '');
     return creator.user;
-  } catch (e) {
-    console.error(`verifyOwner error for ${chatId}:`, e.message);
+  } catch {
     return null;
   }
 }
 
-// ── إدارة المواضيع (Topics) ────────────────────────────────────
-async function lockTopic(bot, chatId, topicId) {
+export async function lockTopic(bot, chatId, topicId) {
   await bot.telegram.callApi('closeForumTopic', {
     chat_id:           chatId,
     message_thread_id: topicId,
   });
 }
 
-async function unlockTopic(bot, chatId, topicId) {
+export async function unlockTopic(bot, chatId, topicId) {
   await bot.telegram.callApi('reopenForumTopic', {
     chat_id:           chatId,
     message_thread_id: topicId,
   });
 }
 
-async function archiveTopic(bot, chatId, topicId) {
-  // إغلاق + إخفاء الموضوع
+export async function archiveTopic(bot, chatId, topicId) {
   await bot.telegram.callApi('closeForumTopic', {
     chat_id:           chatId,
     message_thread_id: topicId,
   });
 }
-
-module.exports = {
-  isDeveloper, isAdmin, isOwner, checkBotPermissions,
-  getTargetUser, getReason,
-  muteMember, muteMemberTimed,
-  banMemberTimed,
-  unmutePerms,
-  promoteUser, demoteUser,
-  applyGroupPermissions,
-  logAction,
-  setJoinApproval,
-  verifyAndRegisterOwner,
-  lockTopic, unlockTopic, archiveTopic,
-};

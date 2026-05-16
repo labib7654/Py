@@ -1,18 +1,17 @@
-const { Markup } = require('telegraf');
-const db         = require('./db');
-const {
+// @ts-nocheck
+import { Markup } from 'telegraf';
+import * as db         from './db';
+import {
   isDeveloper, isAdmin, isOwner,
   applyGroupPermissions, logAction,
   setJoinApproval, verifyAndRegisterOwner,
   lockTopic, unlockTopic, archiveTopic,
-} = require('./helpers');
+} from './helpers';
 
-// ── Map لتتبع جلسات إضافة كلمات محظورة ───────────────────────
 const pendingAddWord = new Map();
 
-// ── لوحة الإعدادات الرئيسية ──────────────────────────────────
 function groupSettingsKeyboard(chatId, s) {
-  const com = s.communityId ? require('./db').getCommunity(s.communityId) : null;
+  const com = s.communityId ? db.getCommunity(s.communityId) : null;
   return Markup.inlineKeyboard([
     [
       Markup.button.callback(`${s.joinRequestsEnabled ? '🔒' : '🔓'} موافقة الانضمام`, `toggle_joinreq_${chatId}`),
@@ -49,7 +48,6 @@ function groupSettingsKeyboard(chatId, s) {
   ]);
 }
 
-// ── لوحة صلاحيات الأعضاء ────────────────────────────────────
 function permissionsDashboard(chatId, perms) {
   return Markup.inlineKeyboard([
     [Markup.button.callback(`${perms.canSendMessages   ? '✅' : '❌'} إرسال رسائل`,    `perm_msg_${chatId}`)],
@@ -63,7 +61,7 @@ function permissionsDashboard(chatId, perms) {
   ]);
 }
 
-module.exports = function setupOwnerHandlers(bot) {
+export default function setupOwnerHandlers(bot) {
 
   // ════════════════════════════════════════════════════════════
   //  الأوامر
@@ -436,7 +434,6 @@ module.exports = function setupOwnerHandlers(bot) {
       ? `🔒 موافقة الانضمام مفعّلة — أي شخص يحاول الدخول سيُرسل طلب انضمام${link ? '\n🔗 ' + link.invite_link : ''}`
       : '🔓 موافقة الانضمام معطّلة — انضمام مباشر';
     await ctx.answerCbQuery(msg, { show_alert: true });
-    // إرسال الرابط للمالك في الخاص إن وجد
     if (link?.invite_link && g.ownerId) {
       try {
         await bot.telegram.sendMessage(g.ownerId,
@@ -554,7 +551,6 @@ module.exports = function setupOwnerHandlers(bot) {
     await ctx.answerCbQuery(
       g.topicSettings.requireApprovalToJoin ? '✅ طلبات دخول المواضيع مفعّلة!' : '❌ طلبات دخول المواضيع معطّلة!'
     );
-    // أعد عرض اللوحة
     const ts   = g.topicSettings;
     let text   = `🧵 *إدارة المواضيع — ${g.title}*\n\n`;
     text += `🔒 طلبات دخول المواضيع: ${ts.requireApprovalToJoin ? '✅ مفعّل' : '❌ معطّل'}\n`;
@@ -752,5 +748,4 @@ module.exports = function setupOwnerHandlers(bot) {
     btns.push([Markup.button.callback('🔙 رجوع', `group_home_${chatId}`)]);
     await ctx.editMessageText(`📨 *طلبات الانضمام* (${pending.length} معلقة)`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
   });
-
-};
+}

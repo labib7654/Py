@@ -1,7 +1,3 @@
-require('dotenv').config();
-
-module.exports = {
-  BOT_TOKEN:    process.env.BOT_TOKEN    || '',
-  DEVELOPER_ID: Number(process.env.DEVELOPER_ID || '0'),
-  PORT:         Number(process.env.PORT          || 3000),
-};
+// @ts-nocheck
+export const BOT_TOKEN   = process.env['BOT_TOKEN']    || '';
+export const DEVELOPER_ID = Number(process.env['DEVELOPER_ID']) || 0;

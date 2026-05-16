@@ -1,10 +1,11 @@
-const { Markup }    = require('telegraf');
-const db            = require('./db');
-const {
+// @ts-nocheck
+import { Markup }    from 'telegraf';
+import * as db            from './db';
+import {
   isDeveloper, isAdmin,
   muteMember, promoteUser, logAction,
-} = require('./helpers');
-const { DEVELOPER_ID } = require('./config');
+} from './helpers';
+import { DEVELOPER_ID } from './config';
 
 function groupHomeKeyboard(chatId) {
   return Markup.inlineKeyboard([
@@ -14,7 +15,7 @@ function groupHomeKeyboard(chatId) {
   ]);
 }
 
-module.exports = function setupGroupHandlers(bot) {
+export default function setupGroupHandlers(bot) {
 
   // ── انضمام/مغادرة البوت ───────────────────────────────────────────────
   bot.on('my_chat_member', async (ctx) => {
@@ -80,20 +81,18 @@ module.exports = function setupGroupHandlers(bot) {
     if (newM.status === 'administrator' && oldM.status !== 'administrator') { if (g) g.admins.set(u.id, { username: u.username || u.first_name || String(u.id), promotedBy: by.id, promotedByUsername: by.username || by.first_name || String(by.id), promotedAt: new Date() }); db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'admin'); }
     if (oldM.status === 'administrator' && newM.status === 'member') { if (g) g.admins.delete(u.id); db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'member'); }
 
-    // ── فحص منع البوتات (محسّن) ──────────────────────────────────────
+    // ── فحص منع البوتات ──────────────────────────────────────────────────
     if (g?.antiBot && u.is_bot) {
       try { await bot.telegram.banChatMember(chat.id, u.id); } catch {}
 
       const adderName = by.username ? `@${by.username}` : by.first_name;
 
-      // تسجيل في سجل الإجراءات
       await logAction(bot, g, '🤖 إزالة بوت', by,
         { id: u.id, username: u.username || '', firstName: u.first_name || 'بوت' },
         `البوت المضاف: @${u.username || u.id}`
       );
 
-      // تحذير من أضاف البوت
-      if (!u.is_bot || by.id !== u.id) { // تأكد أن الباني بشر
+      if (!u.is_bot || by.id !== u.id) {
         if (!g.warns.has(by.id)) g.warns.set(by.id, []);
         const warns = g.warns.get(by.id);
         warns.push({
@@ -103,7 +102,6 @@ module.exports = function setupGroupHandlers(bot) {
           isAutomatic: true,
         });
 
-        // إرسال تحذير في المجموعة
         try {
           await bot.telegram.sendMessage(chat.id,
             `🤖 *تنبيه — منع البوتات*\n\n` +
@@ -114,7 +112,6 @@ module.exports = function setupGroupHandlers(bot) {
           );
         } catch {}
 
-        // حظر إذا تجاوز الحد
         if (warns.length >= g.maxWarns) {
           try {
             await bot.telegram.banChatMember(chat.id, by.id);
@@ -131,7 +128,7 @@ module.exports = function setupGroupHandlers(bot) {
     }
 
     if (newM.status === 'member' && (oldM.status === 'left' || oldM.status === 'kicked')) {
-      if (u.is_bot) return; // تجاهل البوتات بعد السماح بها
+      if (u.is_bot) return;
       const urec = db.getOrCreateUser(u.id, u.username || '', u.first_name || '');
       urec.groups.add(chat.id);
       db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'member');
@@ -145,7 +142,6 @@ module.exports = function setupGroupHandlers(bot) {
           try { await bot.telegram.banChatMember(chat.id, u.id); g.bannedUsers.add(u.id); } catch {}
           if (com) { for (const id of com.subGroups) { try { await bot.telegram.banChatMember(id, u.id); } catch {} } }
 
-          // رسالة مفصّلة بأسماء المجموعات التي انضم لها
           const joinedGroupNames = [...(com?.memberJoins.get(u.id) || [])].map(id => {
             const grp = db.getGroup(id);
             return grp ? grp.title : String(id);
@@ -160,7 +156,6 @@ module.exports = function setupGroupHandlers(bot) {
             `🕐 وقت الحظر: ${new Date().toLocaleString('ar')}\n\n` +
             `⚠️ سبب الحظر: انضم لأكثر من المسموح به من مجموعات المجتمع.`;
 
-          // تسجيل في autoBannedUsers
           if (com) {
             if (!com.autoBannedUsers) com.autoBannedUsers = new Map();
             com.autoBannedUsers.set(u.id, {
@@ -196,10 +191,8 @@ module.exports = function setupGroupHandlers(bot) {
     const g    = db.getGroup(chat.id);
     if (!g) return;
 
-    // تجاهل الطلبات إذا لم تكن ميزة الموافقة مفعّلة
     if (!g.joinRequestsEnabled) return;
 
-    // فحص فترة الحظر من إعادة الطلب
     const cooldown = g.joinRequestCooldown.get(u.id);
     if (cooldown && cooldown > Date.now()) {
       try { await bot.telegram.declineChatJoinRequest(chat.id, u.id); } catch {}
@@ -348,7 +341,6 @@ module.exports = function setupGroupHandlers(bot) {
     if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
     const g = db.getGroup(ctx.chat.id);
 
-    // تتبع تلقائي للمجموعات غير المسجّلة
     if (!g && ctx.chat.type !== 'private') {
       const newG = db.getOrCreateGroup(ctx.chat.id, ctx.chat.title || 'مجموعة', ctx.chat.type, 0, 'unknown');
       try {
@@ -411,7 +403,7 @@ module.exports = function setupGroupHandlers(bot) {
         );
       } catch {}
     }
-    return; // لا تكمل next() — الرسالة حُذفت
+    return;
   });
 
   // ── قبول/رفض طلب دخول موضوع ──────────────────────────────────────────
@@ -537,4 +529,4 @@ module.exports = function setupGroupHandlers(bot) {
     await ctx.answerCbQuery('✅');
     await ctx.deleteMessage().catch(() => {});
   });
-};
+}

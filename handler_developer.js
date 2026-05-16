@@ -1,11 +1,12 @@
-const { Markup } = require('telegraf');
-const db = require('./db');
-const {
+// @ts-nocheck
+import { Markup } from 'telegraf';
+import * as db from './db';
+import {
   isDeveloper, isAdmin, isOwner,
   promoteUser, demoteUser,
   muteMember, unmutePerms,
   logAction,
-} = require('./helpers');
+} from './helpers';
 
 function devMainKeyboard() {
   return Markup.inlineKeyboard([
@@ -44,7 +45,7 @@ function memberActionsKeyboard(targetId, chatId, backCb) {
   ]);
 }
 
-module.exports = function setupDeveloper(bot) {
+export default function setupDeveloper(bot) {
 
   // ── /start ──────────────────────────────────────────────────
   bot.command('start', async (ctx) => {
@@ -342,7 +343,7 @@ module.exports = function setupDeveloper(bot) {
     );
   });
 
-  // ── dev_channels ─────────────────────────────────────────────
+  // ── dev_channels ─────────────────────────────────────────────────────────
   bot.action('dev_channels', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
@@ -365,7 +366,7 @@ module.exports = function setupDeveloper(bot) {
     );
   });
 
-  // ── dev_communities ──────────────────────────────────────────
+  // ── dev_communities ──────────────────────────────────────────────────────
   bot.action('dev_communities', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
@@ -390,7 +391,7 @@ module.exports = function setupDeveloper(bot) {
     );
   });
 
-  // ── /community ───────────────────────────────────────────────
+  // ── /community ───────────────────────────────────────────────────────────
   bot.command('community', async (ctx) => {
     if (!isDeveloper(ctx)) return;
     const args = ctx.message.text.split(' ').slice(1);
@@ -416,7 +417,7 @@ module.exports = function setupDeveloper(bot) {
     ctx.replyWithMarkdown('🌐 *أوامر المجتمعات:*\n\n`/community create <معرف> <الاسم>`\n`/community addgroup <معرف_مجتمع> <معرف_مجموعة>`\n`/community setlimit <معرف_مجتمع> <الحد>`');
   });
 
-  // ── dev_broadcast ────────────────────────────────────────────
+  // ── dev_broadcast ────────────────────────────────────────────────────────
   bot.action('dev_broadcast', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
@@ -433,7 +434,7 @@ module.exports = function setupDeveloper(bot) {
     catch (e) { await ctx.reply(`❌ ${e.message}`); }
   });
 
-  // ── dev_ban_menu / dev_unban_menu ────────────────────────────
+  // ── dev_ban_menu / dev_unban_menu ────────────────────────────────────────
   bot.action('dev_ban_menu', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
@@ -468,7 +469,7 @@ module.exports = function setupDeveloper(bot) {
     await ctx.replyWithMarkdown(`✅ *رُفع الحظر عن:* \`${targetId}\``);
   });
 
-  // ── dev_banned_list ──────────────────────────────────────────
+  // ── dev_banned_list ──────────────────────────────────────────────────────
   bot.action('dev_banned_list', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
@@ -480,7 +481,7 @@ module.exports = function setupDeveloper(bot) {
     await ctx.editMessageText(text, { parse_mode: 'Markdown', ...back('dev_back') });
   });
 
-  // ── dev_user_search / /userinfo ──────────────────────────────
+  // ── dev_user_search / /userinfo ──────────────────────────────────────────
   bot.action('dev_user_search', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
@@ -500,12 +501,11 @@ module.exports = function setupDeveloper(bot) {
     );
   });
 
-  // ── 👤 مستخدمو البوت ─────────────────────────────────────────
+  // ── 👤 مستخدمو البوت ─────────────────────────────────────────────────────
   bot.action('dev_bot_users', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
 
-    // من أضاف البوت لمجموعات
     const addedByStats = new Map();
     for (const g of db.allGroups()) {
       const key = g.addedBy;
@@ -532,7 +532,7 @@ module.exports = function setupDeveloper(bot) {
     await ctx.editMessageText(text, { parse_mode: 'Markdown', ...back('dev_back') });
   });
 
-  // ── 📈 استخدام البوت ─────────────────────────────────────────
+  // ── 📈 استخدام البوت ─────────────────────────────────────────────────────
   bot.action('dev_usage', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
@@ -540,7 +540,7 @@ module.exports = function setupDeveloper(bot) {
     const totalMsgs  = groups.reduce((a, g) => a + [...g.members.values()].reduce((b, m) => b + (m.messageCount || 0), 0), 0);
     const totalWords = groups.reduce((a, g) => a + g.bannedWords.length, 0);
     const totalWarns = groups.reduce((a, g) => a + [...g.warns.values()].reduce((b, w) => b + w.length, 0), 0);
-    const topGroup   = groups.sort((a, b) => b.members.size - a.members.size)[0];
+    const topGroup   = [...groups].sort((a, b) => b.members.size - a.members.size)[0];
     await ctx.editMessageText(
       `📈 *استخدام البوت*\n\n` +
       `💬 إجمالي الرسائل المسجّلة: \`${totalMsgs}\`\n` +
@@ -552,7 +552,7 @@ module.exports = function setupDeveloper(bot) {
     );
   });
 
-  // ── dev_refresh / dev_back ───────────────────────────────────
+  // ── dev_refresh / dev_back ───────────────────────────────────────────────
   bot.action('dev_refresh', async (ctx) => {
     if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery('🔄 تم التحديث!');
@@ -572,5 +572,4 @@ module.exports = function setupDeveloper(bot) {
       { parse_mode: 'Markdown', ...devMainKeyboard() }
     );
   });
-
-};
+}

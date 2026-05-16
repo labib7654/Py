@@ -1,9 +1,10 @@
-const fs   = require('fs');
-const path = require('path');
+// @ts-nocheck
+import fs   from 'fs';
+import path from 'path';
 
-const DATA_FILE = process.env.DATA_FILE
-  ? path.resolve(process.env.DATA_FILE)
-  : path.join(__dirname, 'data.json');
+const DATA_FILE = process.env['DATA_FILE']
+  ? path.resolve(process.env['DATA_FILE'])
+  : path.join(process.cwd(), 'data.json');
 
 const groups      = new Map();
 const channels    = new Map();
@@ -14,9 +15,9 @@ const communities = new Map();
 //  Groups
 // ═══════════════════════════════════════════════════════════════
 
-function getGroup(chatId) { return groups.get(chatId) || null; }
+export function getGroup(chatId) { return groups.get(chatId) || null; }
 
-function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
+export function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
   if (!groups.has(chatId)) {
     groups.set(chatId, {
       chatId, title, type,
@@ -46,8 +47,7 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
       timedMutes:          new Map(),
       timedBans:           new Map(),
       joinRequestCooldown: new Map(),
-      // المواضيع
-      topics:       new Map(),   // topicId -> { name, locked, archived, approvedUsers: Set }
+      topics:       new Map(),
       topicSettings: {
         requireApprovalToJoin: false,
         autoLockOnCreate:      false,
@@ -68,15 +68,15 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
   return groups.get(chatId);
 }
 
-function deleteGroup(chatId) { groups.delete(chatId); }
-function allGroups()         { return [...groups.values()]; }
+export function deleteGroup(chatId) { groups.delete(chatId); }
+export function allGroups()         { return [...groups.values()]; }
 
 // ═══════════════════════════════════════════════════════════════
 //  Channels
 // ═══════════════════════════════════════════════════════════════
 
-function getChannel(chatId) { return channels.get(chatId) || null; }
-function getOrCreateChannel(chatId, title, username, addedBy, addedByUsername) {
+export function getChannel(chatId) { return channels.get(chatId) || null; }
+export function getOrCreateChannel(chatId, title, username, addedBy, addedByUsername) {
   if (!channels.has(chatId)) {
     channels.set(chatId, {
       chatId, title,
@@ -91,14 +91,14 @@ function getOrCreateChannel(chatId, title, username, addedBy, addedByUsername) {
   }
   return channels.get(chatId);
 }
-function deleteChannel(chatId) { channels.delete(chatId); }
-function allChannels()         { return [...channels.values()]; }
+export function deleteChannel(chatId) { channels.delete(chatId); }
+export function allChannels()         { return [...channels.values()]; }
 
 // ═══════════════════════════════════════════════════════════════
 //  Members
 // ═══════════════════════════════════════════════════════════════
 
-function trackMember(chatId, userId, username, firstName, role) {
+export function trackMember(chatId, userId, username, firstName, role) {
   const g = groups.get(chatId);
   if (!g) return;
   if (!g.members.has(userId)) {
@@ -124,7 +124,7 @@ function trackMember(chatId, userId, username, firstName, role) {
 //  Users
 // ═══════════════════════════════════════════════════════════════
 
-function getOrCreateUser(userId, username, firstName) {
+export function getOrCreateUser(userId, username, firstName) {
   if (!users.has(userId)) {
     users.set(userId, {
       userId,
@@ -141,10 +141,10 @@ function getOrCreateUser(userId, username, firstName) {
   }
   return users.get(userId);
 }
-function getUser(userId) { return users.get(userId) || null; }
-function allUsers()      { return [...users.values()]; }
+export function getUser(userId) { return users.get(userId) || null; }
+export function allUsers()      { return [...users.values()]; }
 
-function getUserGroups(userId) {
+export function getUserGroups(userId) {
   return [...groups.values()]
     .filter(g => g.ownerId === userId || g.admins.has(userId))
     .map(g => g.chatId);
@@ -154,7 +154,7 @@ function getUserGroups(userId) {
 //  Communities
 // ═══════════════════════════════════════════════════════════════
 
-function getOrCreateCommunity(communityId, title) {
+export function getOrCreateCommunity(communityId, title) {
   if (!communities.has(communityId)) {
     communities.set(communityId, {
       communityId, title,
@@ -162,15 +162,15 @@ function getOrCreateCommunity(communityId, title) {
       memberJoins:      new Map(),
       maxGroupJoins:    1,
       enabled:          true,
-      autoBannedUsers:  new Map(), // userId -> { reason, groups[], bannedAt }
+      autoBannedUsers:  new Map(),
     });
   }
   return communities.get(communityId);
 }
-function getCommunity(communityId) { return communities.get(communityId) || null; }
-function allCommunities()          { return [...communities.values()]; }
+export function getCommunity(communityId) { return communities.get(communityId) || null; }
+export function allCommunities()          { return [...communities.values()]; }
 
-function recordCommunityJoin(communityId, userId, chatId) {
+export function recordCommunityJoin(communityId, userId, chatId) {
   const c = communities.get(communityId);
   if (!c || !c.enabled) return false;
   if (!c.memberJoins.has(userId)) c.memberJoins.set(userId, new Set());
@@ -183,20 +183,20 @@ function recordCommunityJoin(communityId, userId, chatId) {
 //  Word violations & Audit log
 // ═══════════════════════════════════════════════════════════════
 
-function recordWordViolation(chatId, userId, word) {
+export function recordWordViolation(chatId, userId, word) {
   const g = groups.get(chatId); if (!g) return 0;
   if (!g.wordViolations.has(userId)) g.wordViolations.set(userId, {});
   const vio = g.wordViolations.get(userId);
   vio[word] = (vio[word] || 0) + 1;
   return vio[word];
 }
-function resetWordViolation(chatId, userId, word) {
+export function resetWordViolation(chatId, userId, word) {
   const g = groups.get(chatId); if (!g) return;
   const vio = g.wordViolations.get(userId);
   if (vio) delete vio[word];
 }
 
-function addAuditLog(chatId, entry) {
+export function addAuditLog(chatId, entry) {
   const g = groups.get(chatId); if (!g) return;
   g.auditLog.unshift({ ...entry, at: new Date() });
   if (g.auditLog.length > 100) g.auditLog.length = 100;
@@ -206,7 +206,7 @@ function addAuditLog(chatId, entry) {
 //  Stats
 // ═══════════════════════════════════════════════════════════════
 
-function getStats() {
+export function getStats() {
   return {
     totalGroups:   groups.size,
     totalChannels: channels.size,
@@ -222,7 +222,7 @@ function getStats() {
 //  Persistence — save / load data.json
 // ═══════════════════════════════════════════════════════════════
 
-function saveData() {
+export function saveData() {
   try {
     const data = {
       savedAt: new Date().toISOString(),
@@ -273,18 +273,17 @@ function saveData() {
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (e) {
-    console.error('saveData error:', e.message);
+    process.stderr.write('saveData error: ' + e.message + '\n');
   }
 }
 
-function loadData() {
+export function loadData() {
   if (!fs.existsSync(DATA_FILE)) return;
   try {
     const raw  = fs.readFileSync(DATA_FILE, 'utf-8');
     const data = JSON.parse(raw);
 
     for (const [k, v] of Object.entries(data.groups || {})) {
-      // إعادة بناء topics
       const topicsMap = new Map();
       for (const [tid, tv] of Object.entries(v.topics || {})) {
         topicsMap.set(Number(tid), {
@@ -355,9 +354,9 @@ function loadData() {
       });
     }
 
-    console.log(`✅ تم استعادة البيانات: ${groups.size} مجموعة، ${users.size} مستخدم`);
+    process.stdout.write(`✅ تم استعادة البيانات: ${groups.size} مجموعة، ${users.size} مستخدم\n`);
   } catch (e) {
-    console.error('loadData error:', e.message);
+    process.stderr.write('loadData error: ' + e.message + '\n');
   }
 }
 
@@ -379,18 +378,6 @@ setInterval(() => {
 
 loadData();
 setInterval(saveData, 5 * 60 * 1000);
-process.on('SIGINT',  () => { saveData(); process.exit(0); });
-process.on('SIGTERM', () => { saveData(); process.exit(0); });
+process.on('SIGINT',  () => { saveData(); });
+process.on('SIGTERM', () => { saveData(); });
 process.on('exit',    () => { saveData(); });
-
-module.exports = {
-  getGroup, getOrCreateGroup, deleteGroup, allGroups,
-  getChannel, getOrCreateChannel, deleteChannel, allChannels,
-  trackMember,
-  getOrCreateUser, getUser, allUsers, getUserGroups,
-  getOrCreateCommunity, getCommunity, allCommunities, recordCommunityJoin,
-  recordWordViolation, resetWordViolation,
-  addAuditLog,
-  getStats,
-  saveData,
-};

@@ -1,12 +1,13 @@
-const { Markup } = require('telegraf');
-const db         = require('./db');
-const {
+// @ts-nocheck
+import { Markup } from 'telegraf';
+import * as db from './db';
+import {
   isDeveloper, isAdmin, isOwner,
   getTargetUser, getReason,
   muteMember, muteMemberTimed, banMemberTimed,
   unmutePerms, promoteUser, demoteUser,
   logAction,
-} = require('./helpers');
+} from './helpers';
 
 function memberActionsKeyboard(targetId, chatId, backCb) {
   return Markup.inlineKeyboard([
@@ -70,7 +71,14 @@ function banDurationKeyboard(userId, chatId) {
   ]);
 }
 
-module.exports = function setupAdminHandlers(bot) {
+function durationLabel(secs) {
+  if (secs < 3600)   return `${secs / 60} دقيقة`;
+  if (secs < 86400)  return `${secs / 3600} ساعة`;
+  if (secs < 604800) return `${secs / 86400} يوم`;
+  return `${Math.round(secs / 604800)} أسبوع`;
+}
+
+export default function setupAdminHandlers(bot) {
 
   // ── /admins ──────────────────────────────────────────────────────────────
   bot.command('admins', async (ctx) => {
@@ -440,12 +448,4 @@ module.exports = function setupAdminHandlers(bot) {
       { parse_mode: 'Markdown' }
     );
   });
-};
-
-// ── دالة مساعدة لتسمية المدة ─────────────────────────────────────────────
-function durationLabel(secs) {
-  if (secs < 3600)   return `${secs / 60} دقيقة`;
-  if (secs < 86400)  return `${secs / 3600} ساعة`;
-  if (secs < 604800) return `${secs / 86400} يوم`;
-  return `${Math.round(secs / 604800)} أسبوع`;
 }
