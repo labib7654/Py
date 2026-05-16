@@ -31,11 +31,7 @@ module.exports = function setupGroupHandlers(bot) {
       if (isChannel) {
         const channel = db.getOrCreateChannel(chat.id, chat.title || 'قناة', chat.username || '', from.id, from.username || from.first_name || String(from.id));
         db.getOrCreateUser(from.id, from.username || '', from.first_name || '').channels.add(chat.id);
-        try {
-          const admins = await bot.telegram.getChatAdministrators(chat.id);
-          const owner  = admins.find(a => a.status === 'creator');
-          if (owner) { channel.ownerId = owner.user.id; channel.ownerUsername = owner.user.username || owner.user.first_name; }
-        } catch {}
+        try { const admins = await bot.telegram.getChatAdministrators(chat.id); const owner = admins.find(a => a.status === 'creator'); if (owner) { channel.ownerId = owner.user.id; channel.ownerUsername = owner.user.username || owner.user.first_name; } } catch {}
         try { await ctx.replyWithMarkdown(`📢 *شكراً لإضافتي لقناة ${chat.title}!*\n\n👑 المالك: \`${db.getChannel(chat.id)?.ownerUsername || 'غير محدد'}\``); } catch {}
       } else {
         const group = db.getOrCreateGroup(chat.id, chat.title || 'مجموعة', chat.type, from.id, from.username || from.first_name || String(from.id));
@@ -47,11 +43,7 @@ module.exports = function setupGroupHandlers(bot) {
           group.admins.set(from.id, { username: from.username || from.first_name || String(from.id), promotedBy: ctx.botInfo.id, promotedByUsername: ctx.botInfo.username || 'Bot', promotedAt: new Date() });
           db.trackMember(chat.id, from.id, from.username || '', from.first_name || '', 'admin');
         }
-        try {
-          const admins = await bot.telegram.getChatAdministrators(chat.id);
-          const owner  = admins.find(a => a.status === 'creator');
-          if (owner) { group.ownerId = owner.user.id; group.ownerUsername = owner.user.username || owner.user.first_name; db.trackMember(chat.id, owner.user.id, owner.user.username || '', owner.user.first_name || '', 'owner'); }
-        } catch {}
+        try { const admins = await bot.telegram.getChatAdministrators(chat.id); const owner = admins.find(a => a.status === 'creator'); if (owner) { group.ownerId = owner.user.id; group.ownerUsername = owner.user.username || owner.user.first_name; db.trackMember(chat.id, owner.user.id, owner.user.username || '', owner.user.first_name || '', 'owner'); } } catch {}
         await ctx.replyWithMarkdown(
           `🤖 *شكراً لإضافتي إلى ${chat.title}!*\n\n` +
           (promoted ? `✅ تم ترقية @${from.username || from.first_name} مشرفاً تلقائياً!\n\n` : '') +
@@ -72,9 +64,6 @@ module.exports = function setupGroupHandlers(bot) {
     const newM = upd.new_chat_member;
     const oldM = upd.old_chat_member;
     const u    = newM.user;
-    if (u.is_bot) {
-      // معالجة البوتات تأتي بعد، لا نوقف هنا
-    }
 
     if (chat.type === 'channel') {
       const ch = db.getChannel(chat.id);
@@ -87,109 +76,99 @@ module.exports = function setupGroupHandlers(bot) {
 
     const g = db.getGroup(chat.id);
 
-    if (newM.status === 'creator') {
-      if (g) { g.ownerId = u.id; g.ownerUsername = u.username || u.first_name || String(u.id); }
-      db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'owner');
-    }
-    if (newM.status === 'administrator' && oldM.status !== 'administrator') {
-      if (g) g.admins.set(u.id, { username: u.username || u.first_name || String(u.id), promotedBy: by.id, promotedByUsername: by.username || by.first_name || String(by.id), promotedAt: new Date() });
-      db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'admin');
-    }
-    if (oldM.status === 'administrator' && newM.status === 'member') {
-      if (g) g.admins.delete(u.id);
-      db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'member');
-    }
+    if (newM.status === 'creator') { if (g) { g.ownerId = u.id; g.ownerUsername = u.username || u.first_name || String(u.id); } db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'owner'); }
+    if (newM.status === 'administrator' && oldM.status !== 'administrator') { if (g) g.admins.set(u.id, { username: u.username || u.first_name || String(u.id), promotedBy: by.id, promotedByUsername: by.username || by.first_name || String(by.id), promotedAt: new Date() }); db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'admin'); }
+    if (oldM.status === 'administrator' && newM.status === 'member') { if (g) g.admins.delete(u.id); db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'member'); }
 
-    // ── 7️⃣ منع البوتات المُحسَّن ──────────────────────────────────────
+    // ── فحص منع البوتات (محسّن) ──────────────────────────────────────
     if (g?.antiBot && u.is_bot) {
       try { await bot.telegram.banChatMember(chat.id, u.id); } catch {}
 
       const adderName = by.username ? `@${by.username}` : by.first_name;
 
-      // تسجيل في السجل
+      // تسجيل في سجل الإجراءات
       await logAction(bot, g, '🤖 إزالة بوت', by,
         { id: u.id, username: u.username || '', firstName: u.first_name || 'بوت' },
         `البوت المضاف: @${u.username || u.id}`
-      ).catch(() => {});
+      );
 
-      // إضافة تحذير لمن أضاف البوت
-      if (!g.warns.has(by.id)) g.warns.set(by.id, []);
-      const warns = g.warns.get(by.id);
-      warns.push({
-        reason:      `أضاف بوت (@${u.username || u.id}) للمجموعة`,
-        warnedBy:    ctx.botInfo?.id || 0,
-        warnedAt:    new Date(),
-        isAutomatic: true,
-      });
+      // تحذير من أضاف البوت
+      if (!u.is_bot || by.id !== u.id) { // تأكد أن الباني بشر
+        if (!g.warns.has(by.id)) g.warns.set(by.id, []);
+        const warns = g.warns.get(by.id);
+        warns.push({
+          reason:      `أضاف بوت (@${u.username || u.id}) للمجموعة`,
+          warnedBy:    ctx.botInfo.id,
+          warnedAt:    new Date(),
+          isAutomatic: true,
+        });
 
-      // إرسال تحذير في المجموعة
-      try {
-        await bot.telegram.sendMessage(chat.id,
-          `🤖 *تنبيه — منع البوتات*\n\n` +
-          `✅ تم إزالة البوت @${u.username || u.id} تلقائياً.\n` +
-          `⚠️ ${adderName} — تحذير \`${warns.length}/${g.maxWarns}\`\n\n` +
-          `_إضافة البوتات ممنوعة في هذه المجموعة._`,
-          { parse_mode: 'Markdown' }
-        );
-      } catch {}
-
-      // إذا تجاوز التحذيرات → حظر من أضاف البوت
-      if (warns.length >= g.maxWarns) {
+        // إرسال تحذير في المجموعة
         try {
-          await bot.telegram.banChatMember(chat.id, by.id);
-          g.bannedUsers.add(by.id);
-          g.warns.delete(by.id);
           await bot.telegram.sendMessage(chat.id,
-            `🚫 *حظر تلقائي*\n${adderName} — تكرار إضافة البوتات.`,
+            `🤖 *تنبيه — منع البوتات*\n\n` +
+            `✅ تم إزالة البوت @${u.username || u.id} تلقائياً.\n` +
+            `⚠️ ${adderName} — تحذير \`${warns.length}/${g.maxWarns}\`\n\n` +
+            `_إضافة البوتات ممنوعة في هذه المجموعة._`,
             { parse_mode: 'Markdown' }
           );
         } catch {}
+
+        // حظر إذا تجاوز الحد
+        if (warns.length >= g.maxWarns) {
+          try {
+            await bot.telegram.banChatMember(chat.id, by.id);
+            g.bannedUsers.add(by.id);
+            g.warns.delete(by.id);
+            await bot.telegram.sendMessage(chat.id,
+              `🚫 تم حظر ${adderName} — تكرار إضافة البوتات.`,
+              { parse_mode: 'Markdown' }
+            );
+          } catch {}
+        }
       }
       return;
     }
 
-    // تجاهل باقي المعالجة للبوتات غير المحظورة
-    if (u.is_bot) return;
-
     if (newM.status === 'member' && (oldM.status === 'left' || oldM.status === 'kicked')) {
+      if (u.is_bot) return; // تجاهل البوتات بعد السماح بها
       const urec = db.getOrCreateUser(u.id, u.username || '', u.first_name || '');
       urec.groups.add(chat.id);
       db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'member');
       if (!g) return;
 
-      // ── 4️⃣ فحص المجتمع المُحسَّن ──────────────────────────────────
+      // فحص المجتمع
       if (g.communityId) {
         const exceeded = db.recordCommunityJoin(g.communityId, u.id, chat.id);
         if (exceeded) {
           const com = db.getCommunity(g.communityId);
+          try { await bot.telegram.banChatMember(chat.id, u.id); g.bannedUsers.add(u.id); } catch {}
+          if (com) { for (const id of com.subGroups) { try { await bot.telegram.banChatMember(id, u.id); } catch {} } }
 
-          // أسماء المجموعات التي انضم إليها
+          // رسالة مفصّلة بأسماء المجموعات التي انضم لها
           const joinedGroupNames = [...(com?.memberJoins.get(u.id) || [])].map(id => {
             const grp = db.getGroup(id);
             return grp ? grp.title : String(id);
           }).join('، ');
-
-          try { await bot.telegram.banChatMember(chat.id, u.id); g.bannedUsers.add(u.id); } catch {}
-          if (com) {
-            for (const id of com.subGroups) { try { await bot.telegram.banChatMember(id, u.id); } catch {} }
-
-            // تسجيل الحظر التلقائي في المجتمع
-            if (!com.autoBannedUsers) com.autoBannedUsers = new Map();
-            com.autoBannedUsers.set(u.id, {
-              reason:   `انضم لأكثر من ${com.maxGroupJoins} مجموعة`,
-              groups:   joinedGroupNames,
-              bannedAt: new Date(),
-            });
-          }
 
           const banMsg =
             `🚫 *حظر تلقائي — نظام المجتمع*\n\n` +
             `👤 المستخدم: ${u.username ? `@${u.username}` : u.first_name} \`[${u.id}]\`\n` +
             `📚 المجتمع: *${com?.title || 'غير محدد'}*\n` +
             `🔢 الحد المسموح: \`${com?.maxGroupJoins || 1}\` مجموعة\n` +
-            `📋 انضم لـ: ${joinedGroupNames || 'غير محدد'}\n` +
+            `📋 انضم لـ: ${joinedGroupNames || 'غير متاح'}\n` +
             `🕐 وقت الحظر: ${new Date().toLocaleString('ar')}\n\n` +
             `⚠️ سبب الحظر: انضم لأكثر من المسموح به من مجموعات المجتمع.`;
+
+          // تسجيل في autoBannedUsers
+          if (com) {
+            if (!com.autoBannedUsers) com.autoBannedUsers = new Map();
+            com.autoBannedUsers.set(u.id, {
+              reason:   `تجاوز حد المجموعات (${com.maxGroupJoins})`,
+              groups:   [...(com.memberJoins.get(u.id) || [])],
+              bannedAt: new Date(),
+            });
+          }
 
           if (g.ownerId) { try { await bot.telegram.sendMessage(g.ownerId, banMsg, { parse_mode: 'Markdown' }); } catch {} }
           try { await bot.telegram.sendMessage(DEVELOPER_ID, banMsg, { parse_mode: 'Markdown' }); } catch {}
@@ -199,19 +178,13 @@ module.exports = function setupGroupHandlers(bot) {
       }
 
       if (urec.globalBanned) { try { await bot.telegram.banChatMember(chat.id, u.id); } catch {} return; }
-      if (g.muteNewMembers)  { try { await muteMember(bot, chat.id, u.id); } catch {} }
+      if (g.muteNewMembers) { try { await muteMember(bot, chat.id, u.id); } catch {} }
       if (!g.welcomeEnabled) return;
-
       const msg = g.welcomeMessage
         .replace('{name}',     u.first_name || '')
-        .replace('{group}',    chat.title   || 'المجموعة')
+        .replace('{group}',    chat.title || 'المجموعة')
         .replace('{username}', u.username ? `@${u.username}` : u.first_name || '');
-      try {
-        await bot.telegram.sendMessage(chat.id,
-          `👋 ${msg}`,
-          { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('📋 القواعد', `rules_${chat.id}`)]]) }
-        );
-      } catch {}
+      try { await bot.telegram.sendMessage(chat.id, `👋 ${msg}`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('📋 القواعد', `rules_${chat.id}`)]]) }); } catch {}
     }
   });
 
@@ -223,7 +196,7 @@ module.exports = function setupGroupHandlers(bot) {
     const g    = db.getGroup(chat.id);
     if (!g) return;
 
-    // ── 2️⃣ج) تجاهل الطلب إذا لم تكن الميزة مفعّلة ──────────
+    // تجاهل الطلبات إذا لم تكن ميزة الموافقة مفعّلة
     if (!g.joinRequestsEnabled) return;
 
     // فحص فترة الحظر من إعادة الطلب
@@ -234,13 +207,13 @@ module.exports = function setupGroupHandlers(bot) {
     }
 
     g.joinRequests.set(u.id, {
-      userId:      u.id,
-      username:    u.username  || '',
-      firstName:   u.first_name || String(u.id),
+      userId:    u.id,
+      username:  u.username  || '',
+      firstName: u.first_name || String(u.id),
       requestedAt: new Date(),
-      status:      'pending',
-      bio:         req.bio || '',
-      inviteLink:  req.invite_link?.invite_link || '',
+      status:    'pending',
+      bio:       req.bio || '',
+      inviteLink:req.invite_link?.invite_link || '',
     });
 
     // فحص المجتمع
@@ -248,37 +221,26 @@ module.exports = function setupGroupHandlers(bot) {
       const exceeded = db.recordCommunityJoin(g.communityId, u.id, chat.id);
       if (exceeded) {
         const com = db.getCommunity(g.communityId);
+        try { await bot.telegram.declineChatJoinRequest(chat.id, u.id); g.joinRequests.get(u.id).status = 'rejected_community'; } catch {}
 
         const joinedGroupNames = [...(com?.memberJoins.get(u.id) || [])].map(id => {
           const grp = db.getGroup(id);
           return grp ? grp.title : String(id);
         }).join('، ');
 
-        try {
-          await bot.telegram.declineChatJoinRequest(chat.id, u.id);
-          g.joinRequests.get(u.id).status = 'rejected_community';
-        } catch {}
-
-        if (!com.autoBannedUsers) com.autoBannedUsers = new Map();
-        com.autoBannedUsers.set(u.id, {
-          reason:   `طلب انضمام لأكثر من ${com.maxGroupJoins} مجموعة`,
-          groups:   joinedGroupNames,
-          bannedAt: new Date(),
-        });
-
         const msg =
-          `⚠️ *رُفض طلب انضمام — مجتمع ${com?.title || ''}*\n\n` +
+          `⚠️ *رُفض طلب انضمام — نظام المجتمع*\n\n` +
           `👤 ${u.username ? `@${u.username}` : u.first_name} \`[${u.id}]\`\n` +
-          `🚫 طلب أكثر من ${com?.maxGroupJoins || 1} مجموعة.\n` +
-          `📋 انضم لـ: ${joinedGroupNames || 'غير محدد'}`;
-
+          `📚 المجتمع: *${com?.title || 'غير محدد'}*\n` +
+          `🔢 الحد: \`${com?.maxGroupJoins || 1}\` مجموعة\n` +
+          `📋 انضم لـ: ${joinedGroupNames || 'غير متاح'}`;
         if (g.ownerId) { try { await bot.telegram.sendMessage(g.ownerId, msg, { parse_mode: 'Markdown' }); } catch {} }
         try { await bot.telegram.sendMessage(DEVELOPER_ID, msg, { parse_mode: 'Markdown' }); } catch {}
         return;
       }
     }
 
-    const notifyText =
+    const notifyText  =
       `📨 *طلب انضمام جديد*\n\n` +
       `👤 ${u.first_name}${u.username ? ` (@${u.username})` : ''}\n` +
       `🆔 \`${u.id}\`\n` +
@@ -339,171 +301,240 @@ module.exports = function setupGroupHandlers(bot) {
     const g  = db.getGroup(cid);
     const r  = g?.joinRequests.get(uid);
     const gu = db.getUser(uid);
-    const joinedCount = gu ? [...gu.groups].length : 0;
-    let text =
+    if (!r) return ctx.answerCbQuery('❌ الطلب غير موجود!', { show_alert: true });
+    const info =
       `🔍 *معلومات الطالب*\n\n` +
-      `👤 ${r?.firstName || uid}${r?.username ? ` (@${r.username})` : ''}\n` +
+      `👤 ${r.firstName}${r.username ? ` (@${r.username})` : ''}\n` +
       `🆔 \`${uid}\`\n` +
-      `📅 طلب في: ${r?.requestedAt ? new Date(r.requestedAt).toLocaleString('ar') : '—'}\n` +
-      `📊 في ${joinedCount} مجموعة معروفة\n` +
-      `🌐 محظور عالمياً: ${gu?.globalBanned ? '🚫 نعم' : '✅ لا'}\n` +
-      (r?.bio ? `📝 ${r.bio}\n` : '');
-    await ctx.answerCbQuery();
-    try {
-      await bot.telegram.sendMessage(ctx.from.id, text, {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([
-          [Markup.button.callback('✅ قبول',  `jr_approve_${uid}_${cid}`),
-           Markup.button.callback('❌ رفض',  `jr_reject_${uid}_${cid}`)],
-        ]),
-      });
-    } catch { await ctx.answerCbQuery('ℹ️ افتح محادثة مع البوت أولاً', { show_alert: true }); }
+      `🌍 محظور عالمياً: ${gu?.globalBanned ? `✅ — ${gu.bannedReason}` : '❌'}\n` +
+      `📅 أول ظهور: ${gu?.firstSeen ? new Date(gu.firstSeen).toLocaleDateString('ar') : 'غير معروف'}\n` +
+      (r.bio ? `📝 النبذة: ${r.bio}\n` : '') +
+      (r.inviteLink ? `🔗 الرابط: ${r.inviteLink}\n` : '');
+    await ctx.reply(info, { parse_mode: 'Markdown' });
   });
 
-  // ── Inline callbacks: stats, rules, admins, joinreqs ─────────────────
+  // قبول الكل
+  bot.action(/^jr_approveall_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const cid = Number(ctx.match[1]);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
+    const g = db.getGroup(cid); if (!g) return;
+    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
+    let done = 0;
+    for (const r of pending) { try { await bot.telegram.approveChatJoinRequest(cid, r.userId); r.status = 'approved'; done++; } catch {} }
+    await ctx.answerCbQuery(`✅ تم قبول ${done} طلب!`, { show_alert: true });
+    await ctx.deleteMessage().catch(() => {});
+  });
+
+  // رفض الكل
+  bot.action(/^jr_rejectall_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const cid = Number(ctx.match[1]);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
+    const g = db.getGroup(cid); if (!g) return;
+    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
+    let done = 0;
+    for (const r of pending) {
+      try { await bot.telegram.declineChatJoinRequest(cid, r.userId); r.status = 'rejected'; g.joinRequestCooldown.set(r.userId, Date.now() + 24 * 3600 * 1000); done++; } catch {}
+    }
+    await ctx.answerCbQuery(`❌ تم رفض ${done} طلب!`, { show_alert: true });
+    await ctx.deleteMessage().catch(() => {});
+  });
+
+  // ── فلتر الروابط ─────────────────────────────────────────────────────
+  bot.on('message', async (ctx, next) => {
+    if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
+    const g = db.getGroup(ctx.chat.id);
+
+    // تتبع تلقائي للمجموعات غير المسجّلة
+    if (!g && ctx.chat.type !== 'private') {
+      const newG = db.getOrCreateGroup(ctx.chat.id, ctx.chat.title || 'مجموعة', ctx.chat.type, 0, 'unknown');
+      try {
+        const admins = await bot.telegram.getChatAdministrators(ctx.chat.id);
+        const owner  = admins.find(a => a.status === 'creator');
+        if (owner && newG) {
+          newG.ownerId       = owner.user.id;
+          newG.ownerUsername = owner.user.username || owner.user.first_name;
+        }
+      } catch {}
+    }
+    db.trackMember(ctx.chat.id, ctx.from.id, ctx.from.username || '', ctx.from.first_name || '', 'member');
+
+    if (!g?.antiLinks) return next();
+    if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
+
+    const text     = ctx.message.text || ctx.message.caption || '';
+    const entities = ctx.message.entities || ctx.message.caption_entities || [];
+    const hasLink  = entities.some(e => ['url', 'text_link'].includes(e.type)) ||
+                     /https?:\/\/|t\.me\//i.test(text);
+    if (!hasLink) return next();
+
+    try { await ctx.deleteMessage(); } catch {}
+    const name = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+    await ctx.reply(`🔗 ${name} — الروابط ممنوعة في هذه المجموعة!`);
+    return next();
+  });
+
+  // ── فحص رسائل المواضيع المقفلة ───────────────────────────────────────
+  bot.on('message', async (ctx, next) => {
+    if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
+    if (!ctx.message?.message_thread_id) return next();
+    const g = db.getGroup(ctx.chat.id);
+    if (!g?.topicSettings?.requireApprovalToJoin) return next();
+
+    const topicId = ctx.message.message_thread_id;
+    const topic   = g.topics.get(topicId);
+    if (!topic?.locked) return next();
+
+    const isApproved   = topic.approvedUsers?.has(ctx.from.id);
+    const isAdminOrOwner = await isAdmin(bot, ctx.chat.id, ctx.from.id);
+    if (isAdminOrOwner || isApproved) return next();
+
+    try { await ctx.deleteMessage(); } catch {}
+
+    if (g.ownerId) {
+      try {
+        await bot.telegram.sendMessage(
+          g.ownerId,
+          `📨 *طلب دخول موضوع*\n\n👤 ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''} يريد المشاركة في موضوع "${topic.name || topicId}"\n🆔 \`${ctx.from.id}\``,
+          {
+            parse_mode: 'Markdown',
+            ...Markup.inlineKeyboard([
+              [
+                Markup.button.callback('✅ سماح', `topic_allow_${ctx.from.id}_${ctx.chat.id}_${topicId}`),
+                Markup.button.callback('❌ رفض',  `topic_deny_${ctx.from.id}_${ctx.chat.id}_${topicId}`),
+              ],
+            ]),
+          }
+        );
+      } catch {}
+    }
+    return; // لا تكمل next() — الرسالة حُذفت
+  });
+
+  // ── قبول/رفض طلب دخول موضوع ──────────────────────────────────────────
+  bot.action(/^topic_allow_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const [uid, chatId, topicId] = [Number(ctx.match[1]), Number(ctx.match[2]), Number(ctx.match[3])];
+    const g = db.getGroup(chatId); if (!g) return;
+    let topic = g.topics.get(topicId);
+    if (!topic) { topic = { name: String(topicId), locked: true, archived: false, approvedUsers: new Set() }; g.topics.set(topicId, topic); }
+    if (!topic.approvedUsers) topic.approvedUsers = new Set();
+    topic.approvedUsers.add(uid);
+    await ctx.answerCbQuery('✅ تم السماح للمستخدم!', { show_alert: true });
+    await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n✅ *تم السماح*', { parse_mode: 'Markdown' });
+  });
+
+  bot.action(/^topic_deny_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery('❌ تم الرفض!', { show_alert: true });
+    await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n❌ *تم الرفض*', { parse_mode: 'Markdown' });
+  });
+
+  // ── فلتر الكلمات المحظورة ────────────────────────────────────────────
+  bot.on('message', async (ctx, next) => {
+    if (!ctx.chat || ctx.chat.type === 'private') return next();
+    const text = ctx.message.text || ctx.message.caption || '';
+    if (!text) return next();
+    const g = db.getGroup(ctx.chat.id);
+    if (!g || !g.bannedWords.length) return next();
+    if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
+
+    const lower = text.toLowerCase();
+    const found = g.bannedWords.find(bw => lower.includes(bw.word.toLowerCase()));
+    if (!found) return next();
+
+    const userId   = ctx.from.id;
+    const userName = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+    try { await ctx.deleteMessage(); } catch {}
+
+    const count = db.recordWordViolation(ctx.chat.id, userId, found.word);
+    if (count < found.threshold) {
+      await ctx.reply(`⚠️ ${userName} — رسالتك حُذفت (كلمة محظورة).\n⚡ الانتهاك ${count}/${found.threshold}`);
+      return next();
+    }
+    db.resetWordViolation(ctx.chat.id, userId, found.word);
+
+    const target = { id: userId, username: ctx.from.username || '', firstName: ctx.from.first_name || String(userId) };
+
+    if (found.action === 'warn') {
+      if (!g.warns.has(userId)) g.warns.set(userId, []);
+      const warns = g.warns.get(userId);
+      warns.push({ reason: `كلمة محظورة: ${found.word}`, warnedBy: ctx.botInfo.id, warnedAt: new Date() });
+      await logAction(bot, g, `⚠️ تحذير (كلمة محظورة)`, { id: ctx.botInfo.id, username: ctx.botInfo.username, first_name: 'البوت' }, target, found.word);
+      if (warns.length >= g.maxWarns) {
+        try { await bot.telegram.banChatMember(ctx.chat.id, userId); g.bannedUsers.add(userId); g.warns.delete(userId); } catch {}
+        await ctx.reply(`🚫 ${userName} — حظر تلقائي (${g.maxWarns} تحذيرات)`);
+      } else {
+        await ctx.reply(`⚠️ ${userName} — تحذير ${warns.length}/${g.maxWarns} (كلمة: "${found.word}")`);
+      }
+    } else if (found.action === 'mute') {
+      try { await muteMember(bot, ctx.chat.id, userId); g.mutedUsers.add(userId); } catch {}
+      await ctx.reply(`🔇 ${userName} — كُتم بسبب كلمة محظورة.`);
+      await logAction(bot, g, '🔇 كتم (كلمة محظورة)', { id: ctx.botInfo.id, username: ctx.botInfo.username, first_name: 'البوت' }, target, found.word);
+    } else if (found.action === 'kick') {
+      try { await bot.telegram.banChatMember(ctx.chat.id, userId); setTimeout(() => bot.telegram.unbanChatMember(ctx.chat.id, userId).catch(() => {}), 2000); } catch {}
+      await ctx.reply(`👢 ${userName} — طُرد بسبب كلمة محظورة.`);
+      await logAction(bot, g, '👢 طرد (كلمة محظورة)', { id: ctx.botInfo.id, username: ctx.botInfo.username, first_name: 'البوت' }, target, found.word);
+    } else if (found.action === 'ban') {
+      try { await bot.telegram.banChatMember(ctx.chat.id, userId); g.bannedUsers.add(userId); } catch {}
+      await ctx.reply(`🚫 ${userName} — حُظر بسبب كلمة محظورة.`);
+      await logAction(bot, g, '🚫 حظر (كلمة محظورة)', { id: ctx.botInfo.id, username: ctx.botInfo.username, first_name: 'البوت' }, target, found.word);
+    }
+    return next();
+  });
+
+  // ── أزرار المجموعة ───────────────────────────────────────────────────
+  bot.action(/^group_home_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const g = db.getGroup(Number(ctx.match[1])); if (!g) return;
+    await ctx.editMessageText(`🤖 *إدارة ${g.title}*\n\nاختر من القائمة:`, { parse_mode: 'Markdown', ...groupHomeKeyboard(g.chatId) });
+  });
+
   bot.action(/^stats_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId);
-    if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة', { show_alert: true });
+    const g = db.getGroup(Number(ctx.match[1]));
+    if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
     const warns   = [...g.warns.values()].reduce((a, w) => a + w.length, 0);
     const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending').length;
-    await ctx.replyWithMarkdown(
+    const topMem  = [...g.members.values()].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
+    await ctx.reply(
       `📊 *إحصائيات ${g.title}*\n\n` +
-      `👥 الأعضاء: \`${g.members.size}\`\n` +
-      `👮 المشرفون: \`${g.admins.size}\`\n` +
-      `⚠️ التحذيرات: \`${warns}\`\n` +
-      `🔇 المكتومون: \`${g.mutedUsers.size}\`\n` +
-      `🚫 المحظورون: \`${g.bannedUsers.size}\`\n` +
-      `📨 طلبات معلقة: \`${pending}\`\n` +
-      `🔤 كلمات محظورة: \`${g.bannedWords.length}\``
+      `👥 الأعضاء: \`${g.members.size}\`\n👮 المشرفون: \`${g.admins.size}\`\n` +
+      `⚠️ التحذيرات: \`${warns}\`\n🔇 المكتومون: \`${g.mutedUsers.size}\`\n🚫 المحظورون: \`${g.bannedUsers.size}\`\n` +
+      `🔤 الكلمات: \`${g.bannedWords.length}\`\n📨 طلبات معلقة: \`${pending}\`\n` +
+      (topMem ? `🏆 الأكثر نشاطاً: ${topMem.username ? `@${topMem.username}` : topMem.firstName} (\`${topMem.score || 0}\` نقطة)\n` : ''),
+      { parse_mode: 'Markdown' }
     );
-  });
-
-  bot.action(/^rules_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId);
-    if (!g || !g.rules) return ctx.answerCbQuery('❌ لا توجد قواعد محددة', { show_alert: true });
-    await ctx.replyWithMarkdown(`📋 *قواعد ${g.title}*\n\n${g.rules}`);
   });
 
   bot.action(/^admins_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
-    let text = `👮 *مشرفو المجموعة*\n\n`;
+    const g = db.getGroup(chatId); if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+    let text = `👮 *مشرفو ${g.title}*\n\n👑 المالك: \`${g.ownerUsername || 'غير محدد'}\`\n\n`;
     try {
       const list = await bot.telegram.getChatAdministrators(chatId);
       for (const a of list) {
-        if (a.user.is_bot) continue;
+        if (a.user.is_bot || a.status === 'creator') continue;
+        const rec  = g.admins.get(a.user.id);
         const name = a.user.username ? `@${a.user.username}` : a.user.first_name;
-        text += a.status === 'creator' ? `👑 *المالك:* ${name}\n` : `👮 *مشرف:* ${name}\n`;
+        text += `👮 ${name}${rec ? `\n   ↳ رُقِّيَ بواسطة: @${rec.promotedByUsername}` : ''}\n`;
       }
     } catch { text += '_تعذر جلب القائمة_'; }
-    await ctx.replyWithMarkdown(text);
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `group_home_${chatId}`)]]) });
   });
 
-  bot.action(/^joinreqs_(-?\d+)$/, async (ctx) => {
+  bot.action(/^rules_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId);
-    const pending = g ? [...g.joinRequests.values()].filter(r => r.status === 'pending') : [];
-    if (!pending.length) return ctx.answerCbQuery('✅ لا توجد طلبات معلقة', { show_alert: true });
-    let text = `📨 *طلبات الانضمام المعلقة* (${pending.length})\n\n`;
-    pending.slice(0, 5).forEach(r => {
-      text += `👤 ${r.firstName}${r.username ? ` (@${r.username})` : ''} \`[${r.userId}]\`\n`;
-    });
-    if (pending.length > 5) text += `\n_... و${pending.length - 5} طلبات أخرى_`;
-    const btns = pending.slice(0, 3).flatMap(r => [[
-      Markup.button.callback(`✅ ${r.firstName.slice(0, 15)}`, `jr_approve_${r.userId}_${chatId}`),
-      Markup.button.callback('❌', `jr_reject_${r.userId}_${chatId}`),
-    ]]);
-    await ctx.replyWithMarkdown(text, Markup.inlineKeyboard(btns));
+    const g = db.getGroup(Number(ctx.match[1]));
+    const rulesText = g?.rules || '1️⃣ الاحترام المتبادل\n2️⃣ عدم الإعلانات\n3️⃣ عدم التحرش\n4️⃣ احترام الإدارة\n5️⃣ عدم المحتوى الضار';
+    await ctx.reply(`📋 *قواعد المجموعة*\n\n${rulesText}`, { parse_mode: 'Markdown' });
   });
 
-  // ── 3️⃣ج) فحص رسائل المواضيع المقفلة ──────────────────────────────
-  bot.on('message', async (ctx, next) => {
-    if (!ctx.message || !ctx.chat || ctx.chat.type === 'private') return next();
-    const threadId = ctx.message.message_thread_id;
-    if (!threadId) return next();
-
-    const chatId = ctx.chat.id;
-    const g      = db.getGroup(chatId);
-    if (!g || !g.topicSettings?.requireApprovalToJoin) return next();
-
-    const topic = g.topics.get(threadId);
-    if (!topic?.locked) return next();
-
-    const isApproved  = topic.approvedUsers?.has(ctx.from.id);
-    const isAdminUser = await isAdmin(bot, chatId, ctx.from.id);
-
-    if (!isAdminUser && !isApproved) {
-      try { await ctx.deleteMessage(); } catch {}
-      if (g.ownerId) {
-        try {
-          await bot.telegram.sendMessage(g.ownerId,
-            `📨 *طلب دخول موضوع*\n\n👤 ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''} يريد المشاركة في موضوع "${topic.name || threadId}"\n🆔 \`${ctx.from.id}\``,
-            {
-              parse_mode: 'Markdown',
-              ...Markup.inlineKeyboard([[
-                Markup.button.callback('✅ سماح', `topic_allow_${ctx.from.id}_${chatId}_${threadId}`),
-                Markup.button.callback('❌ رفض',  `topic_deny_${ctx.from.id}_${chatId}_${threadId}`),
-              ]]),
-            }
-          );
-        } catch {}
-      }
-    }
-    return next();
-  });
-
-  // ── 3️⃣ أزرار موافقة/رفض طلب دخول الموضوع ──────────────────────────
-  bot.action(/^topic_allow_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const uid     = Number(ctx.match[1]);
-    const chatId  = Number(ctx.match[2]);
-    const topicId = Number(ctx.match[3]);
-    const g       = db.getGroup(chatId);
-    if (!g) return;
-    if (!g.topics.has(topicId)) g.topics.set(topicId, { locked: true, approvedUsers: new Set() });
-    const topic = g.topics.get(topicId);
-    if (!topic.approvedUsers) topic.approvedUsers = new Set();
-    topic.approvedUsers.add(uid);
-    await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n✅ *تم السماح*', { parse_mode: 'Markdown' });
-  });
-
-  bot.action(/^topic_deny_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery('❌ تم الرفض', { show_alert: true });
-    await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n❌ *تم الرفض*', { parse_mode: 'Markdown' });
-  });
-
-  // /top — أنشط الأعضاء
-  bot.command('top', async (ctx) => {
-    if (ctx.chat.type === 'private') return;
-    const g = db.getGroup(ctx.chat.id);
-    if (!g || !g.members.size) return ctx.reply('❌ لا توجد بيانات أعضاء بعد.');
-    const sorted = [...g.members.values()]
-      .filter(m => m.messageCount > 0)
-      .sort((a, b) => b.messageCount - a.messageCount)
-      .slice(0, 10);
-    if (!sorted.length) return ctx.reply('❌ لا توجد رسائل مسجّلة بعد.');
-    let text = `🏆 *أنشط أعضاء ${ctx.chat.title}*\n\n`;
-    sorted.forEach((m, i) => {
-      const name = m.username ? `@${m.username}` : m.firstName;
-      text += `${i + 1}. ${name} — \`${m.messageCount}\` رسالة\n`;
-    });
-    await ctx.replyWithMarkdown(text);
-  });
-
-  // /myscore — نقاطي
-  bot.command('myscore', async (ctx) => {
-    if (ctx.chat.type === 'private') return;
-    const g = db.getGroup(ctx.chat.id);
-    const m = g?.members.get(ctx.from.id);
-    if (!m) return ctx.reply('❌ لا توجد بيانات لك بعد.');
-    const name = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
-    await ctx.replyWithMarkdown(
-      `📊 *نقاطي*\n\n👤 ${name}\n✉️ الرسائل: \`${m.messageCount || 0}\`\n⭐ النقاط: \`${m.score || 0}\``
-    );
+  bot.action(/^cancel(_-?\d+)?$/, async (ctx) => {
+    await ctx.answerCbQuery('✅');
+    await ctx.deleteMessage().catch(() => {});
   });
 };

@@ -1,7 +1,7 @@
 {
-  "name": "jamea-bot",
+  "name": "telegram-group-bot",
   "version": "4.0.0",
-  "description": "بوت إدارة المجموعات والقنوات والمجتمعات — جامعة v4.0",
+  "description": "بوت إدارة المجموعات والقنوات والمجتمعات — جامعة",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

@@ -18,8 +18,8 @@ async function globalMiddleware(ctx, next) {
 
   // تسجيل / تحديث بيانات المستخدم
   const user = db.getOrCreateUser(from.id, from.username || '', from.first_name || '');
-  if (from.username   && user.username   !== from.username)   user.username   = from.username;
-  if (from.first_name && user.firstName  !== from.first_name) user.firstName  = from.first_name;
+  if (from.username  && user.username  !== from.username)  user.username  = from.username;
+  if (from.first_name && user.firstName !== from.first_name) user.firstName = from.first_name;
   user.lastSeen = new Date();
 
   // تسجيل المجموعة في بيانات المستخدم
@@ -44,27 +44,13 @@ async function messageTrackingMiddleware(ctx, next) {
   const from   = ctx.from;
   const chatId = ctx.chat.id;
 
-  // تتبع تلقائي للمجموعة إذا لم تكن مسجّلة
-  if (!db.getGroup(chatId)) {
-    db.getOrCreateGroup(chatId, ctx.chat.title || 'مجموعة', ctx.chat.type, 0, 'unknown');
-    try {
-      const admins = await ctx.telegram.getChatAdministrators(chatId);
-      const owner  = admins.find(a => a.status === 'creator');
-      const g      = db.getGroup(chatId);
-      if (owner && g) {
-        g.ownerId      = owner.user.id;
-        g.ownerUsername = owner.user.username || owner.user.first_name;
-      }
-    } catch {}
-  }
-
   const g = db.getGroup(chatId);
   if (g) {
     db.trackMember(chatId, from.id, from.username || '', from.first_name || '');
     const m = g.members.get(from.id);
     if (m) {
-      m.messageCount  = (m.messageCount || 0) + 1;
-      m.score         = (m.score        || 0) + 1;
+      m.messageCount = (m.messageCount || 0) + 1;
+      m.score        = (m.score        || 0) + 1;
       m.lastMessageAt = new Date();
     }
   }
