@@ -9,14 +9,31 @@ if (!DB_ENABLED) {
   console.warn('⚠️  SUPABASE_URL / SUPABASE_SERVICE_KEY غير موجودَين — البوت يعمل بالذاكرة فقط (بيانات مؤقتة).');
 }
 
-// stub يُعيد نتائج فارغة بدلاً من الإخفاق
+// [FIX #4] stub يُعيد نتائج فارغة بدلاً من الإخفاق — تم تغطية كل chains بما فيها .not() و .lt()
+const _emptyChain = {
+  single:  async () => ({ data: null,  error: null }),
+  order:   () => _emptyChain,
+  limit:   async () => ({ data: [],    error: null }),
+  not:     () => _emptyChain,
+  lt:      () => _emptyChain,
+  eq:      () => _emptyChain,
+  select:  () => _emptyChain,
+  insert:  () => _emptyChain,
+  upsert:  () => _emptyChain,
+  update:  () => _emptyChain,
+  delete:  () => _emptyChain,
+  data:    [],
+  error:   null,
+  count:   0,
+};
+
 const stubClient = {
   from: () => ({
-    select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }), order: () => ({ limit: async () => ({ data: [], error: null }) }), data: [], error: null }), data: [], error: null }),
-    insert: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }),
-    upsert: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }),
-    update: () => ({ eq: () => ({}) }),
-    delete: () => ({ eq: () => ({}) }),
+    select: () => _emptyChain,
+    insert: () => _emptyChain,
+    upsert: () => _emptyChain,
+    update: () => _emptyChain,
+    delete: () => _emptyChain,
   }),
   rpc: async () => ({ data: null, error: null }),
 };
@@ -82,13 +99,36 @@ async function upsertMember(chatId, userId, fields) {
   } catch (e) { console.error('upsertMember error:', e.message); }
 }
 
+// [FIX #1 + #5] incrementMessageCount: تأكد من وجود المجموعة أولاً قبل upsert الأعضاء
+// واستخدام ignoreDuplicates: true حتى لا يُعيد كتابة score=0 عند conflict
 async function incrementMessageCount(chatId, userId, username, firstName) {
   try {
-    await supabase.from('group_members').upsert(
-      { chat_id: chatId, user_id: userId, username: username || '', first_name: firstName || '', last_message_at: new Date().toISOString() },
-      { onConflict: 'chat_id,user_id' }
+    // تأكد أن المجموعة موجودة في groups (لتجنب Foreign Key violation)
+    await supabase.from('groups').upsert(
+      { chat_id: chatId, title: '', updated_at: new Date().toISOString() },
+      { onConflict: 'chat_id', ignoreDuplicates: true }
     );
+    // أدخل السجل فقط إذا لم يكن موجوداً (ignoreDuplicates: true) حتى لا يُصفَّر الـ score
+    await supabase.from('group_members').upsert(
+      {
+        chat_id:         chatId,
+        user_id:         userId,
+        username:        username  || '',
+        first_name:      firstName || '',
+        last_message_at: new Date().toISOString(),
+        message_count:   0,
+        score:           0,
+      },
+      { onConflict: 'chat_id,user_id', ignoreDuplicates: true }
+    );
+    // بعد ضمان وجود السجل، نزيد الـ score و message_count بالـ rpc
     await supabase.rpc('increment_member_stats', { p_chat_id: chatId, p_user_id: userId });
+    // تحديث last_message_at و username بشكل منفصل بعد الزيادة
+    await supabase.from('group_members').update({
+      username:        username  || '',
+      first_name:      firstName || '',
+      last_message_at: new Date().toISOString(),
+    }).eq('chat_id', chatId).eq('user_id', userId);
   } catch (e) { console.error('incrementMessageCount error:', e.message); }
 }
 
@@ -197,6 +237,14 @@ async function getWarnCount(chatId, userId) {
   } catch { return 0; }
 }
 
+// [FIX #2] دالة جديدة: جلب كل التحذيرات من Supabase للتحميل عند الـ startup
+async function getAllWarns() {
+  try {
+    const { data } = await supabase.from('warns').select('*');
+    return data || [];
+  } catch (e) { console.error('getAllWarns error:', e.message); return []; }
+}
+
 // ═══════════════════════════════════════════
 //  RESTRICTIONS (mute/ban)
 // ═══════════════════════════════════════════
@@ -243,6 +291,14 @@ async function getBannedWords(chatId) {
     const { data } = await supabase.from('banned_words').select('*').eq('chat_id', chatId);
     return data || [];
   } catch { return []; }
+}
+
+// [FIX #2] دالة جديدة: جلب كل الكلمات المحظورة من Supabase للتحميل عند الـ startup
+async function getAllBannedWords() {
+  try {
+    const { data } = await supabase.from('banned_words').select('*');
+    return data || [];
+  } catch (e) { console.error('getAllBannedWords error:', e.message); return []; }
 }
 
 async function addBannedWord(chatId, word, action, threshold, addedBy) {
@@ -501,7 +557,7 @@ async function getCommunityMemberJoins(communityId, userId) {
 }
 
 // ═══════════════════════════════════════════
-//  SPECIALISTS (نظام المتخصصين) — جديد
+//  SPECIALISTS (نظام المتخصصين)
 // ═══════════════════════════════════════════
 
 async function addSpecialist(chatId, userId, username, firstName, specialty, addedBy) {
@@ -537,7 +593,7 @@ async function getSpecialist(chatId, userId) {
 }
 
 // ═══════════════════════════════════════════
-//  ROUTING KEYWORDS (كلمات التوجيه) — جديد
+//  ROUTING KEYWORDS (كلمات التوجيه)
 // ═══════════════════════════════════════════
 
 async function addRoutingKeyword(chatId, keyword, specialistId, addedBy) {
@@ -575,7 +631,7 @@ async function findMatchingKeyword(chatId, messageText) {
 }
 
 // ═══════════════════════════════════════════
-//  SPECIALIST SESSIONS — جديد
+//  SPECIALIST SESSIONS
 // ═══════════════════════════════════════════
 
 async function createSession(chatId, userId, specialistId, triggerKeyword, originalMessage) {
@@ -610,7 +666,7 @@ async function getActiveSession(userId) {
 }
 
 // ═══════════════════════════════════════════
-//  CAPTCHA — جديد
+//  CAPTCHA
 // ═══════════════════════════════════════════
 
 async function setPendingCaptcha(chatId, userId, answer, messageId, expiresAt) {
@@ -644,7 +700,7 @@ async function deletePendingCaptcha(chatId, userId) {
 }
 
 // ═══════════════════════════════════════════
-//  REPORTS — جديد
+//  REPORTS
 // ═══════════════════════════════════════════
 
 async function addReport(chatId, reporterId, reportedUserId, messageId, reason) {
@@ -714,11 +770,11 @@ module.exports = {
   // Admins
   getGroupAdmins, addAdmin, removeAdmin, isAdminInDB,
   // Warns
-  addWarn, getWarns, clearWarns, getWarnCount,
+  addWarn, getWarns, clearWarns, getWarnCount, getAllWarns,
   // Restrictions
   addRestriction, removeRestriction, getActiveRestrictions, getExpiredRestrictions,
   // Banned Words
-  getBannedWords, addBannedWord, removeBannedWord,
+  getBannedWords, getAllBannedWords, addBannedWord, removeBannedWord,
   // Word Violations
   getWordViolationCount, incrementWordViolation, resetWordViolation,
   // Join Requests

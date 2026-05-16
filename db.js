@@ -129,7 +129,40 @@ async function loadData() {
       });
     }
 
-    console.log(`✅ تم تحميل ${groups.length} مجموعة، ${users.length} مستخدم، ${channels.length} قناة من Supabase`);
+    // [FIX #2] تحميل الكلمات المحظورة لكل مجموعة من Supabase
+    const allBannedWords = await supa.getAllBannedWords();
+    for (const bw of allBannedWords) {
+      const g = cache.groups.get(bw.chat_id);
+      if (g) {
+        g.bannedWords.push({
+          word:      bw.word,
+          action:    bw.action    || 'warn',
+          threshold: bw.threshold || 1,
+          addedBy:   bw.added_by  || 0,
+          addedAt:   bw.added_at  ? new Date(bw.added_at) : new Date(),
+        });
+      }
+    }
+
+    // [FIX #2] تحميل التحذيرات لكل مجموعة من Supabase
+    const allWarns = await supa.getAllWarns();
+    for (const w of allWarns) {
+      const g = cache.groups.get(w.chat_id);
+      if (g) {
+        if (!g.warns.has(w.user_id)) g.warns.set(w.user_id, []);
+        g.warns.get(w.user_id).push({
+          reason:    w.reason    || '',
+          warnedBy:  w.warned_by || 0,
+          warnedAt:  w.warned_at ? new Date(w.warned_at) : new Date(),
+        });
+      }
+    }
+
+    console.log(
+      `✅ تم تحميل ${groups.length} مجموعة، ${users.length} مستخدم، ` +
+      `${channels.length} قناة، ${allBannedWords.length} كلمة محظورة، ` +
+      `${allWarns.length} تحذير من Supabase`
+    );
   } catch (e) {
     console.error('❌ فشل تحميل البيانات من Supabase:', e.message);
   }
@@ -180,7 +213,7 @@ function allGroups() {
   return [...cache.groups.values()];
 }
 
-// حفظ تغييرات المجموعة في Supabase (غير مُعيق)
+// [FIX #3] حفظ تغييرات المجموعة في Supabase — تشمل الآن owner_verified_at
 async function _syncGroup(g) {
   try {
     await supa.upsertGroup(g.chat_id || g.chatId, {
@@ -189,6 +222,7 @@ async function _syncGroup(g) {
       owner_id:               g.ownerId || g.owner_id || null,
       owner_username:         g.ownerUsername || g.owner_username || '',
       owner_verified:         g.ownerVerified || false,
+      owner_verified_at:      g.ownerVerifiedAt ? new Date(g.ownerVerifiedAt).toISOString() : null, // [FIX #3]
       added_by:               g.addedBy || g.added_by || 0,
       added_by_username:      g.addedByUsername || g.added_by_username || '',
       max_warns:              g.maxWarns || 3,
@@ -312,7 +346,7 @@ async function getOrCreateUser(userId, username, firstName) {
     };
     cache.users.set(userId, u);
     // مزامنة مع Supabase
-    supa.upsertUser(userId, username || '', firstName || '').catch(() => {});
+    supa.upsertUser(userId, username || '', firstName || '').catch(e => console.error('upsertUser catch:', e.message));
   }
   return cache.users.get(userId);
 }
