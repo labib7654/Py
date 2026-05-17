@@ -1,233 +1,219 @@
 // ══════════════════════════════════════════════════════════════════════
-//  🔍 نظام التحقق من النبذة (Bio Verification System)
+//  🔍 نظام التحقق من النبذة — High Precision Bio Verification
 //
-//  يعمل في حالتين:
-//  1️⃣  طلب انضمام لمجموعة فيها مجتمع → يفحص نبذة الطالب
-//  2️⃣  أي رسالة خاصة للبوت → يفحص نبذة المرسل
+//  يجمع الكلمات المحظورة من كل مجموعة وقناة أُضيف إليها البوت
+//  (ليس فقط المجتمعات — بل كل الكلمات المحظورة في قاعدة البيانات)
 //
-//  إذا وُجدت كلمة محظورة في النبذة:
-//  - يُحظر من المجتمع وكل مجموعاته
-//  - يُضاف إلى قائمة المحظورين مع السبب + يوزر + ID + رابط
-//  - يُحذف البوت نفسه من المحادثة مع الشخص (لا يمكنه مراسلة البوت)
-//  - يُعلَم المطور + مالك كل مجموعة + قنوات السجلات
-//  - فك الحظر يكون من المطور فقط عبر /bio_unban <user_id>
+//  يُفحص الشخص في هذه الحالات:
+//  ① أي رسالة خاصة للبوت (سواء كان يراسله لأول مرة أو قديماً)
+//  ② طلب انضمام لأي مجموعة
+//  ③ انضمام عضو جديد لأي مجموعة (chat_member)
+//
+//  عند اكتشاف كلمة محظورة في النبذة:
+//  ✦ يُحظر من كل مجموعات البوت (ليس فقط المجتمع)
+//  ✦ يُسجَّل في قائمة المحظورين: يوزر + ID + رابط + كلمة + النبذة
+//  ✦ يُبلَّغ المطور + مالك كل مجموعة + قنوات السجلات
+//  ✦ يُرسَل له إشعار ثم تُحذف المحادثة من جانب البوت
+//  ✦ فك الحظر: /bio_unban <id> من المطور فقط
 // ══════════════════════════════════════════════════════════════════════
 
-const db            = require('./db');
+'use strict';
+
+const db               = require('./db');
 const { DEVELOPER_ID } = require('./config');
 const { isDeveloper }  = require('./helpers');
 
-// ── ذاكرة مؤقتة للتحقق المُعلَّق (لتجنب التكرار) ──────────────────
-const _recentlyChecked = new Map(); // userId → timestamp
+// ══════════════════════════════════════════════════════════════════════
+//  Cache — يمنع فحص نفس المستخدم أكثر من مرة كل 5 دقائق
+// ══════════════════════════════════════════════════════════════════════
+const _cache = new Map(); // userId -> { ts, passed }
+const CACHE_TTL = 5 * 60 * 1000;
 
-function _wasRecentlyChecked(userId) {
-  const last = _recentlyChecked.get(userId);
-  if (!last) return false;
-  if (Date.now() - last < 60_000) return true; // لا نتحقق أكثر من مرة كل دقيقة
-  return false;
+function _isCached(userId) {
+  const e = _cache.get(userId);
+  if (!e) return false;
+  if (!e.passed) return true; // محظور -> skip دائماً
+  return (Date.now() - e.ts) < CACHE_TTL;
 }
-function _markChecked(userId) {
-  _recentlyChecked.set(userId, Date.now());
-  // تنظيف القديم
-  if (_recentlyChecked.size > 500) {
-    const oldest = [..._recentlyChecked.entries()].sort((a, b) => a[1] - b[1])[0];
-    _recentlyChecked.delete(oldest[0]);
+function _setCache(userId, passed) {
+  _cache.set(userId, { ts: Date.now(), passed });
+  if (_cache.size > 1000) {
+    const now = Date.now();
+    for (const [k, v] of _cache) {
+      if (v.passed && (now - v.ts) > CACHE_TTL) _cache.delete(k);
+    }
   }
 }
+function _clearCache(userId) { _cache.delete(userId); }
 
-// ── جلب نبذة المستخدم من Telegram ─────────────────────────────────
-async function fetchUserBio(bot, userId) {
+// ══════════════════════════════════════════════════════════════════════
+//  جمع كل الكلمات المحظورة من كل المجموعات
+// ══════════════════════════════════════════════════════════════════════
+function _collectBannedWords() {
+  const words = new Set();
+  for (const g of db.allGroups()) {
+    for (const bw of (g.bannedWords || [])) {
+      if (bw.word && bw.word.trim()) words.add(bw.word.toLowerCase().trim());
+    }
+  }
+  return words;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  فحص النبذة ضد الكلمات — يُعيد الكلمة المخالفة أو null
+// ══════════════════════════════════════════════════════════════════════
+function _matchBio(bio, words) {
+  if (!bio || !words.size) return null;
+  const lower = bio.toLowerCase();
+  for (const w of words) {
+    if (lower.includes(w)) return w;
+  }
+  return null;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  جلب النبذة من Telegram
+// ══════════════════════════════════════════════════════════════════════
+async function _fetchBio(bot, userId) {
   try {
     const chat = await bot.telegram.getChat(userId);
-    return chat.bio || '';
-  } catch {
-    return '';
-  }
-}
-
-// ── فحص النبذة ضد الكلمات المحظورة لمجتمع معين ────────────────────
-// يُعيد: null إذا لا شيء، أو { word, communityId, communityTitle }
-function checkBioAgainstCommunity(bio, communityId) {
-  if (!bio) return null;
-  const com = db.getCommunity(communityId);
-  if (!com || !com.enabled) return null;
-
-  // نجمع الكلمات المحظورة من كل مجموعات المجتمع
-  const words = new Set();
-  for (const groupId of com.subGroups) {
-    const g = db.getGroup(groupId);
-    if (!g) continue;
-    for (const bw of (g.bannedWords || [])) {
-      words.add(bw.word.toLowerCase());
-    }
-  }
-
-  const lowerBio = bio.toLowerCase();
-  for (const word of words) {
-    if (lowerBio.includes(word)) {
-      return { word, communityId, communityTitle: com.title || String(communityId) };
-    }
-  }
-  return null;
-}
-
-// ── فحص النبذة ضد كل المجتمعات (للخاص) ───────────────────────────
-function checkBioAgainstAllCommunities(bio) {
-  if (!bio) return null;
-  for (const com of db.allCommunities()) {
-    const result = checkBioAgainstCommunity(bio, com.communityId);
-    if (result) return result;
-  }
-  return null;
+    return (chat.bio || '').trim();
+  } catch { return ''; }
 }
 
 // ══════════════════════════════════════════════════════════════════════
-//  تنفيذ الحظر الكامل
+//  تنفيذ الحظر الشامل
 // ══════════════════════════════════════════════════════════════════════
-async function executeBioBan(bot, user, bio, violation) {
-  const { word, communityId, communityTitle } = violation;
-  const com = db.getCommunity(communityId);
+async function _executeBan(bot, user, bio, word) {
+  const uid  = user.id;
+  const name = user.username ? '@' + user.username : (user.first_name || String(uid));
+  const link = user.username ? 'https://t.me/' + user.username : 'tg://user?id=' + uid;
 
-  // ── 1. تسجيل الحظر في db ────────────────────────────────────────
-  const userRec = db.getOrCreateUser(user.id, user.username || '', user.first_name || '');
-  userRec.globalBanned  = true;
-  userRec.bannedReason  = `نبذة تحتوي كلمة محظورة: "${word}" | المجتمع: ${communityTitle}`;
-  userRec.bannedAt      = new Date();
-  userRec.bioBanInfo    = {
+  // 1. تحديث قاعدة البيانات
+  const rec        = db.getOrCreateUser(uid, user.username || '', user.first_name || '');
+  rec.globalBanned = true;
+  rec.bannedReason = 'نبذة محظورة — كلمة: "' + word + '"';
+  rec.bannedAt     = new Date();
+  rec.bioBanInfo   = {
     word,
-    bio:         bio.slice(0, 200),
-    communityId,
-    communityTitle,
-    bannedAt:    new Date(),
-    canUnbanBy:  'developer_only',
+    bio:      bio.slice(0, 300),
+    bannedAt: new Date().toISOString(),
+    unbanBy:  'developer_only',
   };
-
-  // تسجيل في المجتمع
-  if (com) {
-    if (!com.autoBannedUsers) com.autoBannedUsers = new Map();
-    com.autoBannedUsers.set(user.id, {
-      reason:    `نبذة محظورة — كلمة: "${word}"`,
-      bio:       bio.slice(0, 200),
-      bannedAt:  new Date(),
-      bannedBy:  'bio_verify',
-    });
-  }
-
   db.markDirty();
+  _setCache(uid, false);
 
-  // ── 2. بناء رسالة التقرير ────────────────────────────────────────
-  const userName    = user.username ? `@${user.username}` : user.first_name || String(user.id);
-  const profileLink = user.username
-    ? `https://t.me/${user.username}`
-    : `tg://user?id=${user.id}`;
+  // 2. رسالة الإشعار
+  const preview = bio.length > 150 ? bio.slice(0, 150) + '...' : bio;
+  const notice =
+    '\u{1F6AB} *حظر تلقائي \u2014 نبذة محظورة*\n\n' +
+    '\u{1F464} [' + name + '](' + link + ')\n' +
+    '\u{1F194} `' + uid + '`\n' +
+    '\u{1F524} الكلمة: `' + word + '`\n' +
+    '\u{1F4DD} النبذة:\n```\n' + preview + '\n```\n' +
+    '\u{1F550} ' + new Date().toLocaleString('ar') + '\n\n' +
+    '_لرفع الحظر: /bio\\_unban ' + uid + '_';
 
-  const reportMsg =
-    `🚫 *حظر تلقائي — نبذة محظورة*\n\n` +
-    `👤 المستخدم: [${userName}](${profileLink})\n` +
-    `🆔 ID: \`${user.id}\`\n` +
-    `📝 النبذة: \`${bio.slice(0, 150)}${bio.length > 150 ? '...' : ''}\`\n` +
-    `🔤 الكلمة المحظورة: \`${word}\`\n` +
-    `🏫 المجتمع: *${communityTitle}*\n` +
-    `🕐 ${new Date().toLocaleString('ar')}\n\n` +
-    `⚠️ _لرفع الحظر: /bio\\_unban ${user.id}_`;
+  // 3. حظر من كل المجموعات + إبلاغ المالكين
+  const notified = new Set();
+  for (const g of db.allGroups()) {
+    // حظر
+    try {
+      await bot.telegram.banChatMember(g.chatId, uid);
+      g.bannedUsers.add(uid);
+    } catch {}
 
-  // ── 3. حظر من كل مجموعات المجتمع ────────────────────────────────
-  if (com) {
-    for (const groupId of com.subGroups) {
-      const g = db.getGroup(groupId);
+    // قناة السجلات
+    if (g.logChannelId) {
       try {
-        await bot.telegram.banChatMember(groupId, user.id);
-        if (g) {
-          g.bannedUsers.add(user.id);
-          // إرسال إشعار لقناة السجلات
-          if (g.logChannelId) {
-            try {
-              await bot.telegram.sendMessage(g.logChannelId, reportMsg, {
-                parse_mode: 'Markdown',
-                disable_web_page_preview: true,
-              });
-            } catch {}
-          }
-          // إبلاغ مالك المجموعة
-          if (g.ownerId) {
-            try {
-              await bot.telegram.sendMessage(g.ownerId, reportMsg, {
-                parse_mode: 'Markdown',
-                disable_web_page_preview: true,
-              });
-            } catch {}
-          }
-        }
+        await bot.telegram.sendMessage(g.logChannelId, notice, {
+          parse_mode: 'Markdown', disable_web_page_preview: true,
+        });
       } catch {}
     }
+
+    // المالك (مرة واحدة فقط)
+    if (g.ownerId && !notified.has(g.ownerId)) {
+      notified.add(g.ownerId);
+      try {
+        await bot.telegram.sendMessage(g.ownerId, notice, {
+          parse_mode: 'Markdown', disable_web_page_preview: true,
+        });
+      } catch {}
+    }
+
+    // تسجيل في المجتمع إن وُجد
+    if (g.communityId) {
+      const com = db.getCommunity(g.communityId);
+      if (com) {
+        if (!com.autoBannedUsers) com.autoBannedUsers = new Map();
+        if (!com.autoBannedUsers.has(uid)) {
+          com.autoBannedUsers.set(uid, {
+            reason: 'نبذة محظورة — كلمة: "' + word + '"',
+            bio:    bio.slice(0, 200),
+            bannedAt: new Date(),
+          });
+        }
+      }
+    }
   }
 
-  // ── 4. إبلاغ المطور ──────────────────────────────────────────────
+  // 4. إبلاغ المطور
   try {
-    await bot.telegram.sendMessage(DEVELOPER_ID, reportMsg, {
-      parse_mode: 'Markdown',
-      disable_web_page_preview: true,
+    await bot.telegram.sendMessage(DEVELOPER_ID, notice, {
+      parse_mode: 'Markdown', disable_web_page_preview: true,
     });
   } catch {}
 
-  // ── 5. حذف البوت من المحادثة الخاصة (يمنع مراسلته) ─────────────
-  // البوت يحذف المحادثة من جانبه — الشخص يرى أن البوت "غير متاح"
+  // 5. إشعار الشخص ثم حذف المحادثة
   try {
-    await bot.telegram.sendMessage(
-      user.id,
-      `🚫 تم حظرك من استخدام البوت بسبب محتوى غير مسموح في نبذتك الشخصية.\n\nللاعتراض تواصل مع إدارة المجتمع.`
+    await bot.telegram.sendMessage(uid,
+      '\u{1F6AB} *تم حظرك تلقائياً*\n\nنبذتك تحتوي على كلمة غير مسموح بها.\nللاعتراض تواصل مع إدارة المجموعة.',
+      { parse_mode: 'Markdown' }
     );
   } catch {}
-
-  // نطلب من Telegram حذف المحادثة من جانب البوت
-  try {
-    await bot.telegram.callApi('deleteChat', { chat_id: user.id });
-  } catch {}
-  // بديل: نغلق المحادثة بحظر الأوامر
-  // (البوت سيرفض رسائله لاحقاً عبر globalMiddleware)
-
-  return reportMsg;
+  try { await bot.telegram.callApi('deleteChat', { chat_id: uid }); } catch {}
 }
 
 // ══════════════════════════════════════════════════════════════════════
-//  الدالة الرئيسية: فحص + حظر إن وُجد مخالفة
-//  chatId: مجموعة مصدر الحدث (لتحديد المجتمع)
+//  الدالة الرئيسية — verifyUserBio
+//  تُعيد true إذا كان محظوراً، false إذا كان آمناً
 // ══════════════════════════════════════════════════════════════════════
-async function verifyUserBio(bot, user, sourceChatId = null) {
-  if (!user || user.is_bot) return null;
-  if (_wasRecentlyChecked(user.id)) return null;
-  _markChecked(user.id);
+async function verifyUserBio(bot, user) {
+  if (!user || user.is_bot) return false;
+  if (user.id === DEVELOPER_ID) return false;
 
-  // تجاهل المطور والبوتات المحظورة مسبقاً
-  if (user.id === DEVELOPER_ID) return null;
-  const userRec = db.getUser(user.id);
-  if (userRec?.globalBanned) return null; // محظور مسبقاً
+  // محظور مسبقاً
+  const rec = db.getUser(user.id);
+  if (rec && rec.globalBanned) return true;
 
-  const bio = await fetchUserBio(bot, user.id);
-  if (!bio) return null;
+  // cache hit
+  if (_isCached(user.id)) return false;
 
-  let violation = null;
-
-  if (sourceChatId) {
-    // فحص مجتمع المجموعة المصدر فقط
-    const g = db.getGroup(sourceChatId);
-    if (g?.communityId) {
-      violation = checkBioAgainstCommunity(bio, g.communityId);
-    }
-    // إن لم تكن مجموعة أو لا مجتمع → فحص كل المجتمعات
-    if (!violation) {
-      violation = checkBioAgainstAllCommunities(bio);
-    }
-  } else {
-    // رسالة خاصة — فحص كل المجتمعات
-    violation = checkBioAgainstAllCommunities(bio);
+  // لا كلمات محظورة أصلاً
+  const words = _collectBannedWords();
+  if (!words.size) {
+    _setCache(user.id, true);
+    return false;
   }
 
-  if (!violation) return null;
+  // جلب النبذة
+  const bio = await _fetchBio(bot, user.id);
+  if (!bio) {
+    _setCache(user.id, true);
+    return false;
+  }
+
+  // فحص
+  const hit = _matchBio(bio, words);
+  if (!hit) {
+    _setCache(user.id, true);
+    return false;
+  }
 
   // تنفيذ الحظر
-  await executeBioBan(bot, user, bio, violation);
-  return violation;
+  await _executeBan(bot, user, bio, hit);
+  return true;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -235,140 +221,137 @@ async function verifyUserBio(bot, user, sourceChatId = null) {
 // ══════════════════════════════════════════════════════════════════════
 module.exports = function setupBioVerify(bot) {
 
-  // ── 1. فحص طلبات الانضمام ─────────────────────────────────────
-  // يعمل قبل handler_groups.js لأنه مسجّل أولاً في index.js
-  bot.on('chat_join_request', async (ctx, next) => {
-    const req    = ctx.chatJoinRequest;
-    const { chat } = req;
-    const user   = req.from;
-
-    const g = db.getGroup(chat.id);
-    if (!g?.communityId) return next(); // لا مجتمع → لا فحص
-
-    const violation = await verifyUserBio(bot, user, chat.id);
-
-    if (violation) {
-      // رفض الطلب تلقائياً
-      try { await bot.telegram.declineChatJoinRequest(chat.id, user.id); } catch {}
-      // لا نكمل معالجة الطلب
-      return;
-    }
-
-    return next();
-  });
-
-  // ── 2. فحص الرسائل الخاصة ─────────────────────────────────────
+  // ① رسائل الخاص — كل رسالة بدون استثناء
   bot.on('message', async (ctx, next) => {
-    if (ctx.chat?.type !== 'private') return next();
-    if (!ctx.from) return next();
-
-    // لا نفحص المطور
-    if (isDeveloper(ctx)) return next();
-
-    // نفحص فقط إذا فيه مجتمعات مفعّلة
-    const activeCommunities = db.allCommunities().filter(c => c.enabled);
-    if (!activeCommunities.length) return next();
-
-    const violation = await verifyUserBio(bot, ctx.from, null);
-    if (violation) {
-      // البوت لن يرد — الرسالة المُرسلة في executeBioBan كافية
-      return;
-    }
-
+    if (ctx.chat && ctx.chat.type !== 'private') return next();
+    if (!ctx.from || isDeveloper(ctx)) return next();
+    const banned = await verifyUserBio(bot, ctx.from);
+    if (banned) return;
     return next();
   });
 
-  // ── 3. أمر فك الحظر (المطور فقط) ─────────────────────────────
+  // ② طلبات الانضمام
+  bot.on('chat_join_request', async (ctx, next) => {
+    const user = ctx.chatJoinRequest && ctx.chatJoinRequest.from;
+    if (!user) return next();
+    const banned = await verifyUserBio(bot, user);
+    if (banned) {
+      try { await bot.telegram.declineChatJoinRequest(ctx.chat.id, user.id); } catch {}
+      return;
+    }
+    return next();
+  });
+
+  // ③ انضمام عضو جديد
+  bot.on('chat_member', async (ctx, next) => {
+    const upd = ctx.chatMember;
+    if (!upd) return next();
+    const newM = upd.new_chat_member;
+    const user = newM && newM.user;
+    if (!user || user.is_bot) return next();
+    const isJoin =
+      (newM.status === 'member' || newM.status === 'restricted') &&
+      (upd.old_chat_member.status === 'left' || upd.old_chat_member.status === 'kicked');
+    if (!isJoin) return next();
+    const banned = await verifyUserBio(bot, user);
+    if (banned) {
+      try { await bot.telegram.banChatMember(upd.chat.id, user.id); } catch {}
+      return;
+    }
+    return next();
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  أوامر المطور
+  // ════════════════════════════════════════════════════════════
+
+  // رفع الحظر
   bot.command('bio_unban', async (ctx) => {
     if (!isDeveloper(ctx)) return;
-
-    const args   = ctx.message.text.split(' ').slice(1);
-    const userId = Number(args[0]);
-    if (!userId) {
-      return ctx.replyWithMarkdown(
-        `🔓 *رفع حظر النبذة*\n\n` +
-        `الاستخدام: \`/bio_unban <user_id>\`\n\n` +
-        `_هذا الأمر للمطور فقط — يُفعَّل يدوياً بعد مراجعة حساب الشخص_`
-      );
+    const uid = Number((ctx.message.text.split(' ')[1] || '').trim());
+    if (!uid) {
+      return ctx.replyWithMarkdown('🔓 الاستخدام: `/bio_unban <user_id>`');
     }
+    const rec = db.getUser(uid);
+    if (!rec) return ctx.reply('❌ المستخدم غير موجود.');
+    if (!rec.globalBanned) return ctx.reply('ℹ️ المستخدم غير محظور.');
 
-    const userRec = db.getUser(userId);
-    if (!userRec) return ctx.reply(`❌ المستخدم \`${userId}\` غير موجود في قاعدة البيانات.`, { parse_mode: 'Markdown' });
-    if (!userRec.globalBanned) return ctx.reply(`ℹ️ المستخدم \`${userId}\` غير محظور أصلاً.`, { parse_mode: 'Markdown' });
-
-    const bioBanInfo = userRec.bioBanInfo;
-    const communityId = bioBanInfo?.communityId;
-
-    // رفع الحظر من db
-    userRec.globalBanned = false;
-    userRec.bannedReason = '';
-    userRec.bioBanInfo   = null;
+    const info      = rec.bioBanInfo || {};
+    rec.globalBanned = false;
+    rec.bannedReason = '';
+    rec.bioBanInfo   = null;
     db.markDirty();
+    _clearCache(uid);
 
-    // رفع الحظر من مجموعات المجتمع
-    let unbannedFrom = 0;
-    if (communityId) {
-      const com = db.getCommunity(communityId);
-      if (com) {
-        com.autoBannedUsers?.delete(userId);
-        for (const groupId of com.subGroups) {
-          try {
-            await bot.telegram.unbanChatMember(groupId, userId);
-            const g = db.getGroup(groupId);
-            if (g) g.bannedUsers.delete(userId);
-            unbannedFrom++;
-          } catch {}
-        }
-      }
+    let count = 0;
+    for (const g of db.allGroups()) {
+      if (!g.bannedUsers.has(uid)) continue;
+      try { await bot.telegram.unbanChatMember(g.chatId, uid); g.bannedUsers.delete(uid); count++; } catch {}
     }
+    for (const com of db.allCommunities()) { com.autoBannedUsers && com.autoBannedUsers.delete(uid); }
 
-    const userName = userRec.username ? `@${userRec.username}` : userRec.firstName || String(userId);
+    const name = rec.username ? '@' + rec.username : rec.firstName || String(uid);
     await ctx.replyWithMarkdown(
-      `✅ *تم رفع حظر النبذة*\n\n` +
-      `👤 ${userName} \`[${userId}]\`\n` +
-      `🏫 المجتمع: ${bioBanInfo?.communityTitle || 'غير محدد'}\n` +
-      `🔤 الكلمة: \`${bioBanInfo?.word || 'غير محدد'}\`\n` +
-      `📋 رُفع الحظر من: ${unbannedFrom} مجموعة\n` +
-      `👨‍💻 بواسطة: المطور`
+      '✅ *تم رفع الحظر*\n\n' +
+      '👤 ' + name + ' `[' + uid + ']`\n' +
+      '🔤 الكلمة: `' + (info.word || '—') + '`\n' +
+      '📋 رُفع من ' + count + ' مجموعة'
     );
-
-    // إبلاغ الشخص
-    try {
-      await bot.telegram.sendMessage(
-        userId,
-        `✅ تم رفع حظرك من قِبل إدارة البوت. يمكنك الآن استخدام البوت ومجموعاته.`
-      );
-    } catch {}
+    try { await bot.telegram.sendMessage(uid, '✅ تم رفع حظرك. يمكنك مراسلة البوت والانضمام للمجموعات.'); } catch {}
   });
 
-  // ── 4. عرض قائمة المحظورين بسبب النبذة ───────────────────────
+  // قائمة المحظورين
   bot.command('bio_bans', async (ctx) => {
     if (!isDeveloper(ctx)) return;
+    const list = db.allUsers().filter(u => u.globalBanned && u.bioBanInfo);
+    if (!list.length) return ctx.replyWithMarkdown('🔍 *لا يوجد محظورون بسبب النبذة.*');
 
-    const bioBanned = db.allUsers().filter(u => u.globalBanned && u.bioBanInfo);
-    if (!bioBanned.length) {
-      return ctx.replyWithMarkdown('🔍 *لا يوجد محظورون بسبب النبذة حالياً.*');
-    }
-
-    let text = `🚫 *المحظورون بسبب النبذة* (${bioBanned.length})\n\n`;
-    bioBanned.slice(0, 15).forEach((u, i) => {
-      const name    = u.username ? `@${u.username}` : u.firstName || String(u.userId);
-      const link    = u.username ? `https://t.me/${u.username}` : `tg://user?id=${u.userId}`;
-      const info    = u.bioBanInfo;
-      text +=
-        `${i + 1}. [${name}](${link}) \`[${u.userId}]\`\n` +
-        `   🔤 كلمة: \`${info?.word || '—'}\`\n` +
-        `   🏫 مجتمع: ${info?.communityTitle || '—'}\n` +
-        `   🕐 ${info?.bannedAt ? new Date(info.bannedAt).toLocaleDateString('ar') : '—'}\n\n`;
+    let text = '🚫 *المحظورون بسبب النبذة* (' + list.length + ')\n\n';
+    list.slice(0, 20).forEach((u, i) => {
+      const n    = u.username ? '@' + u.username : u.firstName || String(u.userId);
+      const href = u.username ? 'https://t.me/' + u.username : 'tg://user?id=' + u.userId;
+      const info = u.bioBanInfo || {};
+      text += (i + 1) + '. [' + n + '](' + href + ') `' + u.userId + '`\n';
+      text += '   🔤 `' + (info.word || '—') + '` | 🕐 ' + (info.bannedAt ? new Date(info.bannedAt).toLocaleDateString('ar') : '—') + '\n\n';
     });
-
-    if (bioBanned.length > 15) text += `_... و${bioBanned.length - 15} آخرين_\n`;
-    text += `\n_لرفع الحظر: /bio\\_unban <user\\_id>_`;
-
+    if (list.length > 20) text += '_...و' + (list.length - 20) + ' آخرين_\n';
+    text += '\n_/bio\\_unban <id>_';
     await ctx.replyWithMarkdown(text, { disable_web_page_preview: true });
   });
 
+  // فحص يدوي فوري
+  bot.command('bio_check', async (ctx) => {
+    if (!isDeveloper(ctx)) return;
+    const uid = Number((ctx.message.text.split(' ')[1] || '').trim());
+    if (!uid) return ctx.reply('❌ مثال: /bio_check 123456789');
+
+    _clearCache(uid);
+    await ctx.reply('🔍 جاري الفحص...');
+
+    const bio   = await _fetchBio(bot, uid);
+    const words = _collectBannedWords();
+
+    if (!bio) return ctx.replyWithMarkdown('ℹ️ المستخدم `' + uid + '` لا يملك نبذة.');
+
+    const hit = _matchBio(bio, words);
+    if (!hit) {
+      return ctx.replyWithMarkdown(
+        '✅ *النبذة نظيفة*\n\n' +
+        '👤 `' + uid + '`\n' +
+        '📝 `' + bio.slice(0, 200) + '`'
+      );
+    }
+
+    await ctx.replyWithMarkdown('🔴 مخالفة — جاري الحظر...\n🔤 `' + hit + '`');
+    const rec = db.getUser(uid);
+    await _executeBan(bot, {
+      id:         uid,
+      username:   rec && rec.username || '',
+      first_name: rec && rec.firstName || String(uid),
+      is_bot:     false,
+    }, bio, hit);
+  });
 };
 
-// تصدير الدالة الأساسية للاستخدام خارجياً (من handler_groups مثلاً)
+// تصدير للاستخدام الخارجي
 module.exports.verifyUserBio = verifyUserBio;
