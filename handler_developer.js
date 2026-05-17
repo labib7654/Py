@@ -1,7 +1,7 @@
 const { Markup } = require('telegraf');
 const db = require('./db');
 const {
-  isDeveloper, isAdmin, isOwner,
+  isDeveloper, isDeveloperOrBotAdmin, isAdmin, isOwner,
   promoteUser, demoteUser,
   muteMember, unmutePerms,
   logAction,
@@ -57,7 +57,7 @@ module.exports = function setupDeveloper(bot) {
       const chatId = Number(payload.replace('panel_', ''));
       const g = db.getGroup(chatId);
       if (g) {
-        const canAccess = isDeveloper(ctx) || g.ownerId === u.id || g.admins.has(u.id);
+        const canAccess = isDeveloperOrBotAdmin(ctx) || g.ownerId === u.id || g.admins.has(u.id);
         if (canAccess) {
           return ctx.replyWithMarkdown(
             `⚙️ *إعدادات ${g.title}*\n\nاضغط لفتح لوحة التحكم:`,
@@ -67,7 +67,7 @@ module.exports = function setupDeveloper(bot) {
       }
     }
 
-    if (isDeveloper(ctx)) {
+    if (isDeveloperOrBotAdmin(ctx)) {
       const s = db.getStats();
       return ctx.replyWithMarkdown(
         `🤖 *بوت إدارة المجموعات — جامعة v4.0*\n\n🔐 *لوحة التحكم السرية للمطور*\n\n` +
@@ -125,7 +125,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── /dev ─────────────────────────────────────────────────────
   bot.command('dev', async (ctx) => {
-    if (!isDeveloper(ctx)) return;
+    if (!isDeveloperOrBotAdmin(ctx)) return;
     const s = db.getStats();
     await ctx.replyWithMarkdown(
       `🔐 *لوحة تحكم المطور*\n\n📊 المجموعات: \`${s.totalGroups}\` | القنوات: \`${s.totalChannels}\`\n👤 ${s.totalUsers} مستخدم | 🚫 ${s.bannedUsers} محظور`,
@@ -135,7 +135,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_stats ────────────────────────────────────────────────
   bot.action('dev_stats', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const s = db.getStats();
     const totalWords = db.allGroups().reduce((a, g) => a + g.bannedWords.length, 0);
@@ -147,7 +147,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_groups (مع Pagination) ───────────────────────────────
   bot.action(/^dev_groups(_(\d+))?$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const page      = Number(ctx.match[2] || 0);
     const PAGE_SIZE = 8;
@@ -173,7 +173,7 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action(/^dev_grp_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
@@ -196,7 +196,7 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action(/^dev_members_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
@@ -238,7 +238,7 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action(/^dev_warned_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
@@ -258,7 +258,7 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action(/^dev_muted_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
@@ -277,7 +277,7 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action(/^dev_banned_grp_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
@@ -297,7 +297,7 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action(/^dev_joinreqs_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
@@ -320,14 +320,14 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action(/^dev_grp_bcast_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     await ctx.editMessageText(`📢 *بث للمجموعة*\n\n\`/bcastone ${chatId} نص الرسالة\``, { parse_mode: 'Markdown', ...back(`dev_grp_${chatId}`) });
   });
 
   bot.action(/^dev_mact_(\d+)_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const targetId = Number(ctx.match[1]);
     const chatId   = Number(ctx.match[2]);
@@ -344,7 +344,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_channels ─────────────────────────────────────────────
   bot.action('dev_channels', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const chs = db.allChannels();
     if (!chs.length)
@@ -355,7 +355,7 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action(/^dev_ch_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const c = db.getChannel(Number(ctx.match[1]));
     if (!c) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
@@ -367,7 +367,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_communities ──────────────────────────────────────────
   bot.action('dev_communities', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const coms = db.allCommunities();
     if (!coms.length)
@@ -378,7 +378,7 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action(/^dev_com_(-?\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const c = db.getCommunity(Number(ctx.match[1]));
     if (!c) return ctx.answerCbQuery('❌ غير موجود!', { show_alert: true });
@@ -418,13 +418,13 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_broadcast ────────────────────────────────────────────
   bot.action('dev_broadcast', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     await ctx.editMessageText('📢 *بث جماعي*\n\n`/broadcast نص الرسالة`\n\nيُرسل لكل المجموعات.', { parse_mode: 'Markdown', ...back('dev_back') });
   });
 
   bot.command('bcastone', async (ctx) => {
-    if (!isDeveloper(ctx)) return;
+    if (!isDeveloperOrBotAdmin(ctx)) return;
     const parts  = ctx.message.text.split(' ');
     const chatId = Number(parts[1]);
     const text   = parts.slice(2).join(' ');
@@ -435,13 +435,13 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_ban_menu / dev_unban_menu ────────────────────────────
   bot.action('dev_ban_menu', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     await ctx.editMessageText('🚫 *حظر عالمي*\n\n`/gban <id> <السبب>`', { parse_mode: 'Markdown', ...back('dev_back') });
   });
 
   bot.action('dev_unban_menu', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     await ctx.editMessageText('✅ *رفع الحظر العالمي*\n\n`/ungban <id>`', { parse_mode: 'Markdown', ...back('dev_back') });
   });
@@ -470,7 +470,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_banned_list ──────────────────────────────────────────
   bot.action('dev_banned_list', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const banned = db.allUsers().filter(u => u.globalBanned);
     if (!banned.length)
@@ -482,13 +482,13 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_user_search / /userinfo ──────────────────────────────
   bot.action('dev_user_search', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     await ctx.editMessageText('🔍 *بحث مستخدم*\n\n`/userinfo <id أو @username>`', { parse_mode: 'Markdown', ...back('dev_back') });
   });
 
   bot.command('userinfo', async (ctx) => {
-    if (!isDeveloper(ctx)) return;
+    if (!isDeveloperOrBotAdmin(ctx)) return;
     const arg = ctx.message.text.split(' ')[1];
     if (!arg) return ctx.reply('❌ مثال: /userinfo 123456');
     const user = /^\d+$/.test(arg)
@@ -502,7 +502,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── 👤 مستخدمو البوت ─────────────────────────────────────────
   bot.action('dev_bot_users', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
 
     // من أضاف البوت لمجموعات
@@ -534,7 +534,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── 📈 استخدام البوت ─────────────────────────────────────────
   bot.action('dev_usage', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const groups = db.allGroups();
     const totalMsgs  = groups.reduce((a, g) => a + [...g.members.values()].reduce((b, m) => b + (m.messageCount || 0), 0), 0);
@@ -554,7 +554,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_refresh / dev_back ───────────────────────────────────
   bot.action('dev_refresh', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery('🔄 تم التحديث!');
     const s = db.getStats();
     await ctx.editMessageText(
@@ -564,13 +564,64 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.action('dev_back', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const s = db.getStats();
     await ctx.editMessageText(
       `🔐 *لوحة تحكم المطور*\n\n📊 المجموعات: \`${s.totalGroups}\` | القنوات: \`${s.totalChannels}\`\n👤 ${s.totalUsers} مستخدم | 🚫 ${s.bannedUsers} محظور`,
       { parse_mode: 'Markdown', ...devMainKeyboard() }
     );
+  });
+
+  // ── /addbotadmin ───────────────────────────────────────────
+  bot.command('addbotadmin', async (ctx) => {
+    if (!isDeveloper(ctx)) return ctx.reply('❌ هذا الأمر للمطور الأساسي فقط.');
+    const args = ctx.message.text.split(' ');
+    const targetId = Number(args[1]);
+    if (!targetId) return ctx.reply('❌ مثال: /addbotadmin 123456789');
+    
+    if (db.isBotAdmin(targetId)) return ctx.reply(`⚠️ \`${targetId}\` مشرف بوت بالفعل.`, { parse_mode: 'Markdown' });
+    
+    db.addBotAdmin(targetId);
+    
+    try {
+      await bot.telegram.sendMessage(targetId, 
+        `🔐 *تمت ترقيتك كمشرف بوت*\n\n` +
+        `لديك صلاحية الوصول إلى لوحة المطور (باستثناء بعض الأوامر الحساسة).\n` +
+        `استخدم /dev للوصول.`,
+        { parse_mode: 'Markdown' }
+      );
+    } catch {}
+    
+    await ctx.replyWithMarkdown(`✅ تمت إضافة \`${targetId}\` كمشرف بوت.`);
+  });
+
+  // ── /removebotadmin ────────────────────────────────────────
+  bot.command('removebotadmin', async (ctx) => {
+    if (!isDeveloper(ctx)) return ctx.reply('❌ هذا الأمر للمطور الأساسي فقط.');
+    const args = ctx.message.text.split(' ');
+    const targetId = Number(args[1]);
+    if (!targetId) return ctx.reply('❌ مثال: /removebotadmin 123456789');
+    
+    if (!db.isBotAdmin(targetId)) return ctx.reply(`⚠️ \`${targetId}\` ليس مشرف بوت.`, { parse_mode: 'Markdown' });
+    
+    db.removeBotAdmin(targetId);
+    await ctx.replyWithMarkdown(`✅ تمت إزالة \`${targetId}\` من قائمة مشرفي البوت.`);
+  });
+
+  // ── /botadmins ─────────────────────────────────────────────
+  bot.command('botadmins', async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.reply('❌ غير مسموح.');
+    
+    const admins = db.allBotAdmins();
+    if (!admins.length) return ctx.reply('📋 لا يوجد مشرفون بوت حالياً.');
+    
+    let text = `👥 *قائمة مشرفي البوت* (${admins.length})\n\n`;
+    for (const id of admins) {
+      const user = db.getUser(id);
+      text += `• \`${id}\` — ${user?.username ? `@${user.username}` : user?.firstName || 'غير معروف'}\n`;
+    }
+    await ctx.replyWithMarkdown(text);
   });
 
 };

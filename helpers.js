@@ -2,6 +2,16 @@ const { DEVELOPER_ID } = require('./config');
 
 function isDeveloper(ctx) { return ctx.from && ctx.from.id === DEVELOPER_ID; }
 
+function isBotAdmin(ctx) {
+  if (!ctx.from) return false;
+  const db = require('./db');
+  return db.isBotAdmin(ctx.from.id);
+}
+
+function isDeveloperOrBotAdmin(ctx) {
+  return isDeveloper(ctx) || isBotAdmin(ctx);
+}
+
 async function isAdmin(bot, chatId, userId) {
   try {
     const m = await bot.telegram.getChatMember(chatId, userId);
@@ -256,7 +266,7 @@ async function archiveTopic(bot, chatId, topicId) {
 }
 
 module.exports = {
-  isDeveloper, isAdmin, isOwner, checkBotPermissions,
+  isDeveloper, isBotAdmin, isDeveloperOrBotAdmin, isAdmin, isOwner, checkBotPermissions,
   getTargetUser, getReason,
   muteMember, muteMemberTimed,
   banMemberTimed,

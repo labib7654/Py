@@ -9,6 +9,7 @@ const groups      = new Map();
 const channels    = new Map();
 const users       = new Map();
 const communities = new Map();
+const botAdmins   = new Set();  // تخزين معرفات مشرفي البوت
 
 // ═══════════════════════════════════════════════════════════════
 //  Groups
@@ -180,6 +181,35 @@ function recordCommunityJoin(communityId, userId, chatId) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  Bot Admins (مشرفي البوت)
+// ═══════════════════════════════════════════════════════════════
+
+function isBotAdmin(userId) {
+  return botAdmins.has(userId);
+}
+
+function addBotAdmin(userId) {
+  if (userId && !isNaN(userId)) {
+    botAdmins.add(userId);
+    saveData(); // حفظ فوري
+  }
+}
+
+function removeBotAdmin(userId) {
+  botAdmins.delete(userId);
+  saveData();
+}
+
+function allBotAdmins() {
+  return [...botAdmins];
+}
+
+function clearBotAdmins() {
+  botAdmins.clear();
+  saveData();
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  Word violations & Audit log
 // ═══════════════════════════════════════════════════════════════
 
@@ -226,6 +256,7 @@ function saveData() {
   try {
     const data = {
       savedAt: new Date().toISOString(),
+      botAdmins: [...botAdmins],
       groups: Object.fromEntries(
         [...groups.entries()].map(([k, v]) => [k, {
           ...v,
@@ -282,6 +313,12 @@ function loadData() {
   try {
     const raw  = fs.readFileSync(DATA_FILE, 'utf-8');
     const data = JSON.parse(raw);
+
+    // استعادة botAdmins
+    if (data.botAdmins && Array.isArray(data.botAdmins)) {
+      botAdmins.clear();
+      data.botAdmins.forEach(id => botAdmins.add(Number(id)));
+    }
 
     for (const [k, v] of Object.entries(data.groups || {})) {
       // إعادة بناء topics
@@ -393,4 +430,10 @@ module.exports = {
   addAuditLog,
   getStats,
   saveData,
+  // Bot Admins
+  isBotAdmin,
+  addBotAdmin,
+  removeBotAdmin,
+  allBotAdmins,
+  clearBotAdmins,
 };
