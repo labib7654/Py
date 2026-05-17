@@ -355,8 +355,9 @@ function buildJSON() {
     users: Object.fromEntries(
       [...users.entries()].map(([k, v]) => [k, {
         ...v,
-        groups:   [...v.groups],
-        channels: [...v.channels],
+        groups:     [...v.groups],
+        channels:   [...v.channels],
+        bioBanInfo: v.bioBanInfo || null,
       }])
     ),
     communities: Object.fromEntries(
@@ -508,10 +509,11 @@ function parseData(raw) {
     for (const [k, v] of Object.entries(data.users || {})) {
       users.set(Number(k), {
         ...v,
-        userId:   Number(k),
-        lastSeen: v.lastSeen || v.firstSeen || new Date(),
-        groups:   new Set((v.groups   || []).map(Number)),
-        channels: new Set((v.channels || []).map(Number)),
+        userId:    Number(k),
+        lastSeen:  v.lastSeen || v.firstSeen || new Date(),
+        groups:    new Set((v.groups   || []).map(Number)),
+        channels:  new Set((v.channels || []).map(Number)),
+        bioBanInfo: v.bioBanInfo || null,
       });
     }
 

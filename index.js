@@ -10,6 +10,7 @@ const express        = require('express');
 const { BOT_TOKEN, DEVELOPER_ID, PORT } = require('./config');
 const { globalMiddleware, messageTrackingMiddleware } = require('./middleware');
 const setupDeveloper     = require('./handler_developer');
+const setupBioVerify     = require('./handler_bio_verify');
 const setupGroupHandlers = require('./handler_groups');
 const setupAdminHandlers = require('./handler_admin');
 const setupOwnerHandlers = require('./handler_owner');
@@ -79,6 +80,7 @@ async function main() {
 
   // ── Handlers ──────────────────────────────────────────────
   setupDeveloper(bot);
+  setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)
   setupGroupHandlers(bot);
   setupAdminHandlers(bot);
   setupOwnerHandlers(bot);
