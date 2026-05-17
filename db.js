@@ -347,6 +347,12 @@ function buildJSON() {
           [...v.topics.entries()].map(([tid, tv]) => [tid, {
             ...tv,
             approvedUsers: tv.approvedUsers ? [...tv.approvedUsers] : [],
+            joinRequests: tv.joinRequests
+              ? Object.fromEntries([...tv.joinRequests.entries()])
+              : {},
+            cooldowns: tv.cooldowns
+              ? Object.fromEntries([...tv.cooldowns.entries()].map(([uk, uv]) => [uk, Number(uv)]))
+              : {},
           }])
         ),
       }])
@@ -454,6 +460,12 @@ function parseData(raw) {
         topicsMap.set(Number(tid), {
           ...tv,
           approvedUsers: new Set((tv.approvedUsers || []).map(Number)),
+          joinRequests: new Map(
+            Object.entries(tv.joinRequests || {}).map(([uk, uv]) => [Number(uk), uv])
+          ),
+          cooldowns: new Map(
+            Object.entries(tv.cooldowns || {}).map(([uk, uv]) => [Number(uk), Number(uv)])
+          ),
         });
       }
 

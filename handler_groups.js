@@ -373,61 +373,6 @@ module.exports = function setupGroupHandlers(bot) {
     return next();
   });
 
-  // ── فحص رسائل المواضيع المقفلة ───────────────────────────────────────
-  bot.on('message', async (ctx, next) => {
-    if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
-    if (!ctx.message?.message_thread_id) return next();
-    const g = db.getGroup(ctx.chat.id);
-    if (!g?.topicSettings?.requireApprovalToJoin) return next();
-
-    const topicId = ctx.message.message_thread_id;
-    const topic   = g.topics.get(topicId);
-    if (!topic?.locked) return next();
-
-    const isApproved   = topic.approvedUsers?.has(ctx.from.id);
-    const isAdminOrOwner = await isAdmin(bot, ctx.chat.id, ctx.from.id);
-    if (isAdminOrOwner || isApproved) return next();
-
-    try { await ctx.deleteMessage(); } catch {}
-
-    if (g.ownerId) {
-      try {
-        await bot.telegram.sendMessage(
-          g.ownerId,
-          `📨 *طلب دخول موضوع*\n\n👤 ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''} يريد المشاركة في موضوع "${topic.name || topicId}"\n🆔 \`${ctx.from.id}\``,
-          {
-            parse_mode: 'Markdown',
-            ...Markup.inlineKeyboard([
-              [
-                Markup.button.callback('✅ سماح', `topic_allow_${ctx.from.id}_${ctx.chat.id}_${topicId}`),
-                Markup.button.callback('❌ رفض',  `topic_deny_${ctx.from.id}_${ctx.chat.id}_${topicId}`),
-              ],
-            ]),
-          }
-        );
-      } catch {}
-    }
-    return; // لا تكمل next() — الرسالة حُذفت
-  });
-
-  // ── قبول/رفض طلب دخول موضوع ──────────────────────────────────────────
-  bot.action(/^topic_allow_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const [uid, chatId, topicId] = [Number(ctx.match[1]), Number(ctx.match[2]), Number(ctx.match[3])];
-    const g = db.getGroup(chatId); if (!g) return;
-    let topic = g.topics.get(topicId);
-    if (!topic) { topic = { name: String(topicId), locked: true, archived: false, approvedUsers: new Set() }; g.topics.set(topicId, topic); }
-    if (!topic.approvedUsers) topic.approvedUsers = new Set();
-    topic.approvedUsers.add(uid);
-    await ctx.answerCbQuery('✅ تم السماح للمستخدم!', { show_alert: true });
-    await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n✅ *تم السماح*', { parse_mode: 'Markdown' });
-  });
-
-  bot.action(/^topic_deny_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery('❌ تم الرفض!', { show_alert: true });
-    await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n❌ *تم الرفض*', { parse_mode: 'Markdown' });
-  });
-
   // ── فلتر الكلمات المحظورة ────────────────────────────────────────────
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private') return next();

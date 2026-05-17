@@ -11,6 +11,7 @@ const { BOT_TOKEN, DEVELOPER_ID, PORT } = require('./config');
 const { globalMiddleware, messageTrackingMiddleware } = require('./middleware');
 const setupDeveloper     = require('./handler_developer');
 const setupBioVerify     = require('./handler_bio_verify');
+const setupTopicHandlers = require('./handler_topics');
 const setupGroupHandlers = require('./handler_groups');
 const setupAdminHandlers = require('./handler_admin');
 const setupOwnerHandlers = require('./handler_owner');
@@ -85,6 +86,7 @@ async function main() {
   setupRadar(bot);           // ✅ رادار المستخدمين — يسجّل الجميع في كل مكان
   setupAdder(bot);           // ✅ ميزة الإضافة العشوائية للمطور
   setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)
+  setupTopicHandlers(bot);  // ✅ نظام طلبات المواضيع — يجب قبل setupGroupHandlers
   setupGroupHandlers(bot);
   setupAdminHandlers(bot);
   setupOwnerHandlers(bot);

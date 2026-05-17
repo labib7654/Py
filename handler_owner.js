@@ -740,61 +740,6 @@ module.exports = function setupOwnerHandlers(bot) {
     await ctx.editMessageReplyMarkup(permissionsDashboard(chatId, g.perms).reply_markup);
   });
 
-  // ── لوحة المواضيع ─────────────────────────────────────────
-  bot.action(/^topics_panel_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId); if (!g) return;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
-      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const ts = g.topicSettings || {};
-    let text = `🧵 *إدارة المواضيع — ${g.title}*\n\n`;
-    text += `🔒 طلبات دخول المواضيع: ${ts.requireApprovalToJoin ? '✅ مفعّل' : '❌ معطّل'}\n\n`;
-    if (g.topics.size) {
-      text += `*المواضيع المسجّلة (${g.topics.size}):*\n`;
-      for (const [tid, t] of g.topics.entries()) {
-        text += `• \`${tid}\` ${t.name ? `(${t.name})` : ''} ${t.locked ? '🔒' : '🔓'} ${t.archived ? '📁' : ''}\n`;
-      }
-    } else {
-      text += '_لا توجد مواضيع مسجّلة حتى الآن._\n';
-    }
-    text += `\n*الأوامر المتاحة:*\n\`/locktopic\` | \`/unlocktopic\` | \`/archivetopic\`\n\`/topicrequest on|off\``;
-    await ctx.editMessageText(text, {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([
-        [Markup.button.callback(
-          `${ts.requireApprovalToJoin ? '✅' : '❌'} طلبات دخول المواضيع`,
-          `toggle_topicreq_${chatId}`
-        )],
-        [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
-      ]),
-    });
-  });
-
-  bot.action(/^toggle_topicreq_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId); if (!g) return;
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
-      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    g.topicSettings = g.topicSettings || { requireApprovalToJoin: false, autoLockOnCreate: false, ownerBypassAll: true };
-    g.topicSettings.requireApprovalToJoin = !g.topicSettings.requireApprovalToJoin;
-    await ctx.answerCbQuery(
-      g.topicSettings.requireApprovalToJoin ? '✅ طلبات دخول المواضيع مفعّلة!' : '❌ طلبات دخول المواضيع معطّلة!'
-    );
-    // أعد عرض اللوحة
-    const ts   = g.topicSettings;
-    let text   = `🧵 *إدارة المواضيع — ${g.title}*\n\n`;
-    text += `🔒 طلبات دخول المواضيع: ${ts.requireApprovalToJoin ? '✅ مفعّل' : '❌ معطّل'}\n`;
-    await ctx.editMessageText(text, {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([
-        [Markup.button.callback(`${ts.requireApprovalToJoin ? '✅' : '❌'} طلبات دخول المواضيع`, `toggle_topicreq_${chatId}`)],
-        [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
-      ]),
-    });
-  });
-
   // ── سجل الإجراءات ─────────────────────────────────────────
   bot.action(/^auditlog_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
