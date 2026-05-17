@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T22:44:40.257Z",
+  "savedAt": "2026-05-17T22:53:38.964Z",
   "botAdmins": [
     6330247540
   ],
@@ -36,7 +36,8 @@
       "muteNewMembers": false,
       "mutedUsers": [],
       "bannedUsers": [
-        7574941687
+        7574941687,
+        8460422540
       ],
       "bannedWords": [],
       "wordViolations": {},
@@ -218,9 +219,9 @@
           "firstName": "جامعة",
           "role": "member",
           "joinedAt": "2026-05-17T22:35:33.272Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-17T22:35:33.272Z"
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-17T22:52:10.841Z"
         }
       },
       "admins": {},
@@ -232,7 +233,8 @@
       "muteNewMembers": false,
       "mutedUsers": [],
       "bannedUsers": [
-        7574941687
+        7574941687,
+        8460422540
       ],
       "bannedWords": [
         {
@@ -310,7 +312,9 @@
       "antiSpam": false,
       "muteNewMembers": false,
       "mutedUsers": [],
-      "bannedUsers": [],
+      "bannedUsers": [
+        8460422540
+      ],
       "bannedWords": [],
       "wordViolations": {},
       "joinRequests": {},
@@ -382,7 +386,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T22:36:41.551Z",
+      "lastSeen": "2026-05-17T22:52:20.317Z",
       "groups": [
         -1003940779079,
         -1003969494192
@@ -413,10 +417,11 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-17T22:35:33.272Z",
+      "lastSeen": "2026-05-17T22:52:10.841Z",
       "groups": [
         -1003969494192,
-        -1003940779079
+        -1003940779079,
+        -1003854112996
       ],
       "channels": [],
       "bioBanInfo": null
@@ -515,16 +520,22 @@
       "userId": 8460422540,
       "username": "Dcctorshema",
       "firstName": "Doctoer Shema",
-      "globalBanned": false,
-      "bannedReason": "",
-      "bannedAt": null,
+      "globalBanned": true,
+      "bannedReason": "نبذة محظورة — كلمة: \"مشاريع\"",
+      "bannedAt": "2026-05-17T22:52:08.145Z",
       "firstSeen": "2026-05-17T22:18:33.279Z",
-      "lastSeen": "2026-05-17T22:26:44.708Z",
+      "lastSeen": "2026-05-17T22:52:10.504Z",
       "groups": [
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": {
+        "word": "مشاريع",
+        "bio": "اسوي مشاريع تخرج وبحوثات وعمل ملخصات واحل واجبات... الخ والحل مضمون ف",
+        "bannedAt": "2026-05-17T22:52:08.145Z",
+        "sourceGroup": -1003969494192,
+        "unbanBy": "developer_only"
+      }
     },
     "7574941687": {
       "userId": 7574941687,
@@ -534,7 +545,7 @@
       "bannedReason": "نبذة محظورة — كلمة: \"مشاريع\"",
       "bannedAt": "2026-05-17T22:35:32.079Z",
       "firstSeen": "2026-05-17T22:25:36.199Z",
-      "lastSeen": "2026-05-17T22:35:59.711Z",
+      "lastSeen": "2026-05-17T22:50:44.648Z",
       "groups": [
         -1003854112996
       ],
