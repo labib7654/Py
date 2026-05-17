@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T21:43:00.578Z",
+  "savedAt": "2026-05-17T21:46:17.477Z",
   "botAdmins": [
     6330247540
   ],
@@ -193,7 +193,7 @@
       "bannedWords": [],
       "wordViolations": {},
       "joinRequests": {},
-      "joinRequestsEnabled": true,
+      "joinRequestsEnabled": false,
       "rules": "",
       "communityId": null,
       "protectContent": false,
@@ -237,6 +237,20 @@
       ],
       "channels": []
     },
+    "1361482400": {
+      "userId": 1361482400,
+      "username": "BMW51O",
+      "firstName": "....",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T21:44:54.456Z",
+      "lastSeen": "2026-05-17T21:45:17.962Z",
+      "groups": [
+        -1003928741558
+      ],
+      "channels": []
+    },
     "7411444902": {
       "userId": 7411444902,
       "username": "Labibrd",
@@ -245,7 +259,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T21:42:59.576Z",
+      "lastSeen": "2026-05-17T21:44:41.810Z",
       "groups": [
         -1003940779079
       ],
@@ -315,7 +329,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:41.730Z",
-      "lastSeen": "2026-05-17T21:35:41.856Z",
+      "lastSeen": "2026-05-17T21:44:55.811Z",
       "groups": [
         -1003969494192
       ],
