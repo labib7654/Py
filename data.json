@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T22:00:40.643Z",
+  "savedAt": "2026-05-17T22:02:40.643Z",
   "botAdmins": [
     6330247540
   ],
@@ -176,9 +176,9 @@
           "firstName": "Eng-Aiman Hezam",
           "role": "member",
           "joinedAt": "2026-05-17T21:35:41.731Z",
-          "messageCount": 2,
-          "score": 2,
-          "lastMessageAt": "2026-05-17T22:00:40.225Z"
+          "messageCount": 3,
+          "score": 3,
+          "lastMessageAt": "2026-05-17T22:01:03.552Z"
         },
         "6330247540": {
           "userId": 6330247540,
@@ -199,6 +199,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-17T21:58:47.801Z"
+        },
+        "8760402829": {
+          "userId": 8760402829,
+          "username": "alasghdra",
+          "firstName": "ملك زماني",
+          "role": "member",
+          "joinedAt": "2026-05-17T22:02:30.538Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-17T22:02:30.981Z"
         }
       },
       "admins": {},
@@ -365,7 +375,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:41.730Z",
-      "lastSeen": "2026-05-17T22:00:40.225Z",
+      "lastSeen": "2026-05-17T22:01:03.552Z",
       "groups": [
         -1003969494192
       ],
@@ -379,7 +389,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:41:38.167Z",
-      "lastSeen": "2026-05-17T21:48:53.794Z",
+      "lastSeen": "2026-05-17T22:02:30.538Z",
       "groups": [
         -1003969494192
       ],
@@ -407,7 +417,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T22:00:21.097Z",
-      "lastSeen": "2026-05-17T22:00:21.097Z",
+      "lastSeen": "2026-05-17T22:02:30.981Z",
       "groups": [
         -1003969494192
       ],
