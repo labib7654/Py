@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T21:57:43.718Z",
+  "savedAt": "2026-05-17T22:00:40.643Z",
   "botAdmins": [
     6330247540
   ],
@@ -176,9 +176,9 @@
           "firstName": "Eng-Aiman Hezam",
           "role": "member",
           "joinedAt": "2026-05-17T21:35:41.731Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-17T21:35:41.856Z"
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-17T22:00:40.225Z"
         },
         "6330247540": {
           "userId": 6330247540,
@@ -189,6 +189,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-17T21:48:53.794Z"
+        },
+        "7087803706": {
+          "userId": 7087803706,
+          "username": "",
+          "firstName": "m",
+          "role": "member",
+          "joinedAt": "2026-05-17T21:58:47.703Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-17T21:58:47.801Z"
         }
       },
       "admins": {},
@@ -200,7 +210,22 @@
       "muteNewMembers": false,
       "mutedUsers": [],
       "bannedUsers": [],
-      "bannedWords": [],
+      "bannedWords": [
+        {
+          "word": "مشاريع",
+          "action": "kick",
+          "threshold": 1,
+          "addedBy": 7411444902,
+          "addedAt": "2026-05-17T21:59:36.908Z"
+        },
+        {
+          "word": "بحوثات",
+          "action": "kick",
+          "threshold": 1,
+          "addedBy": 7411444902,
+          "addedAt": "2026-05-17T22:00:05.301Z"
+        }
+      ],
       "wordViolations": {},
       "joinRequests": {},
       "joinRequestsEnabled": false,
@@ -269,9 +294,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T21:50:01.300Z",
+      "lastSeen": "2026-05-17T22:00:22.535Z",
       "groups": [
-        -1003940779079
+        -1003940779079,
+        -1003969494192
       ],
       "channels": []
     },
@@ -339,7 +365,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:41.730Z",
-      "lastSeen": "2026-05-17T21:44:55.811Z",
+      "lastSeen": "2026-05-17T22:00:40.225Z",
       "groups": [
         -1003969494192
       ],
@@ -354,6 +380,34 @@
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:41:38.167Z",
       "lastSeen": "2026-05-17T21:48:53.794Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": []
+    },
+    "7087803706": {
+      "userId": 7087803706,
+      "username": "",
+      "firstName": "m",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T21:58:41.566Z",
+      "lastSeen": "2026-05-17T21:58:47.801Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": []
+    },
+    "8760402829": {
+      "userId": 8760402829,
+      "username": "alasghdra",
+      "firstName": "ملك زماني",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T22:00:21.097Z",
+      "lastSeen": "2026-05-17T22:00:21.097Z",
       "groups": [
         -1003969494192
       ],
