@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T22:35:08.382Z",
+  "savedAt": "2026-05-17T22:36:07.605Z",
   "botAdmins": [
     6330247540
   ],
@@ -35,7 +35,9 @@
       "antiSpam": false,
       "muteNewMembers": false,
       "mutedUsers": [],
-      "bannedUsers": [],
+      "bannedUsers": [
+        7574941687
+      ],
       "bannedWords": [],
       "wordViolations": {},
       "joinRequests": {},
@@ -209,6 +211,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-17T22:02:30.981Z"
+        },
+        "7243808108": {
+          "userId": 7243808108,
+          "username": "Labibytr_bot",
+          "firstName": "جامعة",
+          "role": "member",
+          "joinedAt": "2026-05-17T22:35:33.272Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-17T22:35:33.272Z"
         }
       },
       "admins": {},
@@ -219,7 +231,9 @@
       "antiSpam": false,
       "muteNewMembers": false,
       "mutedUsers": [],
-      "bannedUsers": [],
+      "bannedUsers": [
+        7574941687
+      ],
       "bannedWords": [
         {
           "word": "مشاريع",
@@ -283,9 +297,9 @@
           "firstName": "m",
           "role": "member",
           "joinedAt": "2026-05-17T22:25:40.983Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-05-17T22:25:53.136Z"
+          "messageCount": 6,
+          "score": 6,
+          "lastMessageAt": "2026-05-17T22:34:55.468Z"
         }
       },
       "admins": {},
@@ -304,8 +318,8 @@
       "rules": "",
       "communityId": null,
       "protectContent": false,
-      "antiLinks": false,
-      "antiBot": false,
+      "antiLinks": true,
+      "antiBot": true,
       "logChannelId": null,
       "timedMutes": {},
       "timedBans": {},
@@ -399,9 +413,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-17T21:35:41.730Z",
+      "lastSeen": "2026-05-17T22:35:33.272Z",
       "groups": [
-        -1003969494192
+        -1003969494192,
+        -1003940779079
       ],
       "channels": [],
       "bioBanInfo": null
@@ -515,16 +530,21 @@
       "userId": 7574941687,
       "username": "slyJxgPfEf",
       "firstName": "m",
-      "globalBanned": false,
-      "bannedReason": "",
-      "bannedAt": null,
+      "globalBanned": true,
+      "bannedReason": "نبذة محظورة — كلمة: \"مشاريع\"",
+      "bannedAt": "2026-05-17T22:35:32.079Z",
       "firstSeen": "2026-05-17T22:25:36.199Z",
-      "lastSeen": "2026-05-17T22:32:43.394Z",
+      "lastSeen": "2026-05-17T22:35:59.711Z",
       "groups": [
         -1003854112996
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": {
+        "word": "مشاريع",
+        "bio": "مشاريع",
+        "bannedAt": "2026-05-17T22:35:32.079Z",
+        "unbanBy": "developer_only"
+      }
     }
   },
   "communities": {}
