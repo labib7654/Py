@@ -25,7 +25,8 @@ function devMainKeyboard() {
      Markup.button.callback('📋 المحظورون',       'dev_banned_list')],
     [Markup.button.callback('✅ رفع حظر عالمي',  'dev_unban_menu'),
      Markup.button.callback('👤 مستخدمو البوت',  'dev_bot_users')],
-    [Markup.button.callback('📈 استخدام البوت',  'dev_usage')],
+    [Markup.button.callback('📈 استخدام البوت',  'dev_usage'),
+     Markup.button.callback('🛡️ حماية المحتوى', 'dev_protect_menu')],
     [Markup.button.callback('🎲 الإضافة العشوائية', 'adder_start')],
   ]);
 }
@@ -805,6 +806,161 @@ module.exports = function setupDeveloper(bot) {
         { parse_mode: 'Markdown' }
       ).catch(() => {});
     } catch {}
+  });
+
+  // ══════════════════════════════════════════════════════════════
+  //  🛡️ لوحة حماية المحتوى — للمطور فقط
+  //  تتيح التطبيق على أي مجموعة/قناة/مجتمع مسجّل في البوت
+  // ══════════════════════════════════════════════════════════════
+  bot.action('dev_protect_menu', async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx))
+      return ctx.answerCbQuery('❌ للمطور فقط!', { show_alert: true });
+    await ctx.answerCbQuery();
+
+    const groups   = db.allGroups();
+    const channels = db.allChannels ? db.allChannels() : [];
+    const total    = groups.length + channels.length;
+
+    const btns = [];
+
+    // مجموعات
+    for (const g of groups.slice(0, 8)) {
+      const icon = g.protectContent ? '🔒' : '🔓';
+      btns.push([Markup.button.callback(
+        `${icon} ${g.title.slice(0, 22)}`,
+        `dev_protect_toggle_${g.chatId}`
+      )]);
+    }
+
+    // قنوات
+    for (const ch of channels.slice(0, 4)) {
+      const icon = ch.protectContent ? '🔒' : '🔓';
+      btns.push([Markup.button.callback(
+        `${icon} 📢 ${(ch.title || 'قناة').slice(0, 20)}`,
+        `dev_protect_toggle_${ch.chatId}`
+      )]);
+    }
+
+    btns.push([
+      Markup.button.callback('🔒 تفعيل الكل',  'dev_protect_all_on'),
+      Markup.button.callback('🔓 تعطيل الكل',  'dev_protect_all_off'),
+    ]);
+    btns.push([Markup.button.callback('🔙 رجوع', 'dev_main')]);
+
+    await ctx.editMessageText(
+      `🛡️ *حماية المحتوى — كل المحادثات*\n\n` +
+      `📊 إجمالي: \`${total}\` محادثة\n` +
+      `🔒 محمية: \`${groups.filter(g => g.protectContent).length + channels.filter(c => c.protectContent).length}\`\n` +
+      `🔓 غير محمية: \`${groups.filter(g => !g.protectContent).length + channels.filter(c => !c.protectContent).length}\`\n\n` +
+      `اضغط على أي محادثة لتبديل حالتها:`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }
+    );
+  });
+
+  // تبديل حماية محادثة واحدة من لوحة المطور
+  bot.action(/^dev_protect_toggle_(-?\d+)$/, async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx))
+      return ctx.answerCbQuery('❌ للمطور فقط!', { show_alert: true });
+    await ctx.answerCbQuery();
+
+    const chatId = Number(ctx.match[1]);
+    const g  = db.getGroup(chatId);
+    const ch = db.getChannel ? db.getChannel(chatId) : null;
+    if (!g && !ch)
+      return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
+
+    const current  = g ? !!g.protectContent : !!ch.protectContent;
+    const newState = !current;
+
+    try {
+      // فحص البوت
+      const botInfo   = await bot.telegram.getMe();
+      const botMember = await bot.telegram.getChatMember(chatId, botInfo.id);
+      if (botMember.status !== 'administrator')
+        return ctx.answerCbQuery('❌ البوت ليس مشرفاً هناك!', { show_alert: true });
+
+      await bot.telegram.callApi('setChatProtectContent', {
+        chat_id: chatId, protect_content: newState,
+      });
+
+      if (g) g.protectContent = newState;
+      else ch.protectContent  = newState;
+      db.markDirty();
+
+      const label = g ? g.title : (ch?.title || 'القناة');
+      await ctx.answerCbQuery(
+        newState ? `🔒 ${label} — تم التفعيل!` : `🔓 ${label} — تم التعطيل!`,
+        { show_alert: true }
+      );
+
+      // إعادة رسم اللوحة
+      const groups   = db.allGroups();
+      const channels = db.allChannels ? db.allChannels() : [];
+      const btns = [];
+      for (const gr of groups.slice(0, 8)) {
+        const ic = gr.protectContent ? '🔒' : '🔓';
+        btns.push([Markup.button.callback(`${ic} ${gr.title.slice(0, 22)}`, `dev_protect_toggle_${gr.chatId}`)]);
+      }
+      for (const c of channels.slice(0, 4)) {
+        const ic = c.protectContent ? '🔒' : '🔓';
+        btns.push([Markup.button.callback(`${ic} 📢 ${(c.title || 'قناة').slice(0, 20)}`, `dev_protect_toggle_${c.chatId}`)]);
+      }
+      btns.push([Markup.button.callback('🔒 تفعيل الكل', 'dev_protect_all_on'), Markup.button.callback('🔓 تعطيل الكل', 'dev_protect_all_off')]);
+      btns.push([Markup.button.callback('🔙 رجوع', 'dev_main')]);
+      const total    = groups.length + channels.length;
+      await ctx.editMessageText(
+        `🛡️ *حماية المحتوى — كل المحادثات*\n\n` +
+        `📊 إجمالي: \`${total}\`\n` +
+        `🔒 محمية: \`${groups.filter(g => g.protectContent).length + channels.filter(c => c.protectContent).length}\`\n` +
+        `🔓 غير محمية: \`${groups.filter(g => !g.protectContent).length + channels.filter(c => !c.protectContent).length}\`\n\n` +
+        `اضغط على أي محادثة لتبديل حالتها:`,
+        { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }
+      );
+    } catch (e) {
+      await ctx.answerCbQuery(`❌ فشل: ${e.description || e.message}`, { show_alert: true });
+    }
+  });
+
+  // تفعيل الحماية على الكل
+  bot.action('dev_protect_all_on', async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx))
+      return ctx.answerCbQuery('❌ للمطور فقط!', { show_alert: true });
+    await ctx.answerCbQuery('⏳ جاري التطبيق على الجميع...', { show_alert: true });
+    const groups   = db.allGroups();
+    const channels = db.allChannels ? db.allChannels() : [];
+    let ok = 0, fail = 0;
+    for (const item of [...groups, ...channels]) {
+      const id = item.chatId;
+      try {
+        await bot.telegram.callApi('setChatProtectContent', { chat_id: id, protect_content: true });
+        item.protectContent = true;
+        ok++;
+      } catch { fail++; }
+      await new Promise(r => setTimeout(r, 100));
+    }
+    db.markDirty();
+    await ctx.reply(`🔒 *تم تفعيل حماية المحتوى على الجميع*\n\n✅ نجح: \`${ok}\`\n❌ فشل: \`${fail}\``, { parse_mode: 'Markdown' });
+  });
+
+  // تعطيل الحماية على الكل
+  bot.action('dev_protect_all_off', async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx))
+      return ctx.answerCbQuery('❌ للمطور فقط!', { show_alert: true });
+    await ctx.answerCbQuery('⏳ جاري التعطيل على الجميع...', { show_alert: true });
+    const groups   = db.allGroups();
+    const channels = db.allChannels ? db.allChannels() : [];
+    let ok = 0, fail = 0;
+    for (const item of [...groups, ...channels]) {
+      const id = item.chatId;
+      try {
+        await bot.telegram.callApi('setChatProtectContent', { chat_id: id, protect_content: false });
+        item.protectContent = false;
+        ok++;
+      } catch { fail++; }
+      await new Promise(r => setTimeout(r, 100));
+    }
+    db.markDirty();
+    await ctx.reply(`🔓 *تم تعطيل حماية المحتوى على الجميع*\n\n✅ نجح: \`${ok}\`\n❌ فشل: \`${fail}\``, { parse_mode: 'Markdown' });
   });
 
 };

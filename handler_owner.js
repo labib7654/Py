@@ -163,6 +163,132 @@ module.exports = function setupOwnerHandlers(bot) {
     await ctx.replyWithMarkdown(`✅ *قناة السجلات:* \`${channelId}\``);
   });
 
+  // ── /protect — أمر مباشر لتفعيل/تعطيل حماية المحتوى ─────────
+  // يعمل داخل: المجموعة، القناة، الخاص (مع تحديد chatId)
+  // يعمل مع: المطور، المالك، الأدمن
+  bot.command('protect', async (ctx) => {
+    // ── تحديد chatId المستهدف ────────────────────────────────
+    let targetChatId = ctx.chat.id;
+    let targetLabel  = ctx.chat.title || 'هذه المحادثة';
+
+    // من الخاص: /protect -100XXXXXXXXX on|off
+    if (ctx.chat.type === 'private') {
+      if (!isDeveloper(ctx))
+        return ctx.reply('❌ هذا الأمر من الخاص للمطور فقط!');
+      const args = ctx.message.text.split(' ').slice(1);
+      if (args.length < 1) {
+        return ctx.replyWithMarkdown(
+          '🛡️ *أمر حماية المحتوى*\n\n' +
+          'الاستخدام:\n' +
+          '`/protect -100CHATID on` — تفعيل\n' +
+          '`/protect -100CHATID off` — تعطيل\n\n' +
+          'مثال: `/protect -1001234567890 on`'
+        );
+      }
+      targetChatId = Number(args[0]);
+      if (isNaN(targetChatId)) return ctx.reply('❌ معرف المجموعة/القناة غير صحيح!');
+    }
+
+    // داخل مجموعة أو قناة: فحص الصلاحية
+    if (ctx.chat.type !== 'private') {
+      if (!isDeveloper(ctx) && !await isAdmin(bot, targetChatId, ctx.from.id))
+        return ctx.reply('❌ للمشرفين فقط!');
+    }
+
+    // قراءة المعامل on/off
+    const args      = ctx.message.text.split(' ').slice(1);
+    const lastArg   = args[args.length - 1]?.toLowerCase();
+    let   newState;
+
+    if (lastArg === 'on'  || lastArg === 'تفعيل')  newState = true;
+    else if (lastArg === 'off' || lastArg === 'تعطيل') newState = false;
+    else {
+      // بدون معامل: نقلب الحالة الحالية
+      const g  = db.getGroup(targetChatId);
+      const ch = db.getChannel?.(targetChatId);
+      newState = !(g?.protectContent || ch?.protectContent || false);
+    }
+
+    // ── فحص صلاحيات البوت ───────────────────────────────────
+    try {
+      const botInfo   = await bot.telegram.getMe();
+      const botMember = await bot.telegram.getChatMember(targetChatId, botInfo.id);
+
+      if (botMember.status !== 'administrator') {
+        return ctx.replyWithMarkdown(
+          '❌ *البوت ليس مشرفاً*\n\n' +
+          `أضفه كمشرف في \`${targetChatId}\` مع صلاحية "تغيير معلومات المجموعة" أولاً.`
+        );
+      }
+      if (!botMember.can_change_info && !botMember.can_post_messages) {
+        return ctx.replyWithMarkdown(
+          '❌ *البوت لا يملك الصلاحية الكافية*\n\n' +
+          'يحتاج صلاحية: `تغيير معلومات المجموعة` (can_change_info)\n\n' +
+          'عدّل صلاحياته من إعدادات المجموعة → إدارة الأعضاء → البوت.'
+        );
+      }
+    } catch (e) {
+      return ctx.reply(`❌ تعذر فحص الصلاحيات: ${e.message}`);
+    }
+
+    // ── تطبيق الحماية ───────────────────────────────────────
+    try {
+      await bot.telegram.callApi('setChatProtectContent', {
+        chat_id:         targetChatId,
+        protect_content: newState,
+      });
+
+      // حفظ في DB
+      const g  = db.getGroup(targetChatId);
+      const ch = db.getChannel?.(targetChatId);
+      if (g) {
+        g.protectContent = newState;
+        // تطبيق على مجتمع؟
+        if (g.communityId && newState) {
+          const com = db.getCommunity(g.communityId);
+          if (com?.subGroups?.length) {
+            let ok = 0;
+            for (const sid of com.subGroups) {
+              try {
+                await bot.telegram.callApi('setChatProtectContent', {
+                  chat_id: sid, protect_content: newState,
+                });
+                const sub = db.getGroup(sid);
+                if (sub) sub.protectContent = newState;
+                ok++;
+              } catch {}
+            }
+            if (ok > 0) targetLabel += ` + ${ok} مجموعات فرعية`;
+          }
+        }
+      } else if (ch) {
+        ch.protectContent = newState;
+      }
+      db.markDirty();
+
+      const icon = newState ? '🔒' : '🔓';
+      const statusText = newState
+        ? `🔒 *حماية المحتوى مفعّلة*\n\n✅ لقطة الشاشة: محظورة\n✅ نسخ الرسائل: محظور\n✅ تحويل/توجيه: محظور`
+        : `🔓 *حماية المحتوى معطّلة*\n\nيمكن الآن نسخ وتوجيه الرسائل بحرية.`;
+
+      await ctx.replyWithMarkdown(
+        `${statusText}\n\n📌 المحادثة: *${targetLabel}*\n👤 بواسطة: ${ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name}`
+      );
+
+    } catch (e) {
+      const errMsg = e.description || e.message || String(e);
+      let hint = '';
+      if (errMsg.includes('not enough rights') || errMsg.includes('CHAT_ADMIN_REQUIRED'))
+        hint = 'البوت يحتاج صلاحية can_change_info';
+      else if (errMsg.includes('method not found'))
+        hint = 'Bot API قديم — شغّل: npm update telegraf';
+      else
+        hint = errMsg.slice(0, 100);
+
+      await ctx.replyWithMarkdown(`❌ *فشل تطبيق الحماية*\n\n⚠️ ${hint}`);
+    }
+  });
+
   bot.command('addword', async (ctx) => {
     if (ctx.chat.type === 'private') return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
@@ -446,50 +572,134 @@ module.exports = function setupOwnerHandlers(bot) {
   });
 
   // ── تبديل حماية المحتوى ──────────────────────────────────
+  // يعمل مع: المجموعات (group/supergroup) والقنوات (channel) والمجتمعات
+  // الـ API الصحيح: setChatProtectContent (متاح في Bot API 5.3+)
+  // الشرط الوحيد: البوت مشرف ويملك can_change_info
   bot.action(/^toggle_protect_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId); if (!g) return;
+
+    // ── 1. تحديد المصدر: مجموعة أو قناة ────────────────────
+    const g  = db.getGroup(chatId);
+    const ch = !g ? db.getChannel(chatId) : null;
+    if (!g && !ch)
+      return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+
+    // ── 2. فحص الصلاحية ─────────────────────────────────────
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
 
-    const newState = !g.protectContent;
+    // ── 3. قراءة الحالة الحالية من الـ DB ───────────────────
+    const currentState = g ? !!g.protectContent : !!ch.protectContent;
+    const newState     = !currentState;
 
-    // ✅ نستخدم callApi مباشرة — متوافق مع جميع إصدارات Telegraf
-    // البوت يحتاج صلاحية "تغيير معلومات المجموعة" (can_change_info)
+    // ── 4. فحص صلاحية البوت قبل المحاولة ───────────────────
     try {
-      await bot.telegram.callApi('setChatPermissions', {
-        chat_id: chatId,
-      }).catch(() => {}); // اختبار الاتصال فقط
+      const botInfo  = await bot.telegram.getMe();
+      const botMember = await bot.telegram.getChatMember(chatId, botInfo.id);
 
+      if (botMember.status !== 'administrator') {
+        return ctx.answerCbQuery(
+          '❌ البوت ليس مشرفاً في هذه المجموعة/القناة!\n\nأضفه كمشرف أولاً.',
+          { show_alert: true }
+        );
+      }
+
+      // can_change_info مطلوبة في المجموعات
+      // في القنوات: can_edit_messages أو can_change_info
+      const hasRight = botMember.can_change_info === true
+                    || botMember.can_post_messages === true; // قنوات
+      if (!hasRight) {
+        return ctx.answerCbQuery(
+          '❌ البوت لا يملك صلاحية "تغيير معلومات المجموعة"\n\nعدّل صلاحياته في الإعدادات.',
+          { show_alert: true }
+        );
+      }
+    } catch (e) {
+      return ctx.answerCbQuery(`❌ تعذر فحص صلاحيات البوت: ${e.message}`, { show_alert: true });
+    }
+
+    // ── 5. تطبيق الحماية عبر Telegram Bot API ────────────────
+    // setChatProtectContent — Bot API 5.3+
+    // يعمل مع supergroup وchannel وcommunity
+    try {
       await bot.telegram.callApi('setChatProtectContent', {
         chat_id:         chatId,
         protect_content: newState,
       });
 
-      g.protectContent = newState;
+      // ── 6. حفظ الحالة محلياً ─────────────────────────────
+      if (g) {
+        g.protectContent = newState;
+        // إذا كانت المجموعة في مجتمع — طبّق على كل المجموعات الفرعية أيضاً
+        if (g.communityId) {
+          const com = db.getCommunity(g.communityId);
+          if (com?.enabled && com.subGroups?.length) {
+            for (const subId of com.subGroups) {
+              try {
+                await bot.telegram.callApi('setChatProtectContent', {
+                  chat_id:         subId,
+                  protect_content: newState,
+                });
+                const sub = db.getGroup(subId);
+                if (sub) sub.protectContent = newState;
+              } catch { /* نتجاوز فشل المجموعات الفرعية */ }
+            }
+          }
+        }
+      } else if (ch) {
+        ch.protectContent = newState;
+      }
+
       db.markDirty();
 
+      // ── 7. رد نجاح + تحديث الأزرار ────────────────────────
+      const successMsg = newState
+        ? '🔒 *حماية المحتوى مفعّلة*\n\nلا يمكن الآن:\n• لقطة الشاشة\n• نسخ الرسائل\n• توجيه/تحويل الرسائل'
+        : '🔓 *حماية المحتوى معطّلة*\n\nيمكن الآن نسخ وتوجيه الرسائل بحرية.';
+
       await ctx.answerCbQuery(
-        newState
-          ? '🔒 حماية المحتوى مفعّلة — لا يمكن نسخ أو توجيه الرسائل!'
-          : '🔓 حماية المحتوى معطّلة — يمكن نسخ وتوجيه الرسائل',
+        newState ? '🔒 تم تفعيل حماية المحتوى!' : '🔓 تم تعطيل حماية المحتوى!',
         { show_alert: true }
       );
-      await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+
+      // تحديث لوحة الأزرار (للمجموعات فقط)
+      if (g) {
+        try {
+          await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+        } catch { /* قد تكون الرسالة قديمة */ }
+      }
+
+      // إشعار في مجموعة السجلات إن وُجدت
+      if (g?.logChannelId) {
+        try {
+          await bot.telegram.sendMessage(
+            g.logChannelId,
+            `🛡️ *حماية المحتوى*\n\n${successMsg}\n\n👤 بواسطة: ${ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name}\n📌 المجموعة: *${g.title}*`,
+            { parse_mode: 'Markdown' }
+          );
+        } catch {}
+      }
 
     } catch (e) {
-      // أسباب الفشل الشائعة:
-      // - البوت ليس مشرفاً أو لا يملك can_change_info
-      // - المجموعة ليست supergroup
+      // ── تشخيص دقيق لأسباب الفشل ─────────────────────────
       const errMsg = e.description || e.message || String(e);
-      let hint = '';
+      let userHint = '';
+
       if (errMsg.includes('not enough rights') || errMsg.includes('CHAT_ADMIN_REQUIRED')) {
-        hint = '\n\n⚠️ تأكد أن البوت مشرف ويملك صلاحية "تغيير معلومات المجموعة"';
-      } else if (errMsg.includes('supergroup')) {
-        hint = '\n\n⚠️ هذه الميزة تعمل في السوبرقروبات فقط';
+        userHint = '⚠️ البوت يحتاج صلاحية "تغيير معلومات المجموعة"';
+      } else if (errMsg.includes('method not found') || errMsg.includes('Bad Request')) {
+        userHint = '⚠️ هذه الميزة تحتاج Bot API 5.3+\nتأكد من تحديث المكتبة: npm update telegraf';
+      } else if (errMsg.includes('supergroup') || errMsg.includes('group')) {
+        userHint = '⚠️ تأكد أن المجموعة نوعها Supergroup\n(ابحث في الإعدادات عن "تحويل لسوبرقروب")';
+      } else if (errMsg.includes('Forbidden')) {
+        userHint = '⚠️ البوت محظور أو أُزيل من المجموعة';
+      } else {
+        userHint = `تفاصيل: ${errMsg.slice(0, 80)}`;
       }
-      await ctx.answerCbQuery(`❌ فشل تفعيل الحماية${hint}`, { show_alert: true });
+
+      console.error(`[protect_content] chatId=${chatId} error:`, errMsg);
+      await ctx.answerCbQuery(`❌ فشل تطبيق الحماية\n\n${userHint}`, { show_alert: true });
     }
   });
 
