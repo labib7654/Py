@@ -1,1 +1,162 @@
-{}
+{
+  "savedAt": "2026-05-17T20:54:31.554Z",
+  "botAdmins": [],
+  "groups": {
+    "-1003940779079": {
+      "chatId": -1003940779079,
+      "title": "⁨صياد الارواح⁩ و ⁨+967771172888⁩",
+      "type": "supergroup",
+      "ownerId": 6275988426,
+      "ownerUsername": "B_7a3j",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "unknown",
+      "addedAt": "2026-05-17T20:53:07.528Z",
+      "members": {
+        "7411444902": {
+          "userId": 7411444902,
+          "username": "Labibrd",
+          "firstName": "ㅤㅤㅤㅤ",
+          "role": "member",
+          "joinedAt": "2026-05-17T20:53:07.712Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": []
+    },
+    "-2072303291198": {
+      "chatId": -2072303291198,
+      "title": "القناة الرسمية لبوت أرقام",
+      "type": "supergroup",
+      "ownerId": null,
+      "ownerUsername": "",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "unknown",
+      "addedAt": "2026-05-17T20:53:11.841Z",
+      "members": {
+        "136817688": {
+          "userId": 136817688,
+          "username": "Channel_Bot",
+          "firstName": "Channel",
+          "role": "member",
+          "joinedAt": "2026-05-17T20:53:12.001Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": []
+    }
+  },
+  "channels": {},
+  "users": {
+    "136817688": {
+      "userId": 136817688,
+      "username": "Channel_Bot",
+      "firstName": "Channel",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T20:53:11.840Z",
+      "lastSeen": "2026-05-17T20:53:11.840Z",
+      "groups": [
+        -2072303291198
+      ],
+      "channels": []
+    },
+    "7411444902": {
+      "userId": 7411444902,
+      "username": "Labibrd",
+      "firstName": "ㅤㅤㅤㅤ",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T20:52:53.626Z",
+      "lastSeen": "2026-05-17T20:53:07.527Z",
+      "groups": [
+        -1003940779079
+      ],
+      "channels": []
+    }
+  },
+  "communities": {}
+}
