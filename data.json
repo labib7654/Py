@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T21:46:17.477Z",
+  "savedAt": "2026-05-17T21:51:17.477Z",
   "botAdmins": [
     6330247540
   ],
@@ -179,6 +179,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-17T21:35:41.856Z"
+        },
+        "6330247540": {
+          "userId": 6330247540,
+          "username": "salma5ns",
+          "firstName": "salman",
+          "role": "member",
+          "joinedAt": "2026-05-17T21:48:53.794Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-17T21:48:53.794Z"
         }
       },
       "admins": {},
@@ -259,7 +269,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T21:44:41.810Z",
+      "lastSeen": "2026-05-17T21:50:01.300Z",
       "groups": [
         -1003940779079
       ],
@@ -343,7 +353,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:41:38.167Z",
-      "lastSeen": "2026-05-17T21:41:38.167Z",
+      "lastSeen": "2026-05-17T21:48:53.794Z",
       "groups": [
         -1003969494192
       ],
