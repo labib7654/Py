@@ -14,6 +14,8 @@ const setupBioVerify     = require('./handler_bio_verify');
 const setupGroupHandlers = require('./handler_groups');
 const setupAdminHandlers = require('./handler_admin');
 const setupOwnerHandlers = require('./handler_owner');
+const setupRadar         = require('./handler_radar');
+const setupAdder         = require('./handler_adder');
 
 const db = require('./db');
 
@@ -80,6 +82,8 @@ async function main() {
 
   // ── Handlers ──────────────────────────────────────────────
   setupDeveloper(bot);
+  setupRadar(bot);           // ✅ رادار المستخدمين — يسجّل الجميع في كل مكان
+  setupAdder(bot);           // ✅ ميزة الإضافة العشوائية للمطور
   setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)
   setupGroupHandlers(bot);
   setupAdminHandlers(bot);

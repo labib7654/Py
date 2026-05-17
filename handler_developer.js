@@ -26,6 +26,7 @@ function devMainKeyboard() {
     [Markup.button.callback('✅ رفع حظر عالمي',  'dev_unban_menu'),
      Markup.button.callback('👤 مستخدمو البوت',  'dev_bot_users')],
     [Markup.button.callback('📈 استخدام البوت',  'dev_usage')],
+    [Markup.button.callback('🎲 الإضافة العشوائية', 'adder_start')],
   ]);
 }
 

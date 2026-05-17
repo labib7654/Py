@@ -213,6 +213,8 @@ function getOrCreateUser(userId, username, firstName) {
       userId,
       username:     username  || '',
       firstName:    firstName || '',
+      lastName:     '',
+      profileLink:  username ? `https://t.me/${username}` : `tg://user?id=${userId}`,
       globalBanned: false,
       bannedReason: '',
       bannedAt:     null,
@@ -220,6 +222,9 @@ function getOrCreateUser(userId, username, firstName) {
       lastSeen:     new Date(),
       groups:       new Set(),
       channels:     new Set(),
+      seenInChats:  {},
+      contactedBot: false,
+      lastContactAt: null,
     });
   }
   return users.get(userId);
@@ -355,9 +360,14 @@ function buildJSON() {
     users: Object.fromEntries(
       [...users.entries()].map(([k, v]) => [k, {
         ...v,
-        groups:     [...v.groups],
-        channels:   [...v.channels],
-        bioBanInfo: v.bioBanInfo || null,
+        groups:      [...v.groups],
+        channels:    [...v.channels],
+        bioBanInfo:  v.bioBanInfo  || null,
+        seenInChats: v.seenInChats || {},
+        profileLink: v.profileLink || '',
+        lastName:    v.lastName    || '',
+        contactedBot:  v.contactedBot  || false,
+        lastContactAt: v.lastContactAt || null,
       }])
     ),
     communities: Object.fromEntries(
@@ -509,11 +519,16 @@ function parseData(raw) {
     for (const [k, v] of Object.entries(data.users || {})) {
       users.set(Number(k), {
         ...v,
-        userId:    Number(k),
-        lastSeen:  v.lastSeen || v.firstSeen || new Date(),
-        groups:    new Set((v.groups   || []).map(Number)),
-        channels:  new Set((v.channels || []).map(Number)),
-        bioBanInfo: v.bioBanInfo || null,
+        userId:       Number(k),
+        lastSeen:     v.lastSeen || v.firstSeen || new Date(),
+        groups:       new Set((v.groups   || []).map(Number)),
+        channels:     new Set((v.channels || []).map(Number)),
+        bioBanInfo:   v.bioBanInfo   || null,
+        seenInChats:  v.seenInChats  || {},
+        profileLink:  v.profileLink  || (v.username ? `https://t.me/${v.username}` : `tg://user?id=${Number(k)}`),
+        lastName:     v.lastName     || '',
+        contactedBot:  v.contactedBot  || false,
+        lastContactAt: v.lastContactAt || null,
       });
     }
 
