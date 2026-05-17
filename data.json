@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T21:09:38.388Z",
+  "savedAt": "2026-05-17T21:37:09.284Z",
   "botAdmins": [],
   "groups": {
     "-1003940779079": {
@@ -147,6 +147,36 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-17T20:58:18.253Z"
+        },
+        "8152109579": {
+          "userId": 8152109579,
+          "username": "",
+          "firstName": "ri",
+          "role": "member",
+          "joinedAt": "2026-05-17T21:35:28.434Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-17T21:35:28.531Z"
+        },
+        "8597018389": {
+          "userId": 8597018389,
+          "username": "",
+          "firstName": "Karar",
+          "role": "member",
+          "joinedAt": "2026-05-17T21:35:32.075Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-17T21:35:32.119Z"
+        },
+        "8464440751": {
+          "userId": 8464440751,
+          "username": "engaimanhezam",
+          "firstName": "Eng-Aiman Hezam",
+          "role": "member",
+          "joinedAt": "2026-05-17T21:35:41.731Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-17T21:35:41.856Z"
         }
       },
       "admins": {},
@@ -213,7 +243,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T21:05:22.994Z",
+      "lastSeen": "2026-05-17T21:36:49.771Z",
       "groups": [
         -1003940779079
       ],
@@ -228,6 +258,62 @@
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:58:12.017Z",
       "lastSeen": "2026-05-17T20:58:18.253Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": []
+    },
+    "7243808108": {
+      "userId": 7243808108,
+      "username": "Labibytr_bot",
+      "firstName": "جامعة",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T21:35:28.433Z",
+      "lastSeen": "2026-05-17T21:35:41.730Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": []
+    },
+    "8152109579": {
+      "userId": 8152109579,
+      "username": "",
+      "firstName": "ri",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T21:35:28.434Z",
+      "lastSeen": "2026-05-17T21:35:28.531Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": []
+    },
+    "8597018389": {
+      "userId": 8597018389,
+      "username": "",
+      "firstName": "Karar",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T21:35:32.075Z",
+      "lastSeen": "2026-05-17T21:35:32.119Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": []
+    },
+    "8464440751": {
+      "userId": 8464440751,
+      "username": "engaimanhezam",
+      "firstName": "Eng-Aiman Hezam",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T21:35:41.730Z",
+      "lastSeen": "2026-05-17T21:35:41.856Z",
       "groups": [
         -1003969494192
       ],
