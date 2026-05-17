@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T22:06:40.642Z",
+  "savedAt": "2026-05-17T22:08:40.645Z",
   "botAdmins": [
     6330247540
   ],
@@ -176,9 +176,9 @@
           "firstName": "Eng-Aiman Hezam",
           "role": "member",
           "joinedAt": "2026-05-17T21:35:41.731Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-05-17T22:01:03.552Z"
+          "messageCount": 4,
+          "score": 4,
+          "lastMessageAt": "2026-05-17T22:06:47.498Z"
         },
         "6330247540": {
           "userId": 6330247540,
@@ -375,7 +375,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:41.730Z",
-      "lastSeen": "2026-05-17T22:01:03.552Z",
+      "lastSeen": "2026-05-17T22:06:47.498Z",
       "groups": [
         -1003969494192
       ],
