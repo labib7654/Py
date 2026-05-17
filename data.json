@@ -1,6 +1,8 @@
 {
-  "savedAt": "2026-05-17T21:37:09.284Z",
-  "botAdmins": [],
+  "savedAt": "2026-05-17T21:43:00.578Z",
+  "botAdmins": [
+    6330247540
+  ],
   "groups": {
     "-1003940779079": {
       "chatId": -1003940779079,
@@ -243,7 +245,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T21:36:49.771Z",
+      "lastSeen": "2026-05-17T21:42:59.576Z",
       "groups": [
         -1003940779079
       ],
@@ -314,6 +316,20 @@
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:41.730Z",
       "lastSeen": "2026-05-17T21:35:41.856Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": []
+    },
+    "6330247540": {
+      "userId": 6330247540,
+      "username": "salma5ns",
+      "firstName": "salman",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T21:41:38.167Z",
+      "lastSeen": "2026-05-17T21:41:38.167Z",
       "groups": [
         -1003969494192
       ],
