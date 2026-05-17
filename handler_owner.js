@@ -452,11 +452,24 @@ module.exports = function setupOwnerHandlers(bot) {
     const g = db.getGroup(chatId); if (!g) return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+
     const newState = !g.protectContent;
+
+    // ✅ نستخدم callApi مباشرة — متوافق مع جميع إصدارات Telegraf
+    // البوت يحتاج صلاحية "تغيير معلومات المجموعة" (can_change_info)
     try {
-      // الطريقة الصحيحة في Telegraf للتحكم بحماية المحتوى
-      await bot.telegram.setChatProtectContent(chatId, newState);
+      await bot.telegram.callApi('setChatPermissions', {
+        chat_id: chatId,
+      }).catch(() => {}); // اختبار الاتصال فقط
+
+      await bot.telegram.callApi('setChatProtectContent', {
+        chat_id:         chatId,
+        protect_content: newState,
+      });
+
       g.protectContent = newState;
+      db.markDirty();
+
       await ctx.answerCbQuery(
         newState
           ? '🔒 حماية المحتوى مفعّلة — لا يمكن نسخ أو توجيه الرسائل!'
@@ -464,24 +477,19 @@ module.exports = function setupOwnerHandlers(bot) {
         { show_alert: true }
       );
       await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+
     } catch (e) {
-      // setChatProtectContent ليست في إصدارات Telegraf القديمة — نستخدم callApi
-      try {
-        await bot.telegram.callApi('setChatProtectContent', {
-          chat_id:         chatId,
-          protect_content: newState,
-        });
-        g.protectContent = newState;
-        await ctx.answerCbQuery(
-          newState
-            ? '🔒 حماية المحتوى مفعّلة!'
-            : '🔓 حماية المحتوى معطّلة',
-          { show_alert: true }
-        );
-        await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
-      } catch (e2) {
-        await ctx.answerCbQuery(`❌ فشل تغيير الحماية: ${e2.message}`, { show_alert: true });
+      // أسباب الفشل الشائعة:
+      // - البوت ليس مشرفاً أو لا يملك can_change_info
+      // - المجموعة ليست supergroup
+      const errMsg = e.description || e.message || String(e);
+      let hint = '';
+      if (errMsg.includes('not enough rights') || errMsg.includes('CHAT_ADMIN_REQUIRED')) {
+        hint = '\n\n⚠️ تأكد أن البوت مشرف ويملك صلاحية "تغيير معلومات المجموعة"';
+      } else if (errMsg.includes('supergroup')) {
+        hint = '\n\n⚠️ هذه الميزة تعمل في السوبرقروبات فقط';
       }
+      await ctx.answerCbQuery(`❌ فشل تفعيل الحماية${hint}`, { show_alert: true });
     }
   });
 

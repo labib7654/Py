@@ -23,6 +23,9 @@ module.exports = function setupGroupHandlers(bot) {
     const newStat = upd.new_chat_member.status;
     const oldStat = upd.old_chat_member.status;
     if (chat.type === 'private') return;
+
+    // ✅ كشف دقيق: القناة = 'channel' فقط، المجموعة = 'group' أو 'supergroup'
+    // ملاحظة: القنوات المرتبطة بمجتمع (linked channel) نوعها 'channel' دائماً
     const isChannel = chat.type === 'channel';
     const joined = (newStat === 'member' || newStat === 'administrator') && (oldStat === 'left' || oldStat === 'kicked');
     const left   = newStat === 'left' || newStat === 'kicked';
@@ -74,7 +77,11 @@ module.exports = function setupGroupHandlers(bot) {
       return;
     }
 
-    const g = db.getGroup(chat.id);
+    // ✅ أنشئ المجموعة تلقائياً إن لم تكن مسجّلة (group أو supergroup)
+    let g = db.getGroup(chat.id);
+    if (!g) {
+      g = db.getOrCreateGroup(chat.id, chat.title || 'مجموعة', chat.type, 0, 'auto-detected');
+    }
 
     if (newM.status === 'creator') { if (g) { g.ownerId = u.id; g.ownerUsername = u.username || u.first_name || String(u.id); } db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'owner'); }
     if (newM.status === 'administrator' && oldM.status !== 'administrator') { if (g) g.admins.set(u.id, { username: u.username || u.first_name || String(u.id), promotedBy: by.id, promotedByUsername: by.username || by.first_name || String(by.id), promotedAt: new Date() }); db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'admin'); }
@@ -344,23 +351,12 @@ module.exports = function setupGroupHandlers(bot) {
   });
 
   // ── فلتر الروابط ─────────────────────────────────────────────────────
+  // ملاحظة: إنشاء المجموعة وتتبع الأعضاء يتم في messageTrackingMiddleware
   bot.on('message', async (ctx, next) => {
-    if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
-    const g = db.getGroup(ctx.chat.id);
+    if (!ctx.chat || ctx.chat.type === 'private' || ctx.chat.type === 'channel' || !ctx.from) return next();
 
-    // تتبع تلقائي للمجموعات غير المسجّلة
-    if (!g && ctx.chat.type !== 'private') {
-      const newG = db.getOrCreateGroup(ctx.chat.id, ctx.chat.title || 'مجموعة', ctx.chat.type, 0, 'unknown');
-      try {
-        const admins = await bot.telegram.getChatAdministrators(ctx.chat.id);
-        const owner  = admins.find(a => a.status === 'creator');
-        if (owner && newG) {
-          newG.ownerId       = owner.user.id;
-          newG.ownerUsername = owner.user.username || owner.user.first_name;
-        }
-      } catch {}
-    }
-    db.trackMember(ctx.chat.id, ctx.from.id, ctx.from.username || '', ctx.from.first_name || '', 'member');
+    // نقرأ المجموعة — إن لم تكن موجودة يعني الـ middleware لم يُنشئها بعد (نادر)
+    const g = db.getGroup(ctx.chat.id);
 
     if (!g?.antiLinks) return next();
     if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
