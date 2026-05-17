@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T22:10:23.615Z",
+  "savedAt": "2026-05-17T22:19:21.345Z",
   "botAdmins": [
     6330247540
   ],
@@ -84,9 +84,9 @@
           "firstName": "Channel",
           "role": "member",
           "joinedAt": "2026-05-17T20:53:12.001Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-17T22:18:23.446Z"
         }
       },
       "admins": {},
@@ -276,7 +276,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:53:11.840Z",
-      "lastSeen": "2026-05-17T20:53:11.840Z",
+      "lastSeen": "2026-05-17T22:18:23.446Z",
       "groups": [
         -2072303291198
       ],
@@ -290,7 +290,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:44:54.456Z",
-      "lastSeen": "2026-05-17T21:45:17.962Z",
+      "lastSeen": "2026-05-17T22:19:10.884Z",
       "groups": [
         -1003928741558
       ],
@@ -304,7 +304,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T22:09:19.444Z",
+      "lastSeen": "2026-05-17T22:18:34.628Z",
       "groups": [
         -1003940779079,
         -1003969494192
@@ -418,6 +418,20 @@
       "bannedAt": null,
       "firstSeen": "2026-05-17T22:00:21.097Z",
       "lastSeen": "2026-05-17T22:02:30.981Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": []
+    },
+    "8460422540": {
+      "userId": 8460422540,
+      "username": "Dcctorshema",
+      "firstName": "Doctoer Shema",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T22:18:33.279Z",
+      "lastSeen": "2026-05-17T22:18:33.279Z",
       "groups": [
         -1003969494192
       ],
