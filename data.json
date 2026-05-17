@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T20:54:31.554Z",
+  "savedAt": "2026-05-17T20:59:47.877Z",
   "botAdmins": [],
   "groups": {
     "-1003940779079": {
@@ -125,6 +125,68 @@
         "canManageTopics": false
       },
       "auditLog": []
+    },
+    "-1003969494192": {
+      "chatId": -1003969494192,
+      "title": "مجتمع جامعةالأمير سلطان",
+      "type": "supergroup",
+      "ownerId": 7411444902,
+      "ownerUsername": "Labibrd",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "unknown",
+      "addedAt": "2026-05-17T20:58:12.197Z",
+      "members": {
+        "8607336247": {
+          "userId": 8607336247,
+          "username": "",
+          "firstName": ".",
+          "role": "member",
+          "joinedAt": "2026-05-17T20:58:12.374Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-17T20:58:18.253Z"
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": true,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": true,
+      "antiBot": true,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": []
     }
   },
   "channels": {},
@@ -151,9 +213,23 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T20:53:07.527Z",
+      "lastSeen": "2026-05-17T20:59:30.179Z",
       "groups": [
         -1003940779079
+      ],
+      "channels": []
+    },
+    "8607336247": {
+      "userId": 8607336247,
+      "username": "",
+      "firstName": ".",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T20:58:12.017Z",
+      "lastSeen": "2026-05-17T20:58:18.253Z",
+      "groups": [
+        -1003969494192
       ],
       "channels": []
     }
