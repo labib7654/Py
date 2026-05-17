@@ -355,25 +355,28 @@ function buildJSON() {
 //  Persistence — saveData / loadData
 // ═══════════════════════════════════════════════════════════════
 
-// منع تراكم طلبات الحفظ
-let _saving = false;
+// نظام الحفظ الذكي — يحفظ فور حدوث تغيير
+// لو جاءت تغييرات متتالية ينتظر ثانية واحدة ثم يحفظ مرة واحدة فقط
 
-async function saveData() {
-  if (_saving) return;
+let _saving      = false;
+let _pendingSave = false;
+let _saveTimer   = null;
+
+async function _doSave() {
+  if (_saving) { _pendingSave = true; return; }
   _saving = true;
   try {
     const json = buildJSON();
 
-    // ① حفظ محلي دائماً (سريع)
+    // ① حفظ محلي فوري
     try { fs.writeFileSync(DATA_FILE, json, 'utf-8'); } catch (e) {
       console.warn('⚠️ حفظ محلي فشل:', e.message);
     }
 
-    // ② رفع لـ GitHub إن كان مفعّلاً
+    // ② رفع لـ GitHub
     if (USE_GITHUB) {
       const ok = await githubPut(json, _ghSha);
       if (ok) {
-        // نحدّث sha من GitHub عشان نعرف القيمة الجديدة
         const fresh = await githubGet();
         if (fresh) _ghSha = fresh.sha;
         console.log('☁️ تم الحفظ على GitHub');
@@ -381,7 +384,14 @@ async function saveData() {
     }
   } finally {
     _saving = false;
+    if (_pendingSave) { _pendingSave = false; _doSave(); }
   }
+}
+
+// الدالة الرئيسية — تحفظ بعد ثانية من آخر تغيير
+function saveData() {
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => { _saveTimer = null; _doSave(); }, 1000);
 }
 
 function parseData(raw) {
@@ -507,20 +517,20 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
-// ─── حفظ تلقائي كل 5 دقائق ────────────────────────────────────
+// ─── تهيئة: تحميل البيانات + حفظ احتياطي كل 5 دقائق ─────────────
 let _readyResolve;
 const _readyPromise = new Promise(res => { _readyResolve = res; });
 
 loadData().then(() => {
-  _readyResolve();                          // أعلن أن البيانات جاهزة
-  setInterval(() => saveData(), 5 * 60 * 1000);
+  _readyResolve();
+  setInterval(() => _doSave(), 5 * 60 * 1000); // حفظ احتياطي كل 5 دقائق
 });
 
 // index.js يستدعي هذه الدالة وينتظرها قبل تشغيل البوت
 function waitReady() { return _readyPromise; }
 
-process.on('SIGINT',  () => { saveData().finally(() => process.exit(0)); });
-process.on('SIGTERM', () => { saveData().finally(() => process.exit(0)); });
+process.on('SIGINT',  () => { _doSave().finally(() => process.exit(0)); });
+process.on('SIGTERM', () => { _doSave().finally(() => process.exit(0)); });
 
 // ─── تحذير إن لم يُضبط GitHub ────────────────────────────────
 if (!USE_GITHUB) {
