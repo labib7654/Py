@@ -1,14 +1,12 @@
 const { Markup } = require('telegraf');
 const db         = require('./db');
 const {
-  isDeveloper, isAdmin,
+  isDeveloper, isAdmin, isOwner,
   getTargetUser, getReason,
-} = require('./helpers_permissions');
-const {
   muteMember, muteMemberTimed, banMemberTimed,
   unmutePerms, promoteUser, demoteUser,
   logAction,
-} = require('./helpers_actions');
+} = require('./helpers');
 
 function memberActionsKeyboard(targetId, chatId, backCb) {
   return Markup.inlineKeyboard([
@@ -52,8 +50,7 @@ function muteDurationKeyboard(userId, chatId) {
       Markup.button.callback('24س',   `mutet_${userId}_${chatId}_86400`),
       Markup.button.callback('7أيام', `mutet_${userId}_${chatId}_604800`),
     ],
-    // FIX 4: تمرير chatId لزر الإلغاء
-    [Markup.button.callback('🔙 إلغاء', `cancel_${chatId}`)],
+    [Markup.button.callback('🔙 إلغاء', `cancel`)],
   ]);
 }
 
@@ -69,8 +66,7 @@ function banDurationKeyboard(userId, chatId) {
       Markup.button.callback('7أيام', `bant_${userId}_${chatId}_604800`),
       Markup.button.callback('30يوم', `bant_${userId}_${chatId}_2592000`),
     ],
-    // FIX 4: تمرير chatId لزر الإلغاء
-    [Markup.button.callback('🔙 إلغاء', `cancel_${chatId}`)],
+    [Markup.button.callback('🔙 إلغاء', `cancel`)],
   ]);
 }
 
@@ -155,8 +151,7 @@ module.exports = function setupAdminHandlers(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return ctx.reply('❌ للمشرفين فقط!');
     const target = await getTargetUser(ctx); if (!target) return ctx.reply('❌ ارد على رسالة المستخدم أو اذكره!');
     try {
-      // FIX 17: تمرير bot وchatId لـ unmutePerms
-      const perms = await unmutePerms(bot, chatId);
+      const perms = await unmutePerms();
       await bot.telegram.restrictChatMember(chatId, target.id, { permissions: perms });
       const g = db.getGroup(chatId);
       if (g) { g.mutedUsers.delete(target.id); await logAction(bot, g, '🔊 رفع كتم', ctx.from, target, ''); }
@@ -219,209 +214,238 @@ module.exports = function setupAdminHandlers(bot) {
   //  أزرار الإجراءات (callbacks)
   // ════════════════════════════════════════════════════════════════════════
 
+  // رفع مشرف
   bot.action(/^promote_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
-      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    if (!isDeveloper(ctx) && !await isOwner(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمالك فقط!', { show_alert: true });
     try {
-      await promoteUser(bot, cid, uid);
+      const ok = await promoteUser(bot, cid, tid);
+      if (!ok) return ctx.answerCbQuery('❌ فشل الترفيع!', { show_alert: true });
       const g = db.getGroup(cid);
-      const m = g?.members.get(uid);
-      if (g) g.admins.set(uid, { username: m?.username || String(uid), promotedBy: ctx.from.id, promotedByUsername: ctx.from.username || ctx.from.first_name, promotedAt: new Date() });
-      await ctx.answerCbQuery('✅ تم الترقية!', { show_alert: true });
+      if (g) {
+        g.admins.set(tid, { promotedBy: ctx.from.id, promotedByUsername: ctx.from.username || ctx.from.first_name, promotedAt: new Date() });
+        const m = g.members.get(tid);
+        const target = { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) };
+        await logAction(bot, g, '⬆️ رفع مشرف', ctx.from, target, '');
+      }
+      await ctx.answerCbQuery('✅ تم رفعه مشرفاً!', { show_alert: true });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
+  // تنزيل مشرف
   bot.action(/^demote_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
-      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    if (!isDeveloper(ctx) && !await isOwner(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمالك فقط!', { show_alert: true });
     try {
-      await demoteUser(bot, cid, uid);
+      await demoteUser(bot, cid, tid);
       const g = db.getGroup(cid);
-      if (g) g.admins.delete(uid);
-      await ctx.answerCbQuery('✅ تم التنزيل!', { show_alert: true });
+      if (g) {
+        const m = g.members.get(tid);
+        const target = { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) };
+        g.admins.delete(tid);
+        await logAction(bot, g, '⬇️ تنزيل مشرف', ctx.from, target, '');
+      }
+      await ctx.answerCbQuery('✅ تم تنزيله من الإشراف!', { show_alert: true });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
+  // كتم عادي
   bot.action(/^mute_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     try {
-      await muteMember(bot, cid, uid);
+      await muteMember(bot, cid, tid);
       const g = db.getGroup(cid);
-      if (g) g.mutedUsers.add(uid);
-      await ctx.answerCbQuery('🔇 تم الكتم!', { show_alert: true });
+      if (g) { g.mutedUsers.add(tid); const m = g.members.get(tid); await logAction(bot, g, '🔇 كتم', ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, ''); }
+      await ctx.answerCbQuery('✅ تم الكتم!', { show_alert: true });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
+  // رفع كتم
   bot.action(/^unmute_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     try {
-      // FIX 17: تمرير bot وcid لـ unmutePerms
-      const perms = await unmutePerms(bot, cid);
-      await bot.telegram.restrictChatMember(cid, uid, { permissions: perms });
+      const perms = await unmutePerms();
+      await bot.telegram.restrictChatMember(cid, tid, { permissions: perms });
       const g = db.getGroup(cid);
-      if (g) g.mutedUsers.delete(uid);
-      await ctx.answerCbQuery('🔊 تم رفع الكتم!', { show_alert: true });
+      if (g) { g.mutedUsers.delete(tid); const m = g.members.get(tid); await logAction(bot, g, '🔊 رفع كتم', ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, ''); }
+      await ctx.answerCbQuery('✅ تم رفع الكتم!', { show_alert: true });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
+  // عرض لوحة الكتم المؤقت
   bot.action(/^mutet_show_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    await ctx.editMessageText('⏱️ اختر مدة الكتم المؤقت:', muteDurationKeyboard(uid, cid));
-  });
-
-  bot.action(/^mutet_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const [uid, cid, dur] = [Number(ctx.match[1]), Number(ctx.match[2]), Number(ctx.match[3])];
-    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
-      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    try {
-      await muteMemberTimed(bot, cid, uid, dur);
-      const g = db.getGroup(cid);
-      if (g) {
-        g.mutedUsers.add(uid);
-        g.timedMutes.set(uid, Date.now() + dur * 1000);
-      }
-      const mins = dur < 3600 ? `${dur / 60} دقيقة` : dur < 86400 ? `${dur / 3600} ساعة` : `${dur / 86400} يوم`;
-      await ctx.editMessageText(`🔇 تم الكتم المؤقت لمدة ${mins}`);
-    } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
-  });
-
-  bot.action(/^bant_show_(\d+)_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    await ctx.editMessageText('🚫⏱️ اختر مدة الحظر المؤقت:', banDurationKeyboard(uid, cid));
-  });
-
-  bot.action(/^bant_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const [uid, cid, dur] = [Number(ctx.match[1]), Number(ctx.match[2]), Number(ctx.match[3])];
-    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
-      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    try {
-      await banMemberTimed(bot, cid, uid, dur);
-      const g = db.getGroup(cid);
-      if (g) {
-        g.bannedUsers.add(uid);
-        g.timedBans.set(uid, Date.now() + dur * 1000);
-      }
-      const mins = dur < 3600 ? `${dur / 60} دقيقة` : dur < 86400 ? `${dur / 3600} ساعة` : `${dur / 86400} يوم`;
-      await ctx.editMessageText(`🚫 تم الحظر المؤقت لمدة ${mins}`);
-    } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
-  });
-
-  // FIX 24: إرسال رسالة في المجموعة بعد التحذير
-  bot.action(/^warn_(\d+)_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
-      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = db.getGroup(cid); if (!g) return;
-    if (!g.warns.has(uid)) g.warns.set(uid, []);
-    const warns = g.warns.get(uid);
-    warns.push({ reason: 'تحذير من الإدارة', warnedBy: ctx.from.id, warnedAt: new Date() });
-    if (warns.length >= g.maxWarns) {
-      try { await bot.telegram.banChatMember(cid, uid); g.bannedUsers.add(uid); g.warns.delete(uid); } catch {}
-      await ctx.answerCbQuery(`🚫 حظر تلقائي بعد ${g.maxWarns} تحذيرات!`, { show_alert: true });
-    } else {
-      await ctx.answerCbQuery(`⚠️ تحذير ${warns.length}/${g.maxWarns}`, { show_alert: true });
-      // FIX 24: إرسال رسالة إعلامية في المجموعة
-      try {
-        await bot.telegram.sendMessage(cid,
-          `⚠️ *تحذير*\n\n🆔 \`${uid}\`\n⚠️ التحذير ${warns.length}/${g.maxWarns}\n👮 بواسطة: ${ctx.from.username ? '@' + ctx.from.username : ctx.from.first_name}`,
-          { parse_mode: 'Markdown' }
-        );
-      } catch {}
-    }
-  });
-
-  bot.action(/^clearwarns_(\d+)_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     const g = db.getGroup(cid);
-    if (g) g.warns.delete(uid);
-    await ctx.answerCbQuery('✅ تم مسح التحذيرات!', { show_alert: true });
+    const m = g?.members.get(tid);
+    const name = m ? (m.username ? `@${m.username}` : m.firstName) : String(tid);
+    await ctx.editMessageText(`⏱️ *اختر مدة كتم ${name}:*`, { parse_mode: 'Markdown', ...muteDurationKeyboard(tid, cid) });
   });
 
-  bot.action(/^ban_(\d+)_(-?\d+)$/, async (ctx) => {
+  // تطبيق الكتم المؤقت
+  bot.action(/^mutet_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    const tid  = Number(ctx.match[1]);
+    const cid  = Number(ctx.match[2]);
+    const secs = Number(ctx.match[3]);
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     try {
-      await bot.telegram.banChatMember(cid, uid);
+      await muteMemberTimed(bot, cid, tid, secs);
       const g = db.getGroup(cid);
-      if (g) { g.bannedUsers.add(uid); await logAction(bot, g, '🚫 حظر', ctx.from, { id: uid, username: '', firstName: String(uid) }, 'عبر الزر'); }
-      await ctx.answerCbQuery('🚫 تم الحظر!', { show_alert: true });
+      const label = durationLabel(secs);
+      if (g) {
+        g.mutedUsers.add(tid);
+        g.timedMutes.set(tid, Date.now() + secs * 1000);
+        const m = g.members.get(tid);
+        await logAction(bot, g, `⏱️ كتم مؤقت (${label})`, ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, '');
+      }
+      await ctx.answerCbQuery(`✅ كتم لمدة ${label}!`, { show_alert: true });
+      await ctx.deleteMessage().catch(() => {});
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
-  bot.action(/^unban_(\d+)_(-?\d+)$/, async (ctx) => {
+  // عرض لوحة الحظر المؤقت
+  bot.action(/^bant_show_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const g = db.getGroup(cid);
+    const m = g?.members.get(tid);
+    const name = m ? (m.username ? `@${m.username}` : m.firstName) : String(tid);
+    await ctx.editMessageText(`🚫⏱️ *اختر مدة حظر ${name}:*`, { parse_mode: 'Markdown', ...banDurationKeyboard(tid, cid) });
+  });
+
+  // تطبيق الحظر المؤقت
+  bot.action(/^bant_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const tid  = Number(ctx.match[1]);
+    const cid  = Number(ctx.match[2]);
+    const secs = Number(ctx.match[3]);
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     try {
-      await bot.telegram.unbanChatMember(cid, uid);
+      await banMemberTimed(bot, cid, tid, secs);
       const g = db.getGroup(cid);
-      if (g) { g.bannedUsers.delete(uid); g.timedBans.delete(uid); }
+      const label = durationLabel(secs);
+      if (g) {
+        g.bannedUsers.add(tid);
+        g.timedBans.set(tid, Date.now() + secs * 1000);
+        const m = g.members.get(tid);
+        await logAction(bot, g, `🚫⏱️ حظر مؤقت (${label})`, ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, '');
+      }
+      await ctx.answerCbQuery(`✅ حظر لمدة ${label}!`, { show_alert: true });
+      await ctx.deleteMessage().catch(() => {});
+    } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
+  });
+
+  // حظر
+  bot.action(/^ban_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    try {
+      await bot.telegram.banChatMember(cid, tid);
+      const g = db.getGroup(cid);
+      if (g) { g.bannedUsers.add(tid); const m = g.members.get(tid); await logAction(bot, g, '🚫 حظر', ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, ''); }
+      await ctx.answerCbQuery('✅ تم الحظر!', { show_alert: true });
+    } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
+  });
+
+  // رفع حظر
+  bot.action(/^unban_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    try {
+      await bot.telegram.unbanChatMember(cid, tid);
+      const g = db.getGroup(cid);
+      if (g) { g.bannedUsers.delete(tid); g.timedBans.delete(tid); const m = g.members.get(tid); await logAction(bot, g, '✅ رفع حظر', ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, ''); }
       await ctx.answerCbQuery('✅ تم رفع الحظر!', { show_alert: true });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
+  // طرد
   bot.action(/^kick_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     try {
-      await bot.telegram.banChatMember(cid, uid);
-      setTimeout(() => bot.telegram.unbanChatMember(cid, uid).catch(() => {}), 1500);
-      await ctx.answerCbQuery('👢 تم الطرد!', { show_alert: true });
+      await bot.telegram.banChatMember(cid, tid);
+      setTimeout(() => bot.telegram.unbanChatMember(cid, tid).catch(() => {}), 1500);
+      const g = db.getGroup(cid);
+      if (g) { const m = g.members.get(tid); await logAction(bot, g, '👢 طرد', ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, ''); }
+      await ctx.answerCbQuery('✅ تم الطرد!', { show_alert: true });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
+  // تحذير (زر)
+  bot.action(/^warn_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const g = db.getGroup(cid); if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+    if (!g.warns.has(tid)) g.warns.set(tid, []);
+    const warns = g.warns.get(tid);
+    warns.push({ reason: 'تحذير يدوي', warnedBy: ctx.from.id, warnedAt: new Date() });
+    const m = g.members.get(tid);
+    await logAction(bot, g, `⚠️ تحذير ${warns.length}/${g.maxWarns}`, ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, 'تحذير يدوي');
+    if (warns.length >= g.maxWarns) {
+      try { await bot.telegram.banChatMember(cid, tid); g.bannedUsers.add(tid); g.warns.delete(tid); } catch {}
+      await ctx.answerCbQuery(`🚫 حظر بعد ${g.maxWarns} تحذيرات!`, { show_alert: true });
+    } else {
+      await ctx.answerCbQuery(`⚠️ تحذير ${warns.length}/${g.maxWarns}!`, { show_alert: true });
+    }
+  });
+
+  // مسح تحذيرات
+  bot.action(/^clearwarns_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const g = db.getGroup(cid);
+    if (g) { g.warns.delete(tid); const m = g.members.get(tid); await logAction(bot, g, '🗑️ مسح تحذيرات', ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, ''); }
+    await ctx.answerCbQuery('✅ تم حذف التحذيرات!', { show_alert: true });
+    try { await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n✅ *تم حذف التحذيرات*', { parse_mode: 'Markdown' }); } catch {}
+  });
+
+  // معلومات عضو
   bot.action(/^info_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    const g   = db.getGroup(cid);
-    const m   = g?.members.get(uid);
-    const gu  = db.getUser(uid);
-    const warns = g?.warns.get(uid)?.length || 0;
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    const g = db.getGroup(cid);
+    const m = g?.members.get(tid);
+    const gu = db.getUser(tid);
+    const name = m ? (m.username ? `@${m.username}` : m.firstName) : String(tid);
     await ctx.reply(
-      `📋 *معلومات المستخدم*\n\n🆔 \`${uid}\`\n👤 ${m?.firstName || '—'}\n@${m?.username || '—'}\n⚠️ تحذيرات: \`${warns}/${g?.maxWarns || 3}\`\n🔇 مكتوم: ${g?.mutedUsers.has(uid) ? '✅' : '❌'}\n🚫 محظور محلياً: ${g?.bannedUsers.has(uid) ? '✅' : '❌'}\n🌍 محظور عالمياً: ${gu?.globalBanned ? `✅ — ${gu.bannedReason}` : '❌'}\n💬 رسائل: \`${m?.messageCount || 0}\`\n⭐ نقاط: \`${m?.score || 0}\``,
+      `📋 *معلومات*\n\n👤 ${name}\n🆔 \`${tid}\`\n⚠️ تحذيرات: \`${g?.warns.get(tid)?.length || 0}/${g?.maxWarns || 3}\`\n🔇 مكتوم: ${g?.mutedUsers.has(tid) ? '✅' : '❌'}\n🚫 محظور: ${g?.bannedUsers.has(tid) ? '✅' : '❌'}\n🌍 محظور عالمياً: ${gu?.globalBanned ? '✅' : '❌'}\n📨 رسائل: \`${m?.messageCount || 0}\`\n⭐ نقاط: \`${m?.score || 0}\``,
       { parse_mode: 'Markdown' }
     );
   });
-
-  bot.action(/^jr_ban_(\d+)_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const [uid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
-      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    try {
-      await bot.telegram.declineChatJoinRequest(cid, uid).catch(() => {});
-      await bot.telegram.banChatMember(cid, uid);
-      const g = db.getGroup(cid);
-      if (g) {
-        g.bannedUsers.add(uid);
-        if (g.joinRequests.has(uid)) g.joinRequests.get(uid).status = 'banned';
-      }
-      await ctx.answerCbQuery('🚫 تم الحظر!', { show_alert: true });
-      await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n🚫 *تم الحظر*', { parse_mode: 'Markdown' });
-    } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
-  });
-
 };
+
+// ── دالة مساعدة لتسمية المدة ─────────────────────────────────────────────
+function durationLabel(secs) {
+  if (secs < 3600)   return `${secs / 60} دقيقة`;
+  if (secs < 86400)  return `${secs / 3600} ساعة`;
+  if (secs < 604800) return `${secs / 86400} يوم`;
+  return `${Math.round(secs / 604800)} أسبوع`;
+}

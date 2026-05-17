@@ -3,17 +3,12 @@ const path = require('path');
 
 const DATA_FILE = process.env.DATA_FILE
   ? path.resolve(process.env.DATA_FILE)
-  : path.join(__dirname, '..', 'data.json');
+  : path.join(__dirname, 'data.json');
 
 const groups      = new Map();
 const channels    = new Map();
 const users       = new Map();
 const communities = new Map();
-
-// ── إعدادات البوت العامة (FEATURE 6 — global protect) ────────
-const botSettings = {
-  globalProtectContent: false,
-};
 
 // ═══════════════════════════════════════════════════════════════
 //  Groups
@@ -39,7 +34,6 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
       mutedUsers:          new Set(),
       bannedUsers:         new Set(),
       bannedWords:         [],
-      allowedWords:        [],   // FEATURE 3: الكلمات المسموحة
       wordViolations:      new Map(),
       joinRequests:        new Map(),
       joinRequestsEnabled: false,
@@ -52,8 +46,8 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
       timedMutes:          new Map(),
       timedBans:           new Map(),
       joinRequestCooldown: new Map(),
-      // المواضيع — FEATURE 2 (هيكل موسّع)
-      topics:       new Map(),   // topicId -> { name, locked, archived, requireJoinRequest, isPrivateTopic, specialization, approvedUsers, pendingRequests, specialistUserId, specialistUsername }
+      // المواضيع
+      topics:       new Map(),   // topicId -> { name, locked, archived, approvedUsers: Set }
       topicSettings: {
         requireApprovalToJoin: false,
         autoLockOnCreate:      false,
@@ -69,8 +63,6 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
         canManageTopics:   false,
       },
       auditLog: [],
-      // FEATURE 1: نوع الكيان
-      chatTypeInfo: null,
     });
   }
   return groups.get(chatId);
@@ -95,15 +87,6 @@ function getOrCreateChannel(chatId, title, username, addedBy, addedByUsername) {
       subscribers:      new Map(),
       ownerId:          null,
       ownerUsername:    '',
-      ownerVerified:    false,      // FEATURE 8
-      ownerVerifiedAt:  null,       // FEATURE 8
-      // FEATURE 8: إدارة القنوات الشاملة
-      protectContent:    false,
-      slowMode:          0,
-      pinnedMessageId:   null,
-      linkedGroupId:     null,
-      discussionEnabled: false,
-      postHistory:       [],
     });
   }
   return channels.get(chatId);
@@ -154,7 +137,6 @@ function getOrCreateUser(userId, username, firstName) {
       lastSeen:     new Date(),
       groups:       new Set(),
       channels:     new Set(),
-      joinRequestHistory: [],   // FEATURE 7: تتبع تاريخ طلبات الانضمام
     });
   }
   return users.get(userId);
@@ -181,10 +163,6 @@ function getOrCreateCommunity(communityId, title) {
       maxGroupJoins:    1,
       enabled:          true,
       autoBannedUsers:  new Map(), // userId -> { reason, groups[], bannedAt }
-      // FEATURE — community enhancements
-      ownerId:          null,
-      ownerUsername:    '',
-      topics:           new Map(),
     });
   }
   return communities.get(communityId);
@@ -264,8 +242,7 @@ function saveData() {
           topics:              Object.fromEntries(
             [...v.topics.entries()].map(([tid, tv]) => [tid, {
               ...tv,
-              approvedUsers:   tv.approvedUsers   ? [...tv.approvedUsers]   : [],
-              pendingRequests: tv.pendingRequests  ? Object.fromEntries(tv.pendingRequests) : {},
+              approvedUsers: tv.approvedUsers ? [...tv.approvedUsers] : [],
             }])
           ),
         }])
@@ -281,7 +258,6 @@ function saveData() {
           ...v,
           groups:   [...v.groups],
           channels: [...v.channels],
-          joinRequestHistory: v.joinRequestHistory || [],
         }])
       ),
       communities: Object.fromEntries(
@@ -292,10 +268,8 @@ function saveData() {
             [...v.memberJoins.entries()].map(([uk, uv]) => [uk, [...uv]])
           ),
           autoBannedUsers: Object.fromEntries(v.autoBannedUsers || new Map()),
-          topics:          Object.fromEntries(v.topics || new Map()),
         }])
       ),
-      botSettings,
     };
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (e) {
@@ -309,25 +283,13 @@ function loadData() {
     const raw  = fs.readFileSync(DATA_FILE, 'utf-8');
     const data = JSON.parse(raw);
 
-    // استعادة botSettings
-    if (data.botSettings) {
-      Object.assign(botSettings, data.botSettings);
-    }
-
     for (const [k, v] of Object.entries(data.groups || {})) {
-      // إعادة بناء topics بالهيكل الجديد
+      // إعادة بناء topics
       const topicsMap = new Map();
       for (const [tid, tv] of Object.entries(v.topics || {})) {
         topicsMap.set(Number(tid), {
           ...tv,
-          approvedUsers:   new Set((tv.approvedUsers || []).map(Number)),
-          pendingRequests: new Map(Object.entries(tv.pendingRequests || {}).map(([uk, uv]) => [Number(uk), uv])),
-          // قيم افتراضية للحقول الجديدة
-          requireJoinRequest: tv.requireJoinRequest || false,
-          isPrivateTopic:     tv.isPrivateTopic     || false,
-          specialization:     tv.specialization     || '',
-          specialistUserId:   tv.specialistUserId   || null,
-          specialistUsername: tv.specialistUsername  || '',
+          approvedUsers: new Set((tv.approvedUsers || []).map(Number)),
         });
       }
 
@@ -347,7 +309,6 @@ function loadData() {
         joinRequestCooldown: new Map(Object.entries(v.joinRequestCooldown || {}).map(([uk, uv]) => [Number(uk), uv])),
         wordViolations:      new Map(Object.entries(v.wordViolations || {}).map(([uk, uv]) => [Number(uk), uv])),
         topics:              topicsMap,
-        allowedWords:        v.allowedWords || [],
         topicSettings: v.topicSettings || {
           requireApprovalToJoin: false,
           autoLockOnCreate:      false,
@@ -358,38 +319,25 @@ function loadData() {
           canAddWebPreviews: true, canInviteUsers: true,
           canPinMessages: false, canManageTopics: false,
         },
-        auditLog:     v.auditLog     || [],
-        chatTypeInfo: v.chatTypeInfo || null,
+        auditLog: v.auditLog || [],
       });
     }
 
-    // FIX: استعادة صحيحة للقنوات مع ownerId وownerUsername
     for (const [k, v] of Object.entries(data.channels || {})) {
       channels.set(Number(k), {
         ...v,
-        chatId:            Number(k),
-        ownerId:           v.ownerId           || null,
-        ownerUsername:     v.ownerUsername      || '',
-        ownerVerified:     v.ownerVerified      || false,
-        ownerVerifiedAt:   v.ownerVerifiedAt    || null,
-        protectContent:    v.protectContent     || false,
-        slowMode:          v.slowMode           || 0,
-        pinnedMessageId:   v.pinnedMessageId    || null,
-        linkedGroupId:     v.linkedGroupId      || null,
-        discussionEnabled: v.discussionEnabled  || false,
-        postHistory:       v.postHistory        || [],
-        subscribers:       new Map(Object.entries(v.subscribers || {}).map(([uk, uv]) => [Number(uk), uv])),
+        chatId:      Number(k),
+        subscribers: new Map(Object.entries(v.subscribers || {}).map(([uk, uv]) => [Number(uk), uv])),
       });
     }
 
     for (const [k, v] of Object.entries(data.users || {})) {
       users.set(Number(k), {
         ...v,
-        userId:             Number(k),
-        lastSeen:           v.lastSeen || v.firstSeen || new Date(),
-        groups:             new Set((v.groups   || []).map(Number)),
-        channels:           new Set((v.channels || []).map(Number)),
-        joinRequestHistory: v.joinRequestHistory || [],
+        userId:   Number(k),
+        lastSeen: v.lastSeen || v.firstSeen || new Date(),
+        groups:   new Set((v.groups   || []).map(Number)),
+        channels: new Set((v.channels || []).map(Number)),
       });
     }
 
@@ -397,8 +345,6 @@ function loadData() {
       communities.set(Number(k), {
         ...v,
         communityId:     Number(k),
-        ownerId:         v.ownerId         || null,
-        ownerUsername:   v.ownerUsername   || '',
         subGroups:       new Set((v.subGroups || []).map(Number)),
         memberJoins:     new Map(
           Object.entries(v.memberJoins || {}).map(([uk, uv]) => [Number(uk), new Set((uv || []).map(Number))])
@@ -406,7 +352,6 @@ function loadData() {
         autoBannedUsers: new Map(
           Object.entries(v.autoBannedUsers || {}).map(([uk, uv]) => [Number(uk), uv])
         ),
-        topics: new Map(Object.entries(v.topics || {})),
       });
     }
 
@@ -448,6 +393,4 @@ module.exports = {
   addAuditLog,
   getStats,
   saveData,
-  loadData,   // FEATURE 5: مطلوب لاستعادة البيانات
-  botSettings, // FEATURE 6: حماية عالمية
 };
