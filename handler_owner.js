@@ -733,6 +733,48 @@ module.exports = function setupOwnerHandlers(bot) {
     );
   });
 
+  // ── الصفحة الرئيسية للمجموعة (زر الرجوع) ────────────────
+  bot.action(/^group_home_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!g) return ctx.answerCbQuery('❌ المجموعة غير موجودة!', { show_alert: true });
+    const isMine = isDeveloper(ctx) || g.ownerId === ctx.from.id || g.admins.has(ctx.from.id);
+    if (!isMine) return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
+    await ctx.editMessageText(
+      `⚙️ *إعدادات ${g.title}*\n\nاضغط لتفعيل/تعطيل:`,
+      { parse_mode: 'Markdown', ...groupSettingsKeyboard(chatId, g) }
+    );
+  });
+
+  // ── إحصائيات المجموعة ─────────────────────────────────────
+  bot.action(/^stats_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const totalMsgs   = [...g.members.values()].reduce((a, m) => a + (m.messageCount || 0), 0);
+    const totalWarns  = [...g.warns.values()].reduce((a, w) => a + w.length, 0);
+    const pending     = [...g.joinRequests.values()].filter(r => r.status === 'pending').length;
+    const topMember   = [...g.members.values()].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
+    const topName     = topMember ? (topMember.username ? `@${topMember.username}` : topMember.firstName) : '—';
+    await ctx.editMessageText(
+      `📊 *إحصائيات ${g.title}*\n\n` +
+      `👥 الأعضاء: \`${g.members.size}\`\n` +
+      `👮 المشرفون: \`${g.admins.size}\`\n` +
+      `🔇 المكتومون: \`${g.mutedUsers.size}\`\n` +
+      `🚫 المحظورون: \`${g.bannedUsers.size}\`\n` +
+      `⚠️ التحذيرات: \`${totalWarns}\`\n` +
+      `💬 إجمالي الرسائل: \`${totalMsgs}\`\n` +
+      `📨 طلبات معلقة: \`${pending}\`\n` +
+      `🔤 كلمات محظورة: \`${g.bannedWords.length}\`\n` +
+      `🏆 الأكثر نشاطاً: ${topName}`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]]) }
+    );
+  });
+
   // طلبات الانضمام (callback)
   bot.action(/^joinreqs_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();

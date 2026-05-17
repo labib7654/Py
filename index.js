@@ -83,9 +83,10 @@ async function main() {
   setupAdminHandlers(bot);
   setupOwnerHandlers(bot);
 
-  // ── معالج callback_query عام ──────────────────────────────
-  bot.on('callback_query', async (ctx) => {
+  // ── معالج callback_query احتياطي (للأزرار غير المعروفة فقط) ──
+  bot.action(/^cancel$/, async (ctx) => {
     try { await ctx.answerCbQuery(); } catch {}
+    try { await ctx.deleteMessage(); } catch {}
   });
 
   // ── أوامر عامة ───────────────────────────────────────────
