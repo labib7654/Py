@@ -430,21 +430,18 @@ module.exports = function setupOwnerHandlers(bot) {
     const g = db.getGroup(chatId); if (!g) return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    g.joinRequestsEnabled = !g.joinRequestsEnabled;
-    const link = await setJoinApproval(bot, chatId, g.joinRequestsEnabled);
-    const msg  = g.joinRequestsEnabled
-      ? `🔒 موافقة الانضمام مفعّلة — أي شخص يحاول الدخول سيُرسل طلب انضمام${link ? '\n🔗 ' + link.invite_link : ''}`
-      : '🔓 موافقة الانضمام معطّلة — انضمام مباشر';
-    await ctx.answerCbQuery(msg, { show_alert: true });
-    // إرسال الرابط للمالك في الخاص إن وجد
-    if (link?.invite_link && g.ownerId) {
-      try {
-        await bot.telegram.sendMessage(g.ownerId,
-          `🔗 *رابط الدعوة الجديد*\n\n${link.invite_link}\n\n_الرابط ${g.joinRequestsEnabled ? 'يشترط الموافقة' : 'للدخول المباشر'}_`,
-          { parse_mode: 'Markdown' }
-        );
-      } catch {}
-    }
+
+    const newState = !g.joinRequestsEnabled;
+    // نضبط الإعداد في تيليغرام أولاً
+    await setJoinApproval(bot, chatId, newState);
+    g.joinRequestsEnabled = newState;
+
+    await ctx.answerCbQuery(
+      newState
+        ? '🔒 موافقة الانضمام مفعّلة — الطلبات ستصلك في الخاص'
+        : '🔓 موافقة الانضمام معطّلة — الدخول مباشر',
+      { show_alert: true }
+    );
     await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
   });
 
@@ -455,24 +452,37 @@ module.exports = function setupOwnerHandlers(bot) {
     const g = db.getGroup(chatId); if (!g) return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    g.protectContent = !g.protectContent;
+    const newState = !g.protectContent;
     try {
-      await bot.telegram.callApi('setChatProtectContent', {
-        chat_id:         chatId,
-        protect_content: g.protectContent,
-      });
+      // الطريقة الصحيحة في Telegraf للتحكم بحماية المحتوى
+      await bot.telegram.setChatProtectContent(chatId, newState);
+      g.protectContent = newState;
       await ctx.answerCbQuery(
-        g.protectContent
-          ? '🔒 حماية المحتوى مفعّلة — لا يمكن نسخ الرسائل!'
-          : '🔓 حماية المحتوى معطّلة',
+        newState
+          ? '🔒 حماية المحتوى مفعّلة — لا يمكن نسخ أو توجيه الرسائل!'
+          : '🔓 حماية المحتوى معطّلة — يمكن نسخ وتوجيه الرسائل',
         { show_alert: true }
       );
+      await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
     } catch (e) {
-      g.protectContent = !g.protectContent;
-      await ctx.answerCbQuery(`❌ فشل: ${e.message}`, { show_alert: true });
-      return;
+      // setChatProtectContent ليست في إصدارات Telegraf القديمة — نستخدم callApi
+      try {
+        await bot.telegram.callApi('setChatProtectContent', {
+          chat_id:         chatId,
+          protect_content: newState,
+        });
+        g.protectContent = newState;
+        await ctx.answerCbQuery(
+          newState
+            ? '🔒 حماية المحتوى مفعّلة!'
+            : '🔓 حماية المحتوى معطّلة',
+          { show_alert: true }
+        );
+        await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+      } catch (e2) {
+        await ctx.answerCbQuery(`❌ فشل تغيير الحماية: ${e2.message}`, { show_alert: true });
+      }
     }
-    await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
   });
 
   // ── لوحة الصلاحيات ───────────────────────────────────────
@@ -730,48 +740,6 @@ module.exports = function setupOwnerHandlers(bot) {
     await ctx.editMessageText(
       `✅ *تمت إضافة الكلمة المحظورة*\n\n🔤 \`${state.word}\`\nالإجراء: ${arAct[state.action]}\nبعد: \`${threshold}\` مرة`,
       { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 قائمة الكلمات', `bwords_list_${state.chatId}`)]]) }
-    );
-  });
-
-  // ── الصفحة الرئيسية للمجموعة (زر الرجوع) ────────────────
-  bot.action(/^group_home_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId);
-    if (!g) return ctx.answerCbQuery('❌ المجموعة غير موجودة!', { show_alert: true });
-    const isMine = isDeveloper(ctx) || g.ownerId === ctx.from.id || g.admins.has(ctx.from.id);
-    if (!isMine) return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
-    await ctx.editMessageText(
-      `⚙️ *إعدادات ${g.title}*\n\nاضغط لتفعيل/تعطيل:`,
-      { parse_mode: 'Markdown', ...groupSettingsKeyboard(chatId, g) }
-    );
-  });
-
-  // ── إحصائيات المجموعة ─────────────────────────────────────
-  bot.action(/^stats_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId);
-    if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
-    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
-      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const totalMsgs   = [...g.members.values()].reduce((a, m) => a + (m.messageCount || 0), 0);
-    const totalWarns  = [...g.warns.values()].reduce((a, w) => a + w.length, 0);
-    const pending     = [...g.joinRequests.values()].filter(r => r.status === 'pending').length;
-    const topMember   = [...g.members.values()].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
-    const topName     = topMember ? (topMember.username ? `@${topMember.username}` : topMember.firstName) : '—';
-    await ctx.editMessageText(
-      `📊 *إحصائيات ${g.title}*\n\n` +
-      `👥 الأعضاء: \`${g.members.size}\`\n` +
-      `👮 المشرفون: \`${g.admins.size}\`\n` +
-      `🔇 المكتومون: \`${g.mutedUsers.size}\`\n` +
-      `🚫 المحظورون: \`${g.bannedUsers.size}\`\n` +
-      `⚠️ التحذيرات: \`${totalWarns}\`\n` +
-      `💬 إجمالي الرسائل: \`${totalMsgs}\`\n` +
-      `📨 طلبات معلقة: \`${pending}\`\n` +
-      `🔤 كلمات محظورة: \`${g.bannedWords.length}\`\n` +
-      `🏆 الأكثر نشاطاً: ${topName}`,
-      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]]) }
     );
   });
 

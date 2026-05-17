@@ -186,36 +186,20 @@ async function logAction(bot, g, action, by, target, details = '') {
   } catch {}
 }
 
-// ── إنشاء/تحديث رابط الدعوة + ضبط صلاحية الدعوة ─────────────
+// ── تفعيل/تعطيل موافقة الانضمام ────────────────────────────
+// يضبط الإعداد الأصلي للمجموعة بدون إنشاء روابط جديدة كل ضغطة
 async function setJoinApproval(bot, chatId, enabled) {
+  // toggleChatJoinRequest: يضبط إعداد المجموعة نفسها مباشرة
+  // يؤثر على الرابط الأصلي الموجود — لا ينشئ روابط جديدة
   try {
-    // 1. تعطيل/تفعيل قدرة الأعضاء على دعوة آخرين مباشرة
-    await bot.telegram.setChatPermissions(chatId, {
-      can_invite_users:          !enabled, // عند تفعيل الموافقة: امنع الأعضاء من الدعوة المباشرة
-      can_send_messages:         true,
-      can_send_audios:           true,
-      can_send_documents:        true,
-      can_send_photos:           true,
-      can_send_videos:           true,
-      can_send_voice_notes:      true,
-      can_send_polls:            true,
-      can_send_other_messages:   true,
-      can_add_web_page_previews: true,
+    await bot.telegram.callApi('toggleChatJoinRequest', {
+      chat_id: chatId,
+      enabled,
     });
-  } catch {}
-
-  // 2. إنشاء رابط دعوة رسمي يشترط الموافقة (أو لا)
-  try {
-    const link = await bot.telegram.callApi('createChatInviteLink', {
-      chat_id:              chatId,
-      creates_join_request: enabled,
-      name: enabled ? 'رابط رسمي - موافقة مطلوبة' : 'رابط رسمي - دخول مباشر',
-    });
-    return link;
   } catch (e) {
-    console.error('setJoinApproval (createLink) error:', e.message);
-    return null;
+    console.error('toggleChatJoinRequest error:', e.message);
   }
+  return { enabled };
 }
 
 // ── التحقق من المالك الحقيقي ─────────────────────────────────
