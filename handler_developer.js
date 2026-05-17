@@ -1,5 +1,6 @@
 const { Markup } = require('telegraf');
 const db = require('./db');
+const { DEVELOPER_ID } = require('./config');
 const {
   isDeveloper, isDeveloperOrBotAdmin, isAdmin, isOwner,
   promoteUser, demoteUser,
@@ -7,6 +8,9 @@ const {
   logAction,
 } = require('./helpers');
 
+// ═══════════════════════════════════════════════════════════════
+//  لوحة المطور الرئيسية (مع زر مشرفي البوت)
+// ═══════════════════════════════════════════════════════════════
 function devMainKeyboard() {
   return Markup.inlineKeyboard([
     [Markup.button.callback('📊 الإحصائيات',     'dev_stats'),
@@ -17,10 +21,11 @@ function devMainKeyboard() {
      Markup.button.callback('🔍 بحث مستخدم',    'dev_user_search')],
     [Markup.button.callback('📣 بث رسالة',        'dev_broadcast'),
      Markup.button.callback('🚫 حظر عالمي',       'dev_ban_menu')],
-    [Markup.button.callback('📋 المحظورون',       'dev_banned_list'),
-     Markup.button.callback('✅ رفع حظر عالمي',  'dev_unban_menu')],
-    [Markup.button.callback('👤 مستخدمو البوت',  'dev_bot_users'),
-     Markup.button.callback('📈 استخدام البوت',  'dev_usage')],
+    [Markup.button.callback('👥 مشرفي البوت',     'botadmins_panel'),
+     Markup.button.callback('📋 المحظورون',       'dev_banned_list')],
+    [Markup.button.callback('✅ رفع حظر عالمي',  'dev_unban_menu'),
+     Markup.button.callback('👤 مستخدمو البوت',  'dev_bot_users')],
+    [Markup.button.callback('📈 استخدام البوت',  'dev_usage')],
   ]);
 }
 
@@ -43,6 +48,9 @@ function memberActionsKeyboard(targetId, chatId, backCb) {
     [Markup.button.callback('🔙 رجوع', backCb || 'cancel')],
   ]);
 }
+
+// تخزين حالة انتظار إضافة مشرف بوت (للخاص)
+const pendingBotAdminAdd = new Map();
 
 module.exports = function setupDeveloper(bot) {
 
@@ -500,36 +508,148 @@ module.exports = function setupDeveloper(bot) {
     );
   });
 
-  // ── 👤 مستخدمو البوت ─────────────────────────────────────────
-  bot.action('dev_bot_users', async (ctx) => {
+  // ── 👤 مستخدمو البوت (مع Pagination وأزرار تفاعلية) ────────────
+  bot.action(/^dev_bot_users(_(\d+))?$/, async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
+    const page      = Number(ctx.match?.[2] || 0);
+    const PAGE_SIZE = 8;
+    const allUsers  = db.allUsers();
+    if (!allUsers.length)
+      return ctx.editMessageText('👤 *لا يوجد مستخدمون مسجّلون بعد.*', { parse_mode: 'Markdown', ...back('dev_back') });
 
-    // من أضاف البوت لمجموعات
+    // إحصاء مجموعات كل مستخدم
     const addedByStats = new Map();
     for (const g of db.allGroups()) {
-      const key = g.addedBy;
-      if (!addedByStats.has(key)) {
-        addedByStats.set(key, { username: g.addedByUsername, groups: 0 });
-      }
-      addedByStats.get(key).groups++;
+      if (!addedByStats.has(g.addedBy))
+        addedByStats.set(g.addedBy, { username: g.addedByUsername, groups: 0 });
+      addedByStats.get(g.addedBy).groups++;
     }
 
-    let text = `👤 *مستخدمو البوت*\n\n`;
-    text += `📊 إجمالي من أضافوا البوت: \`${addedByStats.size}\` مستخدم\n`;
-    text += `👥 إجمالي المستخدمين المسجّلين: \`${db.allUsers().length}\`\n\n`;
+    const slice = allUsers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    let text = `👤 *مستخدمو البوت* (${allUsers.length}) — صفحة ${page + 1}\n\n`;
+    const btns = slice.map(u => {
+      const name    = u.username ? `@${u.username}` : (u.firstName || String(u.userId));
+      const groups  = addedByStats.get(u.userId)?.groups || 0;
+      const banned  = u.globalBanned ? '🚫' : '';
+      text += `${banned}👤 ${name} \`[${u.userId}]\` — ${groups} مجموعة\n`;
+      return [Markup.button.callback(
+        `${banned}👤 ${name.slice(0, 20)} (${groups} مج)`,
+        `dev_uinfo_${u.userId}_${page}`
+      )];
+    });
 
-    if (addedByStats.size) {
-      text += `*أكثر المستخدمين إضافةً:*\n`;
-      const sorted = [...addedByStats.entries()]
-        .sort((a, b) => b[1].groups - a[1].groups)
-        .slice(0, 10);
-      for (const [uid, data] of sorted) {
-        text += `• ${data.username || uid} — \`${data.groups}\` مجموعة\n`;
+    const navBtns = [];
+    if (page > 0) navBtns.push(Markup.button.callback('◀️ السابق', `dev_bot_users_${page - 1}`));
+    if ((page + 1) * PAGE_SIZE < allUsers.length) navBtns.push(Markup.button.callback('التالي ▶️', `dev_bot_users_${page + 1}`));
+    if (navBtns.length) btns.push(navBtns);
+    btns.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
+
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  // ── معلومات مستخدم + أزرار الإجراءات ────────────────────────
+  bot.action(/^dev_uinfo_(\d+)_(\d+)$/, async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    await ctx.answerCbQuery();
+    const userId = Number(ctx.match[1]);
+    const page   = Number(ctx.match[2]);
+    const u      = db.getUser(userId);
+    if (!u) return ctx.answerCbQuery('❌ المستخدم غير موجود!', { show_alert: true });
+
+    const name      = u.username ? `@${u.username}` : (u.firstName || String(userId));
+    const groups    = db.allGroups().filter(g => g.addedBy === userId);
+    const groupList = groups.slice(0, 5).map(g => `• ${g.title}`).join('\n') || '—';
+
+    await ctx.editMessageText(
+      `👤 *${name}*\n\n` +
+      `🆔 \`${userId}\`\n` +
+      `📛 الاسم: ${u.firstName || '—'}\n` +
+      `🔗 يوزر: ${u.username ? `@${u.username}` : '—'}\n` +
+      `📅 أول ظهور: ${new Date(u.firstSeen).toLocaleDateString('ar')}\n` +
+      `👁️ آخر ظهور: ${new Date(u.lastSeen).toLocaleDateString('ar')}\n` +
+      `🌍 محظور عالمياً: ${u.globalBanned ? `✅ — ${u.bannedReason}` : '❌'}\n` +
+      `🤖 مشرف بوت: ${db.isBotAdmin(userId) ? '✅' : '❌'}\n` +
+      `👥 مجموعاته (${groups.length}):\n${groupList}`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [
+            Markup.button.callback('🚫 حظر عالمي',    `dev_ugban_${userId}_${page}`),
+            Markup.button.callback('✅ رفع حظر',       `dev_uungban_${userId}_${page}`),
+          ],
+          [
+            Markup.button.callback('🤖 منح مشرف بوت', `dev_umakeadmin_${userId}_${page}`),
+            Markup.button.callback('❌ إزالة مشرف',   `dev_uremoveadmin_${userId}_${page}`),
+          ],
+          [Markup.button.callback('🔙 رجوع', `dev_bot_users_${page}`)],
+        ]),
       }
-    }
+    );
+  });
 
-    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...back('dev_back') });
+  // حظر عالمي من لوحة المستخدم
+  bot.action(/^dev_ugban_(\d+)_(\d+)$/, async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    const userId = Number(ctx.match[1]);
+    const page   = Number(ctx.match[2]);
+    const u      = db.getOrCreateUser(userId, '', '');
+    if (u.globalBanned) return ctx.answerCbQuery('⚠️ محظور بالفعل!', { show_alert: true });
+    u.globalBanned = true; u.bannedReason = 'حظر من لوحة المطور'; u.bannedAt = new Date();
+    db.saveData();
+    for (const g of db.allGroups()) { try { await bot.telegram.banChatMember(g.chatId, userId); } catch {} }
+    await ctx.answerCbQuery('🚫 تم الحظر العالمي!', { show_alert: true });
+    // إعادة تحميل معلومات المستخدم
+    ctx.match[1] = String(userId); ctx.match[2] = String(page);
+    await ctx.editMessageText(
+      `🚫 *تم حظر \`${userId}\` عالمياً.*`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `dev_bot_users_${page}`)]]) }
+    );
+  });
+
+  // رفع حظر من لوحة المستخدم
+  bot.action(/^dev_uungban_(\d+)_(\d+)$/, async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    const userId = Number(ctx.match[1]);
+    const page   = Number(ctx.match[2]);
+    const u      = db.getUser(userId);
+    if (!u || !u.globalBanned) return ctx.answerCbQuery('⚠️ ليس محظوراً!', { show_alert: true });
+    u.globalBanned = false; u.bannedReason = ''; u.bannedAt = null;
+    db.saveData();
+    await ctx.answerCbQuery('✅ رُفع الحظر!', { show_alert: true });
+    await ctx.editMessageText(
+      `✅ *رُفع الحظر عن \`${userId}\`.*`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `dev_bot_users_${page}`)]]) }
+    );
+  });
+
+  // منح صلاحية مشرف بوت
+  bot.action(/^dev_umakeadmin_(\d+)_(\d+)$/, async (ctx) => {
+    if (!isDeveloper(ctx)) return ctx.answerCbQuery('❌ المطور الأساسي فقط!', { show_alert: true });
+    const userId = Number(ctx.match[1]);
+    const page   = Number(ctx.match[2]);
+    if (db.isBotAdmin(userId)) return ctx.answerCbQuery('⚠️ مشرف بالفعل!', { show_alert: true });
+    db.addBotAdmin(userId);
+    try { await bot.telegram.sendMessage(userId, '🔐 *تمت ترقيتك كمشرف بوت!*\n\nاستخدم /dev للوصول.', { parse_mode: 'Markdown' }); } catch {}
+    await ctx.answerCbQuery('✅ تمت الترقية!', { show_alert: true });
+    await ctx.editMessageText(
+      `✅ *تم منح \`${userId}\` صلاحية مشرف بوت.*`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `dev_bot_users_${page}`)]]) }
+    );
+  });
+
+  // إزالة صلاحية مشرف بوت
+  bot.action(/^dev_uremoveadmin_(\d+)_(\d+)$/, async (ctx) => {
+    if (!isDeveloper(ctx)) return ctx.answerCbQuery('❌ المطور الأساسي فقط!', { show_alert: true });
+    const userId = Number(ctx.match[1]);
+    const page   = Number(ctx.match[2]);
+    if (!db.isBotAdmin(userId)) return ctx.answerCbQuery('⚠️ ليس مشرفاً!', { show_alert: true });
+    db.removeBotAdmin(userId);
+    await ctx.answerCbQuery('✅ تمت الإزالة!', { show_alert: true });
+    await ctx.editMessageText(
+      `❌ *تمت إزالة صلاحية مشرف بوت عن \`${userId}\`.*`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `dev_bot_users_${page}`)]]) }
+    );
   });
 
   // ── 📈 استخدام البوت ─────────────────────────────────────────
@@ -573,55 +693,117 @@ module.exports = function setupDeveloper(bot) {
     );
   });
 
-  // ── /addbotadmin ───────────────────────────────────────────
-  bot.command('addbotadmin', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.reply('❌ هذا الأمر للمطور الأساسي فقط.');
-    const args = ctx.message.text.split(' ');
-    const targetId = Number(args[1]);
-    if (!targetId) return ctx.reply('❌ مثال: /addbotadmin 123456789');
-    
-    if (db.isBotAdmin(targetId)) return ctx.reply(`⚠️ \`${targetId}\` مشرف بوت بالفعل.`, { parse_mode: 'Markdown' });
-    
-    db.addBotAdmin(targetId);
-    
+  // ═══════════════════════════════════════════════════════════════
+  //  إدارة مشرفي البوت (لوحة تفاعلية)
+  // ═══════════════════════════════════════════════════════════════
+  bot.action('botadmins_panel', async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ غير مسموح', { show_alert: true });
+    await ctx.answerCbQuery();
+
+    const admins = db.allBotAdmins();
+    let text = `👥 *إدارة مشرفي البوت*\n\n`;
+    text += `👑 المطور الأساسي: \`${DEVELOPER_ID}\`\n\n`;
+    text += `📋 *المشرفون الحاليون (${admins.length}):*\n`;
+
+    const btns = [];
+
+    if (admins.length === 0) {
+      text += `_لا يوجد مشرفون بوت._\n\n`;
+    } else {
+      for (const id of admins) {
+        const user = db.getUser(id);
+        const name = user?.username ? `@${user.username}` : (user?.firstName || `غير معروف`);
+        text += `• \`${id}\` — ${name}\n`;
+        // زر حذف لكل مشرف (للمطور الأساسي فقط)
+        if (isDeveloper(ctx)) {
+          btns.push([Markup.button.callback(`❌ حذف ${name.slice(0, 20)}`, `remove_botadmin_${id}`)]);
+        }
+      }
+      text += `\n`;
+    }
+
+    text += `➕ *إضافة مشرف جديد:*\nأرسل معرف المستخدم (ID) بالرد على هذه الرسالة.\n\nمثال: \`123456789\``;
+
+    // أزرار: تحديث، رجوع
+    btns.push([Markup.button.callback('🔄 تحديث', 'botadmins_panel')]);
+    btns.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
+
+    // تخزين حالة انتظار إضافة مشرف لهذا المستخدم (في الخاص)
+    pendingBotAdminAdd.set(ctx.from.id, { chatId: ctx.chat.id, messageId: ctx.callbackQuery.message.message_id });
+
+    await ctx.editMessageText(text, {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard(btns)
+    });
+  });
+
+  // ── حذف مشرف بوت (للمطور الأساسي فقط) ────────────────────────
+  bot.action(/^remove_botadmin_(\d+)$/, async (ctx) => {
+    if (!isDeveloper(ctx)) return ctx.answerCbQuery('❌ المطور الأساسي فقط!', { show_alert: true });
+    await ctx.answerCbQuery();
+    const targetId = Number(ctx.match[1]);
+    if (!db.isBotAdmin(targetId)) return ctx.answerCbQuery('⚠️ ليس مشرفاً!', { show_alert: true });
+    db.removeBotAdmin(targetId);
+    await ctx.answerCbQuery('✅ تمت الإزالة!', { show_alert: true });
+    // تحديث اللوحة
+    await ctx.deleteMessage().catch(() => {});
+    // إعادة فتح اللوحة (عن طريق محاكاة النقر على الزر)
+    await ctx.answerCbQuery();
+    const newMsg = await ctx.reply('🔄 جاري تحديث اللوحة...');
+    const s = db.getStats();
+    await ctx.telegram.editMessageText(ctx.chat.id, newMsg.message_id, null,
+      `🔐 *لوحة تحكم المطور*\n\n📊 المجموعات: \`${s.totalGroups}\` | القنوات: \`${s.totalChannels}\`\n👤 ${s.totalUsers} مستخدم | 🚫 ${s.bannedUsers} محظور`,
+      { parse_mode: 'Markdown', ...devMainKeyboard() }
+    );
+  });
+
+  // ── استقبال الرسائل الخاصة لإضافة مشرف بوت (بعد عرض اللوحة) ────
+  bot.on('text', async (ctx, next) => {
+    if (ctx.chat.type !== 'private') return next();
+    const state = pendingBotAdminAdd.get(ctx.from.id);
+    if (!state) return next();
+
+    const text = ctx.message.text.trim();
+    const userId = Number(text);
+    if (isNaN(userId)) {
+      await ctx.reply('❌ الرجاء إرسال معرف رقمي صحيح (مثال: 123456789)');
+      return;
+    }
+
+    if (!isDeveloper(ctx)) {
+      await ctx.reply('❌ فقط المطور الأساسي يمكنه إضافة مشرفين.');
+      pendingBotAdminAdd.delete(ctx.from.id);
+      return;
+    }
+
+    if (db.isBotAdmin(userId)) {
+      await ctx.reply(`⚠️ \`${userId}\` مشرف بوت بالفعل.`, { parse_mode: 'Markdown' });
+      pendingBotAdminAdd.delete(ctx.from.id);
+      return;
+    }
+
+    db.addBotAdmin(userId);
+    await ctx.replyWithMarkdown(`✅ تمت إضافة \`${userId}\` كمشرف بوت.`);
+
+    // إعلام المستخدم الجديد
     try {
-      await bot.telegram.sendMessage(targetId, 
+      await bot.telegram.sendMessage(userId,
         `🔐 *تمت ترقيتك كمشرف بوت*\n\n` +
-        `لديك صلاحية الوصول إلى لوحة المطور (باستثناء بعض الأوامر الحساسة).\n` +
+        `لديك صلاحية الوصول إلى لوحة المطور (باستثناء الأوامر الحساسة).\n` +
         `استخدم /dev للوصول.`,
         { parse_mode: 'Markdown' }
       );
     } catch {}
-    
-    await ctx.replyWithMarkdown(`✅ تمت إضافة \`${targetId}\` كمشرف بوت.`);
-  });
 
-  // ── /removebotadmin ────────────────────────────────────────
-  bot.command('removebotadmin', async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.reply('❌ هذا الأمر للمطور الأساسي فقط.');
-    const args = ctx.message.text.split(' ');
-    const targetId = Number(args[1]);
-    if (!targetId) return ctx.reply('❌ مثال: /removebotadmin 123456789');
-    
-    if (!db.isBotAdmin(targetId)) return ctx.reply(`⚠️ \`${targetId}\` ليس مشرف بوت.`, { parse_mode: 'Markdown' });
-    
-    db.removeBotAdmin(targetId);
-    await ctx.replyWithMarkdown(`✅ تمت إزالة \`${targetId}\` من قائمة مشرفي البوت.`);
-  });
+    pendingBotAdminAdd.delete(ctx.from.id);
 
-  // ── /botadmins ─────────────────────────────────────────────
-  bot.command('botadmins', async (ctx) => {
-    if (!isDeveloperOrBotAdmin(ctx)) return ctx.reply('❌ غير مسموح.');
-    
-    const admins = db.allBotAdmins();
-    if (!admins.length) return ctx.reply('📋 لا يوجد مشرفون بوت حالياً.');
-    
-    let text = `👥 *قائمة مشرفي البوت* (${admins.length})\n\n`;
-    for (const id of admins) {
-      const user = db.getUser(id);
-      text += `• \`${id}\` — ${user?.username ? `@${user.username}` : user?.firstName || 'غير معروف'}\n`;
-    }
-    await ctx.replyWithMarkdown(text);
+    // محاولة تحديث اللوحة القديمة (اختياري)
+    try {
+      await bot.telegram.editMessageText(state.chatId, state.messageId, null,
+        `✅ تمت إضافة \`${userId}\`.\nاضغط /dev للعودة.`,
+        { parse_mode: 'Markdown' }
+      ).catch(() => {});
+    } catch {}
   });
 
 };
