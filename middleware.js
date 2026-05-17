@@ -52,6 +52,8 @@ async function messageTrackingMiddleware(ctx, next) {
       m.messageCount = (m.messageCount || 0) + 1;
       m.score        = (m.score        || 0) + 1;
       m.lastMessageAt = new Date();
+      // نُعلم نظام الحفظ أن البيانات تغيّرت (بدون حفظ فوري لكل رسالة)
+      db.markDirty();
     }
   }
 

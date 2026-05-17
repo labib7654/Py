@@ -38,7 +38,7 @@ async function githubGet() {
 }
 
 async function githubPut(content, sha) {
-  if (!USE_GITHUB) return false;
+  if (!USE_GITHUB) return null;
   try {
     const body = {
       message: `💾 حفظ تلقائي ${new Date().toISOString()}`,
@@ -57,11 +57,26 @@ async function githubPut(content, sha) {
         body: JSON.stringify(body),
       }
     );
-    if (!res.ok) { const t = await res.text(); console.error('GitHub PUT error:', res.status, t); return false; }
-    return true;
+    if (!res.ok) {
+      const t = await res.text();
+      // إذا كان SHA قديم — نجلب SHA الجديد ونعيد المحاولة مرة واحدة
+      if (res.status === 409 || res.status === 422) {
+        console.warn('⚠️ SHA قديم — جاري جلب SHA الحالي وإعادة المحاولة...');
+        const fresh = await githubGet();
+        if (fresh) {
+          _ghSha = fresh.sha;
+          return githubPut(content, fresh.sha); // إعادة محاولة واحدة
+        }
+      }
+      console.error('GitHub PUT error:', res.status, t);
+      return null;
+    }
+    const json = await res.json();
+    // نأخذ SHA الجديد مباشرة من response بدون request إضافي
+    return json.content?.sha || null;
   } catch (e) {
     console.error('githubPut error:', e.message);
-    return false;
+    return null;
   }
 }
 
@@ -177,11 +192,14 @@ function trackMember(chatId, userId, username, firstName, role) {
       score:         0,
       lastMessageAt: null,
     });
+    markDirty();
   } else {
     const m = g.members.get(userId);
-    if (role)      m.role      = role;
-    if (username)  m.username  = username;
-    if (firstName) m.firstName = firstName;
+    let changed = false;
+    if (role      && m.role      !== role)      { m.role      = role;      changed = true; }
+    if (username  && m.username  !== username)  { m.username  = username;  changed = true; }
+    if (firstName && m.firstName !== firstName) { m.firstName = firstName; changed = true; }
+    if (changed) markDirty();
   }
 }
 
@@ -266,6 +284,7 @@ function recordWordViolation(chatId, userId, word) {
   if (!g.wordViolations.has(userId)) g.wordViolations.set(userId, {});
   const vio = g.wordViolations.get(userId);
   vio[word] = (vio[word] || 0) + 1;
+  markDirty();
   return vio[word];
 }
 function resetWordViolation(chatId, userId, word) {
@@ -278,6 +297,8 @@ function addAuditLog(chatId, entry) {
   const g = groups.get(chatId); if (!g) return;
   g.auditLog.unshift({ ...entry, at: new Date() });
   if (g.auditLog.length > 100) g.auditLog.length = 100;
+  markDirty();
+  saveData(); // الإجراءات مهمة — نحفظ فوراً
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -368,23 +389,28 @@ async function _doSave() {
   try {
     const json = buildJSON();
 
-    // ① حفظ محلي فوري
-    try { fs.writeFileSync(DATA_FILE, json, 'utf-8'); } catch (e) {
+    // ① حفظ محلي فوري دائماً (cache)
+    try {
+      fs.writeFileSync(DATA_FILE, json, 'utf-8');
+    } catch (e) {
       console.warn('⚠️ حفظ محلي فشل:', e.message);
     }
 
-    // ② رفع لـ GitHub
+    // ② رفع لـ GitHub مع إعادة محاولة عند فشل SHA
     if (USE_GITHUB) {
-      const ok = await githubPut(json, _ghSha);
-      if (ok) {
-        const fresh = await githubGet();
-        if (fresh) _ghSha = fresh.sha;
-        console.log('☁️ تم الحفظ على GitHub');
+      const newSha = await githubPut(json, _ghSha);
+      if (newSha) {
+        _ghSha = newSha; // نحدّث SHA مباشرة من response — بدون request إضافي
+        console.log(`☁️ تم الحفظ على GitHub (SHA: ${newSha.slice(0,8)}...)`);
+      } else {
+        console.warn('⚠️ فشل الحفظ على GitHub — البيانات محفوظة محلياً فقط');
       }
     }
+  } catch (e) {
+    console.error('❌ خطأ في _doSave:', e.message);
   } finally {
     _saving = false;
-    if (_pendingSave) { _pendingSave = false; _doSave(); }
+    if (_pendingSave) { _pendingSave = false; setTimeout(_doSave, 500); }
   }
 }
 
@@ -395,14 +421,22 @@ function saveData() {
 }
 
 function parseData(raw) {
+  let data;
   try {
-    const data = JSON.parse(raw);
+    data = JSON.parse(raw);
+  } catch (e) {
+    console.error('❌ JSON تالف — لا يمكن تحليل البيانات:', e.message);
+    return false;
+  }
 
+  try {
+    // ── botAdmins ──────────────────────────────────────────────
     if (data.botAdmins && Array.isArray(data.botAdmins)) {
       botAdmins.clear();
       data.botAdmins.forEach(id => botAdmins.add(Number(id)));
     }
 
+    // ── groups ────────────────────────────────────────────────
     for (const [k, v] of Object.entries(data.groups || {})) {
       const topicsMap = new Map();
       for (const [tid, tv] of Object.entries(v.topics || {})) {
@@ -411,21 +445,38 @@ function parseData(raw) {
           approvedUsers: new Set((tv.approvedUsers || []).map(Number)),
         });
       }
+
+      // نضمن bannedWords مصفوفة صالحة
+      const bannedWords = Array.isArray(v.bannedWords) ? v.bannedWords : [];
+
+      // نضمن auditLog مصفوفة صالحة (حد 100 سجل)
+      const auditLog = Array.isArray(v.auditLog) ? v.auditLog.slice(0, 100) : [];
+
       groups.set(Number(k), {
         ...v,
         chatId:              Number(k),
         ownerVerified:       v.ownerVerified  || false,
         ownerVerifiedAt:     v.ownerVerifiedAt || null,
-        members:             new Map(Object.entries(v.members || {}).map(([uk, uv]) => [Number(uk), uv])),
+        bannedWords,
+        auditLog,
+        // Maps — نتحقق أن المدخل object صالح
+        members: new Map(
+          Object.entries(v.members || {}).map(([uk, uv]) => [Number(uk), {
+            ...uv,
+            userId:       Number(uk),
+            messageCount: Number(uv.messageCount) || 0,
+            score:        Number(uv.score)        || 0,
+          }])
+        ),
         admins:              new Map(Object.entries(v.admins  || {}).map(([uk, uv]) => [Number(uk), uv])),
-        warns:               new Map(Object.entries(v.warns   || {}).map(([uk, uv]) => [Number(uk), uv])),
+        warns:               new Map(Object.entries(v.warns   || {}).map(([uk, uv]) => [Number(uk), Array.isArray(uv) ? uv : []])),
         mutedUsers:          new Set((v.mutedUsers  || []).map(Number)),
         bannedUsers:         new Set((v.bannedUsers || []).map(Number)),
-        timedMutes:          new Map(Object.entries(v.timedMutes  || {}).map(([uk, uv]) => [Number(uk), uv])),
-        timedBans:           new Map(Object.entries(v.timedBans   || {}).map(([uk, uv]) => [Number(uk), uv])),
+        timedMutes:          new Map(Object.entries(v.timedMutes  || {}).map(([uk, uv]) => [Number(uk), Number(uv)])),
+        timedBans:           new Map(Object.entries(v.timedBans   || {}).map(([uk, uv]) => [Number(uk), Number(uv)])),
         joinRequests:        new Map(Object.entries(v.joinRequests || {}).map(([uk, uv]) => [Number(uk), uv])),
-        joinRequestCooldown: new Map(Object.entries(v.joinRequestCooldown || {}).map(([uk, uv]) => [Number(uk), uv])),
-        wordViolations:      new Map(Object.entries(v.wordViolations || {}).map(([uk, uv]) => [Number(uk), uv])),
+        joinRequestCooldown: new Map(Object.entries(v.joinRequestCooldown || {}).map(([uk, uv]) => [Number(uk), Number(uv)])),
+        wordViolations:      new Map(Object.entries(v.wordViolations || {}).map(([uk, uv]) => [Number(uk), uv || {}])),
         topics:              topicsMap,
         topicSettings: v.topicSettings || {
           requireApprovalToJoin: false,
@@ -433,14 +484,18 @@ function parseData(raw) {
           ownerBypassAll:        true,
         },
         perms: v.perms || {
-          canSendMessages: true, canSendMedia: true, canSendPolls: true,
-          canAddWebPreviews: true, canInviteUsers: true,
-          canPinMessages: false, canManageTopics: false,
+          canSendMessages:   true,
+          canSendMedia:      true,
+          canSendPolls:      true,
+          canAddWebPreviews: true,
+          canInviteUsers:    true,
+          canPinMessages:    false,
+          canManageTopics:   false,
         },
-        auditLog: v.auditLog || [],
       });
     }
 
+    // ── channels ──────────────────────────────────────────────
     for (const [k, v] of Object.entries(data.channels || {})) {
       channels.set(Number(k), {
         ...v,
@@ -449,6 +504,7 @@ function parseData(raw) {
       });
     }
 
+    // ── users ─────────────────────────────────────────────────
     for (const [k, v] of Object.entries(data.users || {})) {
       users.set(Number(k), {
         ...v,
@@ -459,6 +515,7 @@ function parseData(raw) {
       });
     }
 
+    // ── communities ───────────────────────────────────────────
     for (const [k, v] of Object.entries(data.communities || {})) {
       communities.set(Number(k), {
         ...v,
@@ -473,35 +530,66 @@ function parseData(raw) {
       });
     }
 
-    console.log(`✅ تم استعادة البيانات: ${groups.size} مجموعة، ${users.size} مستخدم`);
+    console.log(
+      `✅ تم استعادة البيانات: ${groups.size} مجموعة، ` +
+      `${channels.size} قناة، ${users.size} مستخدم، ` +
+      `${communities.size} مجتمع، ${botAdmins.size} مشرف بوت`
+    );
+    return true;
   } catch (e) {
-    console.error('parseData error:', e.message);
+    console.error('❌ خطأ في parseData:', e.message, e.stack);
+    return false;
   }
 }
 
 async function loadData() {
-  // ① حاول من GitHub أولاً
+  let loaded = false;
+
+  // ① GitHub أولاً (المصدر الأساسي للبيانات)
   if (USE_GITHUB) {
     console.log('☁️ جاري تحميل البيانات من GitHub...');
-    const gh = await githubGet();
-    if (gh) {
-      _ghSha = gh.sha;
-      parseData(gh.content);
-      // احفظ نسخة محلية كـ cache
-      try { fs.writeFileSync(DATA_FILE, gh.content, 'utf-8'); } catch {}
-      return;
+    try {
+      const gh = await githubGet();
+      if (gh && gh.content && gh.content.trim()) {
+        _ghSha = gh.sha;
+        const ok = parseData(gh.content);
+        if (ok) {
+          loaded = true;
+          // احفظ نسخة محلية كـ cache للطوارئ
+          try { fs.writeFileSync(DATA_FILE, gh.content, 'utf-8'); } catch {}
+          console.log(`☁️ تم تحميل البيانات من GitHub (SHA: ${gh.sha.slice(0,8)}...)`);
+        } else {
+          console.error('❌ بيانات GitHub تالفة — جاري تجاهلها');
+        }
+      } else {
+        console.warn('⚠️ لا يوجد ملف بيانات على GitHub بعد');
+      }
+    } catch (e) {
+      console.error('❌ فشل الاتصال بـ GitHub:', e.message);
     }
-    console.warn('⚠️ لم يوجد ملف على GitHub، سيُحاول من المحلي...');
   }
 
-  // ② fallback: ملف محلي
-  if (fs.existsSync(DATA_FILE)) {
+  // ② fallback: الملف المحلي (cache)
+  if (!loaded && fs.existsSync(DATA_FILE)) {
+    console.log('📁 جاري التحميل من الملف المحلي (cache)...');
     try {
       const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-      parseData(raw);
+      if (raw && raw.trim()) {
+        const ok = parseData(raw);
+        if (ok) {
+          loaded = true;
+          console.log('📁 تم التحميل من الملف المحلي');
+        } else {
+          console.error('❌ الملف المحلي تالف');
+        }
+      }
     } catch (e) {
-      console.error('loadData local error:', e.message);
+      console.error('❌ خطأ في قراءة الملف المحلي:', e.message);
     }
+  }
+
+  if (!loaded) {
+    console.warn('⚠️ لا توجد بيانات سابقة — يبدأ البوت نظيفاً');
   }
 }
 
@@ -517,20 +605,47 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
-// ─── تهيئة: تحميل البيانات + حفظ احتياطي كل 5 دقائق ─────────────
+// ─── تهيئة: تحميل البيانات + حفظ ذكي مستمر ──────────────────
 let _readyResolve;
 const _readyPromise = new Promise(res => { _readyResolve = res; });
 
+// عداد التغييرات — يزداد عند أي تعديل على البيانات
+let _changeCount = 0;
+function markDirty() { _changeCount++; }
+
 loadData().then(() => {
   _readyResolve();
-  setInterval(() => _doSave(), 5 * 60 * 1000); // حفظ احتياطي كل 5 دقائق
+
+  // ① حفظ احتياطي كل دقيقتين إذا كان فيه تغييرات
+  setInterval(() => {
+    if (_changeCount > 0) {
+      _changeCount = 0;
+      _doSave().catch(e => console.error('auto-save error:', e.message));
+    }
+  }, 2 * 60 * 1000);
+
+  // ② حفظ إجباري كل 10 دقائق بغض النظر (ضمان)
+  setInterval(() => {
+    _doSave().catch(e => console.error('forced-save error:', e.message));
+  }, 10 * 60 * 1000);
 });
 
 // index.js يستدعي هذه الدالة وينتظرها قبل تشغيل البوت
 function waitReady() { return _readyPromise; }
 
-process.on('SIGINT',  () => { _doSave().finally(() => process.exit(0)); });
-process.on('SIGTERM', () => { _doSave().finally(() => process.exit(0)); });
+// حفظ عند الإغلاق — ضروري جداً
+async function _shutdownSave() {
+  console.log('🔄 جاري الحفظ النهائي قبل الإغلاق...');
+  await _doSave();
+  console.log('✅ تم الحفظ النهائي');
+}
+
+process.on('SIGINT',  () => _shutdownSave().finally(() => process.exit(0)));
+process.on('SIGTERM', () => _shutdownSave().finally(() => process.exit(0)));
+process.on('exit',    () => {
+  // حفظ محلي متزامن كـ last resort عند أي خروج
+  try { fs.writeFileSync(DATA_FILE, buildJSON(), 'utf-8'); } catch {}
+});
 
 // ─── تحذير إن لم يُضبط GitHub ────────────────────────────────
 if (!USE_GITHUB) {
@@ -548,7 +663,7 @@ module.exports = {
   recordWordViolation, resetWordViolation,
   addAuditLog,
   getStats,
-  saveData,
+  saveData, markDirty,
   isBotAdmin, addBotAdmin, removeBotAdmin, allBotAdmins, clearBotAdmins,
   waitReady,
 };
