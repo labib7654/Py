@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T22:24:01.338Z",
+  "savedAt": "2026-05-17T22:26:58.348Z",
   "botAdmins": [
     6330247540
   ],
@@ -264,21 +264,71 @@
         "canManageTopics": false
       },
       "auditLog": []
+    },
+    "-1003854112996": {
+      "chatId": -1003854112996,
+      "title": "⁨m⁩ و ⁨..⁩",
+      "type": "supergroup",
+      "ownerId": 7574941687,
+      "ownerUsername": "slyJxgPfEf",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "auto-detected",
+      "addedAt": "2026-05-17T22:25:40.811Z",
+      "members": {
+        "7574941687": {
+          "userId": 7574941687,
+          "username": "slyJxgPfEf",
+          "firstName": "m",
+          "role": "member",
+          "joinedAt": "2026-05-17T22:25:40.983Z",
+          "messageCount": 3,
+          "score": 3,
+          "lastMessageAt": "2026-05-17T22:25:53.136Z"
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": []
     }
   },
-  "channels": {
-    "-1003818035567": {
-      "chatId": -1003818035567,
-      "title": "بطاط",
-      "username": "",
-      "addedBy": 1361482400,
-      "addedByUsername": "BMW51O",
-      "addedAt": "2026-05-17T22:19:44.634Z",
-      "subscribers": {},
-      "ownerId": 1361482400,
-      "ownerUsername": "BMW51O"
-    }
-  },
+  "channels": {},
   "users": {
     "136817688": {
       "userId": 136817688,
@@ -292,7 +342,8 @@
       "groups": [
         -2072303291198
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "1361482400": {
       "userId": 1361482400,
@@ -302,13 +353,12 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:44:54.456Z",
-      "lastSeen": "2026-05-17T22:22:17.111Z",
+      "lastSeen": "2026-05-17T22:23:21.394Z",
       "groups": [
         -1003928741558
       ],
-      "channels": [
-        -1003818035567
-      ]
+      "channels": [],
+      "bioBanInfo": null
     },
     "7411444902": {
       "userId": 7411444902,
@@ -318,12 +368,13 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T22:20:49.180Z",
+      "lastSeen": "2026-05-17T22:25:12.697Z",
       "groups": [
         -1003940779079,
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "8607336247": {
       "userId": 8607336247,
@@ -337,7 +388,8 @@
       "groups": [
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "7243808108": {
       "userId": 7243808108,
@@ -351,7 +403,8 @@
       "groups": [
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "8152109579": {
       "userId": 8152109579,
@@ -365,7 +418,8 @@
       "groups": [
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "8597018389": {
       "userId": 8597018389,
@@ -379,7 +433,8 @@
       "groups": [
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "8464440751": {
       "userId": 8464440751,
@@ -393,7 +448,8 @@
       "groups": [
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "6330247540": {
       "userId": 6330247540,
@@ -407,7 +463,8 @@
       "groups": [
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "7087803706": {
       "userId": 7087803706,
@@ -421,7 +478,8 @@
       "groups": [
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "8760402829": {
       "userId": 8760402829,
@@ -435,7 +493,8 @@
       "groups": [
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
     },
     "8460422540": {
       "userId": 8460422540,
@@ -445,11 +504,27 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T22:18:33.279Z",
-      "lastSeen": "2026-05-17T22:18:33.279Z",
+      "lastSeen": "2026-05-17T22:26:44.708Z",
       "groups": [
         -1003969494192
       ],
-      "channels": []
+      "channels": [],
+      "bioBanInfo": null
+    },
+    "7574941687": {
+      "userId": 7574941687,
+      "username": "slyJxgPfEf",
+      "firstName": "m",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-17T22:25:36.199Z",
+      "lastSeen": "2026-05-17T22:26:08.266Z",
+      "groups": [
+        -1003854112996
+      ],
+      "channels": [],
+      "bioBanInfo": null
     }
   },
   "communities": {}
