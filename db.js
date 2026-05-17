@@ -508,9 +508,16 @@ setInterval(() => {
 }, 60 * 1000);
 
 // ─── حفظ تلقائي كل 5 دقائق ────────────────────────────────────
+let _readyResolve;
+const _readyPromise = new Promise(res => { _readyResolve = res; });
+
 loadData().then(() => {
+  _readyResolve();                          // أعلن أن البيانات جاهزة
   setInterval(() => saveData(), 5 * 60 * 1000);
 });
+
+// index.js يستدعي هذه الدالة وينتظرها قبل تشغيل البوت
+function waitReady() { return _readyPromise; }
 
 process.on('SIGINT',  () => { saveData().finally(() => process.exit(0)); });
 process.on('SIGTERM', () => { saveData().finally(() => process.exit(0)); });
@@ -533,4 +540,5 @@ module.exports = {
   getStats,
   saveData,
   isBotAdmin, addBotAdmin, removeBotAdmin, allBotAdmins, clearBotAdmins,
+  waitReady,
 };
