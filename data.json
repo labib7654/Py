@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-17T23:00:23.977Z",
+  "savedAt": "2026-05-17T23:09:21.968Z",
   "botAdmins": [
     6330247540
   ],
@@ -361,7 +361,12 @@
         -2072303291198
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "https://t.me/Channel_Bot",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "1361482400": {
       "userId": 1361482400,
@@ -376,7 +381,12 @@
         -1003928741558
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "https://t.me/BMW51O",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "7411444902": {
       "userId": 7411444902,
@@ -386,13 +396,18 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-17T22:52:20.317Z",
+      "lastSeen": "2026-05-17T23:02:59.669Z",
       "groups": [
         -1003940779079,
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "https://t.me/Labibrd",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "8607336247": {
       "userId": 8607336247,
@@ -407,7 +422,12 @@
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "tg://user?id=8607336247",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "7243808108": {
       "userId": 7243808108,
@@ -424,7 +444,12 @@
         -1003854112996
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "https://t.me/Labibytr_bot",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "8152109579": {
       "userId": 8152109579,
@@ -439,7 +464,12 @@
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "tg://user?id=8152109579",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "8597018389": {
       "userId": 8597018389,
@@ -454,7 +484,12 @@
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "tg://user?id=8597018389",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "8464440751": {
       "userId": 8464440751,
@@ -469,7 +504,12 @@
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "https://t.me/engaimanhezam",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "6330247540": {
       "userId": 6330247540,
@@ -484,7 +524,12 @@
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "https://t.me/salma5ns",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "7087803706": {
       "userId": 7087803706,
@@ -499,7 +544,12 @@
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "tg://user?id=7087803706",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "8760402829": {
       "userId": 8760402829,
@@ -514,7 +564,12 @@
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null
+      "bioBanInfo": null,
+      "seenInChats": {},
+      "profileLink": "https://t.me/alasghdra",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "8460422540": {
       "userId": 8460422540,
@@ -535,7 +590,12 @@
         "bannedAt": "2026-05-17T22:52:08.145Z",
         "sourceGroup": -1003969494192,
         "unbanBy": "developer_only"
-      }
+      },
+      "seenInChats": {},
+      "profileLink": "https://t.me/Dcctorshema",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     },
     "7574941687": {
       "userId": 7574941687,
@@ -555,7 +615,12 @@
         "bio": "مشاريع",
         "bannedAt": "2026-05-17T22:35:32.079Z",
         "unbanBy": "developer_only"
-      }
+      },
+      "seenInChats": {},
+      "profileLink": "https://t.me/slyJxgPfEf",
+      "lastName": "",
+      "contactedBot": false,
+      "lastContactAt": null
     }
   },
   "communities": {}
