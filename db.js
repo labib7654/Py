@@ -1,15 +1,80 @@
 const fs   = require('fs');
 const path = require('path');
 
+// ═══════════════════════════════════════════════════════════════
+//  إعدادات GitHub — تُقرأ من Environment Variables فقط
+//  GITHUB_TOKEN  = توكن GitHub الشخصي
+//  GITHUB_REPO   = اسم_المستخدم/اسم_المستودع  مثال: labib7/bot-data
+//  GITHUB_FILE   = مسار الملف في المستودع     مثال: data.json
+// ═══════════════════════════════════════════════════════════════
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN  || '';
+const GITHUB_REPO  = process.env.GITHUB_REPO   || '';
+const GITHUB_FILE  = process.env.GITHUB_FILE   || 'data.json';
+
+const USE_GITHUB = !!(GITHUB_TOKEN && GITHUB_REPO);
+
+// ملف مؤقت محلي (يُستخدم كـ cache بين عمليات الحفظ)
 const DATA_FILE = process.env.DATA_FILE
   ? path.resolve(process.env.DATA_FILE)
   : path.join(__dirname, 'data.json');
+
+// ─── GitHub API helpers ────────────────────────────────────────
+
+async function githubGet() {
+  if (!USE_GITHUB) return null;
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`,
+      { headers: { Authorization: `token ${GITHUB_TOKEN}`, Accept: 'application/vnd.github.v3+json' } }
+    );
+    if (res.status === 404) return null;
+    if (!res.ok) { console.error('GitHub GET error:', res.status); return null; }
+    const json = await res.json();
+    return { content: Buffer.from(json.content, 'base64').toString('utf-8'), sha: json.sha };
+  } catch (e) {
+    console.error('githubGet error:', e.message);
+    return null;
+  }
+}
+
+async function githubPut(content, sha) {
+  if (!USE_GITHUB) return false;
+  try {
+    const body = {
+      message: `💾 حفظ تلقائي ${new Date().toISOString()}`,
+      content: Buffer.from(content, 'utf-8').toString('base64'),
+    };
+    if (sha) body.sha = sha;
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_FILE}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `token ${GITHUB_TOKEN}`,
+          Accept: 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
+    if (!res.ok) { const t = await res.text(); console.error('GitHub PUT error:', res.status, t); return false; }
+    return true;
+  } catch (e) {
+    console.error('githubPut error:', e.message);
+    return false;
+  }
+}
+
+// sha الأخير — نحتاجه عند كل تحديث
+let _ghSha = null;
+
+// ─── Maps & Sets ───────────────────────────────────────────────
 
 const groups      = new Map();
 const channels    = new Map();
 const users       = new Map();
 const communities = new Map();
-const botAdmins   = new Set();  // تخزين معرفات مشرفي البوت
+const botAdmins   = new Set();
 
 // ═══════════════════════════════════════════════════════════════
 //  Groups
@@ -47,8 +112,7 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
       timedMutes:          new Map(),
       timedBans:           new Map(),
       joinRequestCooldown: new Map(),
-      // المواضيع
-      topics:       new Map(),   // topicId -> { name, locked, archived, approvedUsers: Set }
+      topics:       new Map(),
       topicSettings: {
         requireApprovalToJoin: false,
         autoLockOnCreate:      false,
@@ -163,7 +227,7 @@ function getOrCreateCommunity(communityId, title) {
       memberJoins:      new Map(),
       maxGroupJoins:    1,
       enabled:          true,
-      autoBannedUsers:  new Map(), // userId -> { reason, groups[], bannedAt }
+      autoBannedUsers:  new Map(),
     });
   }
   return communities.get(communityId);
@@ -181,33 +245,17 @@ function recordCommunityJoin(communityId, userId, chatId) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  Bot Admins (مشرفي البوت)
+//  Bot Admins
 // ═══════════════════════════════════════════════════════════════
 
-function isBotAdmin(userId) {
-  return botAdmins.has(userId);
-}
+function isBotAdmin(userId)  { return botAdmins.has(userId); }
+function allBotAdmins()      { return [...botAdmins]; }
 
 function addBotAdmin(userId) {
-  if (userId && !isNaN(userId)) {
-    botAdmins.add(userId);
-    saveData(); // حفظ فوري
-  }
+  if (userId && !isNaN(userId)) { botAdmins.add(userId); saveData(); }
 }
-
-function removeBotAdmin(userId) {
-  botAdmins.delete(userId);
-  saveData();
-}
-
-function allBotAdmins() {
-  return [...botAdmins];
-}
-
-function clearBotAdmins() {
-  botAdmins.clear();
-  saveData();
-}
+function removeBotAdmin(userId) { botAdmins.delete(userId); saveData(); }
+function clearBotAdmins()       { botAdmins.clear(); saveData(); }
 
 // ═══════════════════════════════════════════════════════════════
 //  Word violations & Audit log
@@ -249,79 +297,103 @@ function getStats() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  Persistence — save / load data.json
+//  بناء JSON للحفظ (مشترك بين المحلي و GitHub)
 // ═══════════════════════════════════════════════════════════════
 
-function saveData() {
+function buildJSON() {
+  return JSON.stringify({
+    savedAt: new Date().toISOString(),
+    botAdmins: [...botAdmins],
+    groups: Object.fromEntries(
+      [...groups.entries()].map(([k, v]) => [k, {
+        ...v,
+        members:             Object.fromEntries(v.members),
+        admins:              Object.fromEntries(v.admins),
+        warns:               Object.fromEntries([...v.warns.entries()]),
+        mutedUsers:          [...v.mutedUsers],
+        bannedUsers:         [...v.bannedUsers],
+        timedMutes:          Object.fromEntries(v.timedMutes),
+        timedBans:           Object.fromEntries(v.timedBans),
+        joinRequests:        Object.fromEntries(v.joinRequests),
+        joinRequestCooldown: Object.fromEntries(v.joinRequestCooldown),
+        wordViolations:      Object.fromEntries(v.wordViolations),
+        topics: Object.fromEntries(
+          [...v.topics.entries()].map(([tid, tv]) => [tid, {
+            ...tv,
+            approvedUsers: tv.approvedUsers ? [...tv.approvedUsers] : [],
+          }])
+        ),
+      }])
+    ),
+    channels: Object.fromEntries(
+      [...channels.entries()].map(([k, v]) => [k, {
+        ...v,
+        subscribers: Object.fromEntries(v.subscribers),
+      }])
+    ),
+    users: Object.fromEntries(
+      [...users.entries()].map(([k, v]) => [k, {
+        ...v,
+        groups:   [...v.groups],
+        channels: [...v.channels],
+      }])
+    ),
+    communities: Object.fromEntries(
+      [...communities.entries()].map(([k, v]) => [k, {
+        ...v,
+        subGroups:       [...v.subGroups],
+        memberJoins:     Object.fromEntries(
+          [...v.memberJoins.entries()].map(([uk, uv]) => [uk, [...uv]])
+        ),
+        autoBannedUsers: Object.fromEntries(v.autoBannedUsers || new Map()),
+      }])
+    ),
+  }, null, 2);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Persistence — saveData / loadData
+// ═══════════════════════════════════════════════════════════════
+
+// منع تراكم طلبات الحفظ
+let _saving = false;
+
+async function saveData() {
+  if (_saving) return;
+  _saving = true;
   try {
-    const data = {
-      savedAt: new Date().toISOString(),
-      botAdmins: [...botAdmins],
-      groups: Object.fromEntries(
-        [...groups.entries()].map(([k, v]) => [k, {
-          ...v,
-          members:             Object.fromEntries(v.members),
-          admins:              Object.fromEntries(v.admins),
-          warns:               Object.fromEntries([...v.warns.entries()]),
-          mutedUsers:          [...v.mutedUsers],
-          bannedUsers:         [...v.bannedUsers],
-          timedMutes:          Object.fromEntries(v.timedMutes),
-          timedBans:           Object.fromEntries(v.timedBans),
-          joinRequests:        Object.fromEntries(v.joinRequests),
-          joinRequestCooldown: Object.fromEntries(v.joinRequestCooldown),
-          wordViolations:      Object.fromEntries(v.wordViolations),
-          topics:              Object.fromEntries(
-            [...v.topics.entries()].map(([tid, tv]) => [tid, {
-              ...tv,
-              approvedUsers: tv.approvedUsers ? [...tv.approvedUsers] : [],
-            }])
-          ),
-        }])
-      ),
-      channels: Object.fromEntries(
-        [...channels.entries()].map(([k, v]) => [k, {
-          ...v,
-          subscribers: Object.fromEntries(v.subscribers),
-        }])
-      ),
-      users: Object.fromEntries(
-        [...users.entries()].map(([k, v]) => [k, {
-          ...v,
-          groups:   [...v.groups],
-          channels: [...v.channels],
-        }])
-      ),
-      communities: Object.fromEntries(
-        [...communities.entries()].map(([k, v]) => [k, {
-          ...v,
-          subGroups:       [...v.subGroups],
-          memberJoins:     Object.fromEntries(
-            [...v.memberJoins.entries()].map(([uk, uv]) => [uk, [...uv]])
-          ),
-          autoBannedUsers: Object.fromEntries(v.autoBannedUsers || new Map()),
-        }])
-      ),
-    };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {
-    console.error('saveData error:', e.message);
+    const json = buildJSON();
+
+    // ① حفظ محلي دائماً (سريع)
+    try { fs.writeFileSync(DATA_FILE, json, 'utf-8'); } catch (e) {
+      console.warn('⚠️ حفظ محلي فشل:', e.message);
+    }
+
+    // ② رفع لـ GitHub إن كان مفعّلاً
+    if (USE_GITHUB) {
+      const ok = await githubPut(json, _ghSha);
+      if (ok) {
+        // نحدّث sha من GitHub عشان نعرف القيمة الجديدة
+        const fresh = await githubGet();
+        if (fresh) _ghSha = fresh.sha;
+        console.log('☁️ تم الحفظ على GitHub');
+      }
+    }
+  } finally {
+    _saving = false;
   }
 }
 
-function loadData() {
-  if (!fs.existsSync(DATA_FILE)) return;
+function parseData(raw) {
   try {
-    const raw  = fs.readFileSync(DATA_FILE, 'utf-8');
     const data = JSON.parse(raw);
 
-    // استعادة botAdmins
     if (data.botAdmins && Array.isArray(data.botAdmins)) {
       botAdmins.clear();
       data.botAdmins.forEach(id => botAdmins.add(Number(id)));
     }
 
     for (const [k, v] of Object.entries(data.groups || {})) {
-      // إعادة بناء topics
       const topicsMap = new Map();
       for (const [tid, tv] of Object.entries(v.topics || {})) {
         topicsMap.set(Number(tid), {
@@ -329,7 +401,6 @@ function loadData() {
           approvedUsers: new Set((tv.approvedUsers || []).map(Number)),
         });
       }
-
       groups.set(Number(k), {
         ...v,
         chatId:              Number(k),
@@ -394,31 +465,62 @@ function loadData() {
 
     console.log(`✅ تم استعادة البيانات: ${groups.size} مجموعة، ${users.size} مستخدم`);
   } catch (e) {
-    console.error('loadData error:', e.message);
+    console.error('parseData error:', e.message);
   }
 }
 
-// تنظيف الكتم/الحظر المنتهي كل دقيقة
+async function loadData() {
+  // ① حاول من GitHub أولاً
+  if (USE_GITHUB) {
+    console.log('☁️ جاري تحميل البيانات من GitHub...');
+    const gh = await githubGet();
+    if (gh) {
+      _ghSha = gh.sha;
+      parseData(gh.content);
+      // احفظ نسخة محلية كـ cache
+      try { fs.writeFileSync(DATA_FILE, gh.content, 'utf-8'); } catch {}
+      return;
+    }
+    console.warn('⚠️ لم يوجد ملف على GitHub، سيُحاول من المحلي...');
+  }
+
+  // ② fallback: ملف محلي
+  if (fs.existsSync(DATA_FILE)) {
+    try {
+      const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+      parseData(raw);
+    } catch (e) {
+      console.error('loadData local error:', e.message);
+    }
+  }
+}
+
+// ─── تنظيف الكتم/الحظر المنتهي كل دقيقة ──────────────────────
 setInterval(() => {
   const now = Date.now();
   for (const g of groups.values()) {
-    for (const [uid, expiry] of g.timedBans.entries()) {
+    for (const [uid, expiry] of g.timedBans.entries())
       if (expiry <= now) g.timedBans.delete(uid);
-    }
     for (const [uid, expiry] of g.timedMutes.entries()) {
-      if (expiry <= now) {
-        g.timedMutes.delete(uid);
-        g.mutedUsers.delete(uid);
-      }
+      if (expiry <= now) { g.timedMutes.delete(uid); g.mutedUsers.delete(uid); }
     }
   }
 }, 60 * 1000);
 
-loadData();
-setInterval(saveData, 5 * 60 * 1000);
-process.on('SIGINT',  () => { saveData(); process.exit(0); });
-process.on('SIGTERM', () => { saveData(); process.exit(0); });
-process.on('exit',    () => { saveData(); });
+// ─── حفظ تلقائي كل 5 دقائق ────────────────────────────────────
+loadData().then(() => {
+  setInterval(() => saveData(), 5 * 60 * 1000);
+});
+
+process.on('SIGINT',  () => { saveData().finally(() => process.exit(0)); });
+process.on('SIGTERM', () => { saveData().finally(() => process.exit(0)); });
+
+// ─── تحذير إن لم يُضبط GitHub ────────────────────────────────
+if (!USE_GITHUB) {
+  console.warn('⚠️  GITHUB_TOKEN أو GITHUB_REPO غير موجود — البيانات ستُحفظ محلياً فقط وتُحذف عند الـ restart!');
+} else {
+  console.log(`✅ GitHub Storage مفعّل → ${GITHUB_REPO}/${GITHUB_FILE}`);
+}
 
 module.exports = {
   getGroup, getOrCreateGroup, deleteGroup, allGroups,
@@ -430,10 +532,5 @@ module.exports = {
   addAuditLog,
   getStats,
   saveData,
-  // Bot Admins
-  isBotAdmin,
-  addBotAdmin,
-  removeBotAdmin,
-  allBotAdmins,
-  clearBotAdmins,
+  isBotAdmin, addBotAdmin, removeBotAdmin, allBotAdmins, clearBotAdmins,
 };
