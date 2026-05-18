@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T16:14:28.495Z",
+  "savedAt": "2026-05-18T16:18:28.511Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1412,6 +1412,16 @@
           "messageCount": 3,
           "score": 3,
           "lastMessageAt": "2026-05-18T15:20:03.844Z"
+        },
+        "8704156938": {
+          "userId": 8704156938,
+          "username": "User_Active8",
+          "firstName": "خدمات طلابية",
+          "role": "member",
+          "joinedAt": "2026-05-18T16:16:57.443Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
       "admins": {
@@ -5493,6 +5503,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T15:10:37.198Z",
           "lastSeen": "2026-05-18T15:10:37.198Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8704156938": {
+      "userId": 8704156938,
+      "username": "User_Active8",
+      "firstName": "خدمات طلابية",
+      "lastName": "B",
+      "profileLink": "https://t.me/User_Active8",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T16:16:57.442Z",
+      "lastSeen": "2026-05-18T16:16:57.443Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T16:16:57.443Z",
+          "lastSeen": "2026-05-18T16:16:57.443Z"
         }
       },
       "contactedBot": false,
