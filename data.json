@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T11:04:53.442Z",
+  "savedAt": "2026-05-18T11:06:52.633Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -782,7 +782,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T11:02:40.486Z",
+      "lastSeen": "2026-05-18T11:06:51.633Z",
       "groups": [
         -1003940779079,
         -1003969494192
@@ -807,9 +807,9 @@
       "userId": 8607336247,
       "username": "",
       "firstName": ".",
-      "globalBanned": true,
-      "bannedReason": "نبذة محظورة — كلمة: \"مشاريع\"",
-      "bannedAt": "2026-05-18T11:03:33.843Z",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
       "firstSeen": "2026-05-17T20:58:12.017Z",
       "lastSeen": "2026-05-18T11:03:33.636Z",
       "groups": [
