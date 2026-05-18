@@ -1106,6 +1106,66 @@ module.exports = function setupOwnerHandlers(bot) {
     await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
   });
 
+  // ─── دالة مساعدة: بناء أزرار اختيار المتخصص ─────────────────
+  async function sendSpecialistPicker(ctx, state, isEdit = false) {
+    const chatId = state.chatId;
+
+    // جلب المشرفين والمالكين من تيليغرام
+    let adminButtons = [];
+    try {
+      const admins = await bot.telegram.getChatAdministrators(chatId);
+      const filtered = admins.filter(a => !a.user.is_bot);
+      adminButtons = filtered.map(a => {
+        const label = (a.status === 'creator' ? '👑 ' : '🛡 ') +
+          (a.user.first_name || a.user.username || String(a.user.id)).slice(0, 20);
+        return [Markup.button.callback(label, `spec_pick_${a.user.id}_${chatId}`)];
+      });
+    } catch {}
+
+    // جلب الأعضاء من db (المحفوظون في المجموعة)
+    const g = db.getGroup(chatId);
+    const memberIds = g?.members ? [...g.members.keys()] : [];
+    const adminIds  = new Set(
+      (await bot.telegram.getChatAdministrators(chatId).catch(() => []))
+        .map(a => a.user.id)
+    );
+    const memberButtons = memberIds
+      .filter(uid => !adminIds.has(uid))
+      .slice(0, 30)
+      .map(uid => {
+        const u = db.getUser(uid);
+        const label = '👤 ' + (u?.firstName || u?.username || String(uid)).slice(0, 20);
+        return [Markup.button.callback(label, `spec_pick_${uid}_${chatId}`)];
+      });
+
+    // لوحة المفاتيح: زر لعرض المشرفين وزر للأعضاء
+    const keyboard = [
+      [Markup.button.callback(`👑 المشرفون والمالكون (${adminButtons.length})`, `spec_show_admins_${chatId}`)],
+      [Markup.button.callback(`👥 الأعضاء (${memberButtons.length})`, `spec_show_members_${chatId}`)],
+      [Markup.button.callback('❌ إلغاء', `specwords_list_${chatId}`)],
+    ];
+
+    // حفظ القوائم في الجلسة لاستخدامها لاحقاً
+    state._adminButtons  = adminButtons;
+    state._memberButtons = memberButtons;
+    pendingAddSpecialist.set(ctx.from.id, state);
+
+    const text =
+      `👨‍⚕️ *إضافة كلمة مع متخصص*\n\n` +
+      `✅ الكلمة: \`${state.word}\`\n\n` +
+      `*الخطوة 2/2:* اختر المتخصص من أي قائمة:`;
+
+    if (isEdit) {
+      try {
+        await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(keyboard) });
+      } catch {
+        await ctx.reply(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(keyboard) });
+      }
+    } else {
+      await ctx.reply(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(keyboard) });
+    }
+  }
+
   // بدء إضافة كلمة متخصص عبر الأزرار
   bot.action(/^add_spec_start_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
@@ -1122,7 +1182,123 @@ module.exports = function setupOwnerHandlers(bot) {
     );
   });
 
-  // معالجة رسائل الخاص لإضافة كلمة متخصص
+  // عرض قائمة المشرفين والمالكين
+  bot.action(/^spec_show_admins_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const uid   = ctx.from.id;
+    const state = pendingAddSpecialist.get(uid);
+    if (!state || state.step !== 'specialist')
+      return ctx.answerCbQuery('⚠️ انتهت الجلسة، ابدأ من جديد.', { show_alert: true });
+
+    const btns = (state._adminButtons || []);
+    if (!btns.length)
+      return ctx.answerCbQuery('⚠️ لا يوجد مشرفون في المجموعة.', { show_alert: true });
+
+    const keyboard = [
+      ...btns,
+      [Markup.button.callback('🔙 رجوع', `spec_back_picker_${state.chatId}`)],
+    ];
+    await ctx.editMessageText(
+      `👑 *المشرفون والمالكون*\n\n✅ الكلمة: \`${state.word}\`\n\nاختر المتخصص:`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard(keyboard) }
+    );
+  });
+
+  // عرض قائمة الأعضاء
+  bot.action(/^spec_show_members_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const uid   = ctx.from.id;
+    const state = pendingAddSpecialist.get(uid);
+    if (!state || state.step !== 'specialist')
+      return ctx.answerCbQuery('⚠️ انتهت الجلسة، ابدأ من جديد.', { show_alert: true });
+
+    const btns = (state._memberButtons || []);
+    if (!btns.length)
+      return ctx.answerCbQuery('⚠️ لا يوجد أعضاء محفوظون بعد في قاعدة البيانات.', { show_alert: true });
+
+    const keyboard = [
+      ...btns,
+      [Markup.button.callback('🔙 رجوع', `spec_back_picker_${state.chatId}`)],
+    ];
+    await ctx.editMessageText(
+      `👥 *أعضاء المجموعة*\n\n✅ الكلمة: \`${state.word}\`\n\nاختر المتخصص:`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard(keyboard) }
+    );
+  });
+
+  // رجوع للقائمة الرئيسية للاختيار
+  bot.action(/^spec_back_picker_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const uid   = ctx.from.id;
+    const state = pendingAddSpecialist.get(uid);
+    if (!state || state.step !== 'specialist')
+      return ctx.answerCbQuery('⚠️ انتهت الجلسة، ابدأ من جديد.', { show_alert: true });
+    await sendSpecialistPicker(ctx, state, true);
+  });
+
+  // اختيار المتخصص بالضغط على الزر — spec_pick_USERID_CHATID
+  bot.action(/^spec_pick_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const uid        = ctx.from.id;
+    const targetId   = Number(ctx.match[1]);
+    const chatId     = Number(ctx.match[2]);
+    const state      = pendingAddSpecialist.get(uid);
+
+    if (!state || state.step !== 'specialist' || state.chatId !== chatId)
+      return ctx.answerCbQuery('⚠️ انتهت الجلسة، ابدأ من جديد.', { show_alert: true });
+
+    // جلب معلومات المستخدم المختار
+    let specialist = null;
+    try {
+      const m = await bot.telegram.getChatMember(chatId, targetId);
+      specialist = { id: m.user.id, username: m.user.username || m.user.first_name };
+    } catch {
+      // fallback من db
+      const u = db.getUser(targetId);
+      if (u) specialist = { id: u.userId, username: u.username || u.firstName || String(u.userId) };
+    }
+
+    if (!specialist)
+      return ctx.answerCbQuery('❌ تعذر جلب بيانات هذا المستخدم.', { show_alert: true });
+
+    const g = db.getGroup(chatId);
+    if (!g) { pendingAddSpecialist.delete(uid); return ctx.editMessageText('❌ حدث خطأ، حاول مرة أخرى.'); }
+
+    // تحقق تكرار
+    if (g.specialistWords.find(sw => sw.word.toLowerCase() === state.word.toLowerCase())) {
+      pendingAddSpecialist.delete(uid);
+      return ctx.editMessageText('❌ هذه الكلمة موجودة مسبقاً!',
+        Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `specwords_list_${chatId}`)]]));
+    }
+
+    g.specialistWords.push({
+      word:               state.word,
+      specialistId:       specialist.id,
+      specialistUsername: specialist.username,
+      addedBy:            uid,
+      addedAt:            new Date(),
+    });
+    db.saveData();
+    pendingAddSpecialist.delete(uid);
+
+    const displayName = specialist.username?.startsWith('@')
+      ? specialist.username
+      : `@${specialist.username}`;
+
+    await ctx.editMessageText(
+      `✅ *تمت الإضافة بنجاح!*\n\n🔤 الكلمة: \`${state.word}\`\n👨‍⚕️ المتخصص: ${displayName}\n\n` +
+      `عند ذكر هذه الكلمة في المجموعة:\n• يُحذف الكلام تلقائياً\n• يُوجَّه صاحبه للمتخصص في الخاص مباشرة`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('➕ إضافة كلمة أخرى', `add_spec_start_${chatId}`)],
+          [Markup.button.callback('📋 قائمة الكلمات', `specwords_list_${chatId}`)],
+        ]),
+      }
+    );
+  });
+
+  // معالجة رسائل الخاص لإضافة كلمة متخصص (مرحلة إدخال الكلمة فقط)
   bot.on('message', async (ctx, next) => {
     if (!ctx.from) return next();
     const state = pendingAddSpecialist.get(ctx.from.id);
@@ -1143,49 +1319,8 @@ module.exports = function setupOwnerHandlers(bot) {
       state.step = 'specialist';
       pendingAddSpecialist.set(ctx.from.id, state);
 
-      // جلب قائمة الأعضاء المشرفين من المجموعة
-      let adminsText = '';
-      try {
-        const admins = await bot.telegram.getChatAdministrators(state.chatId);
-        const filtered = admins.filter(a => !a.user.is_bot);
-        adminsText = filtered.map(a => `• ${a.user.username ? '@' + a.user.username : a.user.first_name}`).join('\n');
-      } catch {}
-
-      await ctx.reply(
-        `✅ الكلمة: \`${text}\`\n\n*الخطوة 2/2:* أرسل @username للمتخصص من المجموعة\n\nالمشرفون المتاحون:\n${adminsText || 'لا يوجد'}`,
-        { parse_mode: 'Markdown' }
-      );
-      return;
-    }
-
-    if (state.step === 'specialist') {
-      const uname = text.replace('@', '').trim();
-      let specialist = null;
-      try {
-        const m = await bot.telegram.getChatMember(state.chatId, uname);
-        specialist = { id: m.user.id, username: m.user.username || m.user.first_name };
-      } catch {
-        await ctx.reply('❌ لم أجد هذا المستخدم في المجموعة! تأكد من اسم المستخدم وأعد المحاولة.');
-        return;
-      }
-
-      const g = db.getGroup(state.chatId);
-      if (!g) { pendingAddSpecialist.delete(ctx.from.id); return ctx.reply('❌ حدث خطأ، حاول مرة أخرى.'); }
-
-      g.specialistWords.push({
-        word:               state.word,
-        specialistId:       specialist.id,
-        specialistUsername: specialist.username,
-        addedBy:            ctx.from.id,
-        addedAt:            new Date(),
-      });
-      db.saveData();
-      pendingAddSpecialist.delete(ctx.from.id);
-
-      await ctx.replyWithMarkdown(
-        `✅ *تمت الإضافة بنجاح!*\n\n🔤 الكلمة: \`${state.word}\`\n👨‍⚕️ المتخصص: @${specialist.username}\n\n` +
-        `عند ذكر هذه الكلمة في المجموعة:\n• يُحذف الكلام تلقائياً\n• يُوجَّه صاحبه للمتخصص في الخاص مباشرة`
-      );
+      // عرض أزرار الاختيار
+      await sendSpecialistPicker(ctx, state, false);
       return;
     }
 
