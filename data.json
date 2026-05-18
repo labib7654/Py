@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T22:20:58.968Z",
+  "savedAt": "2026-05-18T22:21:50.175Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2920,21 +2920,29 @@
       "maxWarns": 3,
       "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
       "welcomeEnabled": true,
-      "antiSpam": false,
+      "antiSpam": true,
       "muteNewMembers": false,
       "mutedUsers": [],
       "bannedUsers": [
         8607336247
       ],
-      "bannedWords": [],
+      "bannedWords": [
+        {
+          "word": "انيك",
+          "action": "kick",
+          "threshold": 1,
+          "addedBy": 7411444902,
+          "addedAt": "2026-05-18T22:21:49.197Z"
+        }
+      ],
       "wordViolations": {},
       "joinRequests": {},
       "joinRequestsEnabled": true,
       "rules": "",
       "communityId": null,
       "protectContent": false,
-      "antiLinks": false,
-      "antiBot": false,
+      "antiLinks": true,
+      "antiBot": true,
       "logChannelId": null,
       "timedMutes": {},
       "timedBans": {},
@@ -2947,8 +2955,8 @@
       },
       "perms": {
         "canSendMessages": true,
-        "canSendMedia": true,
-        "canSendPolls": true,
+        "canSendMedia": false,
+        "canSendPolls": false,
         "canAddWebPreviews": true,
         "canInviteUsers": true,
         "canPinMessages": false,
@@ -3537,7 +3545,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T22:20:57.967Z",
+      "lastSeen": "2026-05-18T22:21:49.195Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -3557,7 +3565,7 @@
       "profileLink": "https://t.me/Labibrd",
       "lastName": "ㅤㅤㅤㅤ",
       "contactedBot": true,
-      "lastContactAt": "2026-05-18T15:29:27.291Z"
+      "lastContactAt": "2026-05-18T22:21:41.917Z"
     },
     "8607336247": {
       "userId": 8607336247,
