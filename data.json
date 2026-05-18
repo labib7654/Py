@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T15:05:39.380Z",
+  "savedAt": "2026-05-18T15:07:39.378Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -299,9 +299,9 @@
           "firstName": "Karar",
           "role": "member",
           "joinedAt": "2026-05-17T21:35:32.075Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-17T21:35:32.119Z"
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-18T15:07:25.369Z"
         },
         "8464440751": {
           "userId": 8464440751,
@@ -2339,13 +2339,21 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:32.075Z",
-      "lastSeen": "2026-05-17T21:35:32.119Z",
+      "lastSeen": "2026-05-18T15:07:25.369Z",
       "groups": [
         -1003969494192
       ],
       "channels": [],
       "bioBanInfo": null,
-      "seenInChats": {},
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T15:07:25.369Z",
+          "lastSeen": "2026-05-18T15:07:25.369Z"
+        }
+      },
       "profileLink": "tg://user?id=8597018389",
       "lastName": "",
       "contactedBot": false,
