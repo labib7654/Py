@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T01:50:09.855Z",
+  "savedAt": "2026-05-18T02:00:09.854Z",
   "botAdmins": [
     6330247540
   ],
@@ -978,6 +978,26 @@
           "lastSeen": "2026-05-18T00:26:11.223Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8205789906": {
+      "userId": 8205789906,
+      "username": "",
+      "firstName": "ابو عبدالله",
+      "lastName": "",
+      "profileLink": "tg://user?id=8205789906",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T01:57:25.727Z",
+      "lastSeen": "2026-05-18T01:57:25.727Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
