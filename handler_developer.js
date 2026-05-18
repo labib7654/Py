@@ -77,7 +77,7 @@ module.exports = function setupDeveloper(bot) {
 
     // ── رابط التحقق الجامعي: /start verify_{chatId}
     if (payload.startsWith('verify_')) {
-      const { sessions, getVerifySettings, getAvailableTopics, stepWelcome } = require('./verify_helpers');
+      const { sessions, getVerifySettings, stepWelcome } = require('./verify_helpers');
       const chatId = Number(payload.replace('verify_', ''));
       const g      = db.getGroup(chatId);
       if (!g) return ctx.reply('❌ المجموعة غير موجودة.');
@@ -86,8 +86,21 @@ module.exports = function setupDeveloper(bot) {
       if (!vs.enabled) return ctx.reply('⚠️ نظام التحقق غير مفعّل حالياً.');
 
       // معتمد مسبقاً
-      if (vs.approvedMembers.has(u.id))
-        return ctx.reply('✅ أنت معتمد بالفعل! يمكنك المشاركة في موضوع كليتك.');
+      if (vs.approvedMembers.has(u.id)) {
+        // إذا كان عضواً قديماً → ارفع تقييده
+        try {
+          await bot.telegram.restrictChatMember(chatId, u.id, {
+            permissions: {
+              can_send_messages: true, can_send_audios: true,
+              can_send_documents: true, can_send_photos: true,
+              can_send_videos: true, can_send_video_notes: true,
+              can_send_voice_notes: true, can_send_polls: true,
+              can_send_other_messages: true, can_add_web_page_previews: true,
+            },
+          });
+        } catch {}
+        return ctx.reply('✅ أنت معتمد بالفعل! يمكنك المشاركة في المجموعة.');
+      }
 
       // طلب معلق
       if (vs.pendingRequests.get(u.id)?.status === 'pending')
@@ -100,20 +113,29 @@ module.exports = function setupDeveloper(bot) {
         return ctx.reply(`⏳ يمكنك إعادة المحاولة بعد ${hrs} ساعة.`);
       }
 
-      // بدء جلسة تسجيل جديدة
-      const topics = getAvailableTopics(g);
-      sessions.set(u.id, { step: 'student_id', chatId, data: {}, topics });
-      // إرسال رسالة الترحيب مباشرة
-      return ctx.replyWithMarkdown(
-        `🎓 *أهلاً بك في مجتمع جامعة الأمير سلطان!*\n\n` +
-        `انضممت إلى *${g.title}*.\n\n` +
-        `لفتح المواضيع وتفعيل حسابك، يرجى إكمال بيانات التسجيل:\n\n` +
-        `━━━━━━━━━━━━━━━━━━\n` +
-        `1⃣ *أدخل رقم القيد الجامعي:*\n\n` +
-        `_مثال: 2023001234_`
-      );
-    }
+      // تسجيل في joinRequests إن لم يكن موجوداً (للأعضاء القدامى)
+      if (!g.joinRequests) g.joinRequests = new Map();
+      if (!g.joinRequests.has(u.id)) {
+        let isMember = false;
+        try {
+          const cm = await bot.telegram.getChatMember(chatId, u.id);
+          isMember = ['member', 'restricted'].includes(cm.status);
+        } catch {}
+        g.joinRequests.set(u.id, {
+          userId:           u.id,
+          username:         u.username || '',
+          firstName:        u.first_name || String(u.id),
+          status:           'pending_verify',
+          requestedAt:      new Date(),
+          isExistingMember: isMember,
+        });
+        db.markDirty();
+      }
 
+      // بدء جلسة تسجيل جديدة من الخطوة الأولى
+      sessions.set(u.id, { step: 'type_select', chatId, data: {} });
+      return stepWelcome(bot, u.id, g.title);
+    }
     if (isDeveloperOrBotAdmin(ctx)) {
       const s = db.getStats();
       return ctx.replyWithMarkdown(
