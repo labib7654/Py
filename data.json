@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T00:09:54.115Z",
+  "savedAt": "2026-05-18T00:11:54.116Z",
   "botAdmins": [
     6330247540
   ],
@@ -354,6 +354,68 @@
         "canManageTopics": false
       },
       "auditLog": []
+    },
+    "-1002648125233": {
+      "chatId": -1002648125233,
+      "title": "⁨(قٌٍَِْــًٌٌٍَُِّْــXـٌـاَُّ&هـــRًٍُــرًٌٍُِّ⁩ و ⁨لبيب⁩",
+      "type": "supergroup",
+      "ownerId": null,
+      "ownerUsername": "",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "auto-detected",
+      "addedAt": "2026-05-18T00:10:00.612Z",
+      "members": {
+        "7243808108": {
+          "userId": 7243808108,
+          "username": "Labibytr_bot",
+          "firstName": "جامعة",
+          "role": "member",
+          "joinedAt": "2026-05-18T00:10:00.618Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T00:10:00.618Z"
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": []
     }
   },
   "channels": {},
@@ -447,11 +509,12 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-17T22:52:10.841Z",
+      "lastSeen": "2026-05-18T00:10:00.618Z",
       "groups": [
         -1003969494192,
         -1003940779079,
-        -1003854112996
+        -1003854112996,
+        -1002648125233
       ],
       "channels": [],
       "bioBanInfo": null,
@@ -615,9 +678,10 @@
       "bannedReason": "نبذة محظورة — كلمة: \"مشاريع\"",
       "bannedAt": "2026-05-17T22:35:32.079Z",
       "firstSeen": "2026-05-17T22:25:36.199Z",
-      "lastSeen": "2026-05-17T22:50:44.648Z",
+      "lastSeen": "2026-05-18T00:10:51.112Z",
       "groups": [
-        -1003854112996
+        -1003854112996,
+        -1002648125233
       ],
       "channels": [],
       "bioBanInfo": {
@@ -629,8 +693,8 @@
       "seenInChats": {},
       "profileLink": "https://t.me/slyJxgPfEf",
       "lastName": "",
-      "contactedBot": false,
-      "lastContactAt": null
+      "contactedBot": true,
+      "lastContactAt": "2026-05-18T00:10:36.592Z"
     },
     "6740522308": {
       "userId": 6740522308,
