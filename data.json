@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T09:32:46.925Z",
+  "savedAt": "2026-05-18T09:33:44.842Z",
   "botAdmins": [
     6330247540
   ],
@@ -232,12 +232,12 @@
         "7243808108": {
           "userId": 7243808108,
           "username": "Labibytr_bot",
-          "firstName": "جامعة",
+          "firstName": "الجامعة",
           "role": "member",
           "joinedAt": "2026-05-17T22:35:33.272Z",
-          "messageCount": 7,
-          "score": 7,
-          "lastMessageAt": "2026-05-18T08:52:26.529Z"
+          "messageCount": 17,
+          "score": 17,
+          "lastMessageAt": "2026-05-18T09:33:23.573Z"
         },
         "6740522308": {
           "userId": 6740522308,
@@ -265,9 +265,9 @@
           "firstName": "ㅤㅤㅤㅤ",
           "role": "member",
           "joinedAt": "2026-05-18T00:18:09.869Z",
-          "messageCount": 21,
-          "score": 21,
-          "lastMessageAt": "2026-05-18T09:24:48.557Z"
+          "messageCount": 22,
+          "score": 22,
+          "lastMessageAt": "2026-05-18T09:33:05.365Z"
         },
         "8603034665": {
           "userId": 8603034665,
@@ -403,7 +403,7 @@
       },
       "auditLog": [],
       "verifySystem": {
-        "enabled": false,
+        "enabled": true,
         "pendingRequests": {},
         "approvedMembers": {},
         "rejectedMembers": {},
@@ -744,7 +744,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T09:25:23.841Z",
+      "lastSeen": "2026-05-18T09:33:21.452Z",
       "groups": [
         -1003940779079,
         -1003969494192
@@ -757,13 +757,13 @@
           "chatTitle": "مجتمع جامعةالأمير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:18:09.870Z",
-          "lastSeen": "2026-05-18T09:24:48.557Z"
+          "lastSeen": "2026-05-18T09:33:05.366Z"
         }
       },
       "profileLink": "https://t.me/Labibrd",
       "lastName": "ㅤㅤㅤㅤ",
       "contactedBot": true,
-      "lastContactAt": "2026-05-18T00:50:55.410Z"
+      "lastContactAt": "2026-05-18T09:32:48.659Z"
     },
     "8607336247": {
       "userId": 8607336247,
@@ -788,12 +788,12 @@
     "7243808108": {
       "userId": 7243808108,
       "username": "Labibytr_bot",
-      "firstName": "جامعة",
+      "firstName": "الجامعة",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-18T08:52:26.529Z",
+      "lastSeen": "2026-05-18T09:33:23.573Z",
       "groups": [
         -1003969494192,
         -1003940779079,
