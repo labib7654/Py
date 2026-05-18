@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T20:36:57.039Z",
+  "savedAt": "2026-05-18T20:36:58.272Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1392,6 +1392,16 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
+        },
+        "8265840070": {
+          "userId": 8265840070,
+          "username": "BMW0_0",
+          "firstName": "ووة",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:36:57.271Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
       "admins": {
@@ -1437,7 +1447,7 @@
           "username": "BMW0_0",
           "firstName": "ووة",
           "requestedAt": "2026-05-18T20:35:43.695Z",
-          "status": "pending",
+          "status": "approved_auto",
           "bio": "",
           "inviteLink": "https://t.me/+mMMSMLgl..."
         }
@@ -2317,7 +2327,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-18T15:09:41.774Z",
+      "lastSeen": "2026-05-18T20:36:57.280Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -2568,7 +2578,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T20:35:43.695Z",
+      "lastSeen": "2026-05-18T20:36:57.281Z",
       "groups": [
         -1003794953708,
         -1003969494192
@@ -2580,7 +2590,7 @@
           "chatTitle": "مجتمع جامعة الامير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:16:31.531Z",
-          "lastSeen": "2026-05-18T20:35:20.464Z"
+          "lastSeen": "2026-05-18T20:36:57.281Z"
         },
         "-1003794953708": {
           "chatId": -1003794953708,
