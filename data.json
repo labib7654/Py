@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T20:14:28.517Z",
+  "savedAt": "2026-05-18T20:18:28.650Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1392,6 +1392,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T17:44:35.331Z"
+        },
+        "8466574509": {
+          "userId": 8466574509,
+          "username": "Fager_Ahed",
+          "firstName": "Reham",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:17:59.406Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
       "admins": {
@@ -2223,7 +2233,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T20:12:31.039Z",
+      "lastSeen": "2026-05-18T20:17:59.405Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -5521,6 +5531,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T17:44:35.332Z",
           "lastSeen": "2026-05-18T17:44:35.332Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8466574509": {
+      "userId": 8466574509,
+      "username": "Fager_Ahed",
+      "firstName": "Reham",
+      "lastName": "Ahed",
+      "profileLink": "https://t.me/Fager_Ahed",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:16:41.971Z",
+      "lastSeen": "2026-05-18T20:17:59.406Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:17:59.406Z",
+          "lastSeen": "2026-05-18T20:17:59.406Z"
         }
       },
       "contactedBot": false,
