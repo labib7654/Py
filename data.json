@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T14:04:40.090Z",
+  "savedAt": "2026-05-18T14:10:15.732Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -572,7 +572,15 @@
         "cooldowns": {},
         "verifyTopicId": null
       },
-      "specialistWords": []
+      "specialistWords": [
+        {
+          "word": "سكليف",
+          "specialistId": 7574941687,
+          "specialistUsername": "slyJxgPfEf",
+          "addedBy": 7411444902,
+          "addedAt": "2026-05-18T14:10:14.732Z"
+        }
+      ]
     },
     "-1002648125233": {
       "chatId": -1002648125233,
@@ -595,6 +603,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T00:10:00.618Z"
+        },
+        "7411444902": {
+          "userId": 7411444902,
+          "username": "Labibrd",
+          "firstName": "ㅤㅤㅤㅤ",
+          "role": "member",
+          "joinedAt": "2026-05-18T14:09:23.181Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T14:09:23.181Z"
         }
       },
       "admins": {},
@@ -882,10 +900,11 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T14:04:34.601Z",
+      "lastSeen": "2026-05-18T14:10:14.565Z",
       "groups": [
         -1003940779079,
-        -1003969494192
+        -1003969494192,
+        -1002648125233
       ],
       "channels": [],
       "bioBanInfo": null,
@@ -901,7 +920,7 @@
       "profileLink": "https://t.me/Labibrd",
       "lastName": "ㅤㅤㅤㅤ",
       "contactedBot": true,
-      "lastContactAt": "2026-05-18T13:42:12.796Z"
+      "lastContactAt": "2026-05-18T14:10:10.255Z"
     },
     "8607336247": {
       "userId": 8607336247,
