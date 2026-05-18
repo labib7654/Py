@@ -37,7 +37,9 @@ module.exports = function setupGroupHandlers(bot) {
         try { const admins = await bot.telegram.getChatAdministrators(chat.id); const owner = admins.find(a => a.status === 'creator'); if (owner) { channel.ownerId = owner.user.id; channel.ownerUsername = owner.user.username || owner.user.first_name; } } catch {}
         try { await ctx.replyWithMarkdown(`📢 *شكراً لإضافتي لقناة ${chat.title}!*\n\n👑 المالك: \`${db.getChannel(chat.id)?.ownerUsername || 'غير محدد'}\``); } catch {}
       } else {
-        const group = db.getOrCreateGroup(chat.id, chat.title || 'مجموعة', chat.type, from.id, from.username || from.first_name || String(from.id));
+        // تحديد النوع الدقيق: forum = مجتمع بمواضيع، supergroup عادي، group عادي
+        const exactType = chat.is_forum ? 'forum' : (chat.type || 'group');
+        const group = db.getOrCreateGroup(chat.id, chat.title || 'مجموعة', exactType, from.id, from.username || from.first_name || String(from.id));
         db.getOrCreateUser(from.id, from.username || '', from.first_name || '').groups.add(chat.id);
         db.trackMember(chat.id, from.id, from.username || '', from.first_name || '', 'member');
         let promoted = false;
@@ -228,11 +230,13 @@ module.exports = function setupGroupHandlers(bot) {
       userId:    u.id,
       username:  u.username  || '',
       firstName: u.first_name || String(u.id),
-      requestedAt: new Date(),
+      requestedAt: new Date().toISOString(), // نحفظ كـ string ثابت لضمان التحويل الصحيح
       status:    'pending',
       bio:       req.bio || '',
       inviteLink:req.invite_link?.invite_link || '',
     });
+    db.saveData(); // ✅ حفظ فوري لضمان عدم فقدان الطلب
+    console.log(`📨 طلب انضمام جديد: ${u.username || u.id} في ${chat.title} — سيُقبل بعد ${g.autoApproveDelay ?? 300}ث`);
 
     // فحص المجتمع
     if (g.communityId) {
@@ -394,7 +398,7 @@ module.exports = function setupGroupHandlers(bot) {
     if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
 
     const lower = text.toLowerCase();
-    const found = g.specialistWords.find(sw => sw.word && lower.includes(sw.word.toLowerCase()));
+    const found = g.specialistWords.find(sw => lower.includes(sw.word.toLowerCase()));
     if (!found) return next();
 
     const userId   = ctx.from.id;
@@ -402,67 +406,43 @@ module.exports = function setupGroupHandlers(bot) {
     const specUser = found.specialistUsername;
     const specId   = found.specialistId;
 
-    console.log(`[SpecialistFilter] كلمة "${found.word}" من ${userName} (${userId}) في ${ctx.chat.title} (${ctx.chat.id})`);
+    // ① حذف الرسالة
+    try { await ctx.deleteMessage(); } catch {}
 
-    // ① حذف الرسالة الأصلية من المجموعة
+    // ② إرسال رسالة في المجموعة توجيهه للمتخصص
     try {
-      await ctx.deleteMessage();
-      console.log(`[SpecialistFilter] ✅ تم حذف الرسالة`);
-    } catch (e) {
-      console.error(`[SpecialistFilter] ❌ فشل حذف الرسالة:`, e.message);
-    }
+      await ctx.reply(
+        `👨‍⚕️ ${userName}، تم حذف رسالتك.\nللمساعدة في موضوع «${found.word}» تواصل مع المتخصص @${specUser} مباشرة.`,
+        { parse_mode: 'Markdown' }
+      );
+    } catch {}
 
-    // ② إشعار المتخصص في خاصه بتفاصيل الطلب
+    // ③ فتح محادثة الخاص مع المتخصص تلقائياً — البوت يرسل للمتخصص بأن لديه شخص يحتاجه
     try {
-      const specUrl = specUser
-        ? `https://t.me/${specUser}`
-        : `tg://user?id=${userId}`;
-
       await bot.telegram.sendMessage(
         specId,
-        `📬 *طلب جديد يحتاج مساعدتك*\n\n` +
+        `📬 *طلب تلقائي من البوت*\n\n` +
         `👤 المستخدم: ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''}\n` +
-        `🔤 الكلمة المُفعِّلة: \`${found.word}\`\n` +
+        `🔤 الكلمة: \`${found.word}\`\n` +
         `💬 المجموعة: ${ctx.chat.title}\n\n` +
-        `📝 رسالته:\n_"${text.slice(0, 300)}"_`,
-        {
-          parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard([
-            [Markup.button.url(`💬 فتح محادثة مع ${ctx.from.first_name}`, `tg://user?id=${userId}`)],
-          ]),
-        }
+        `الرسالة المحذوفة:\n_"${text.slice(0, 200)}"_\n\n` +
+        `يمكنك التواصل معه مباشرة: tg://user?id=${userId}`,
+        { parse_mode: 'Markdown' }
       );
-      console.log(`[SpecialistFilter] ✅ أُرسل إشعار للمتخصص ${specUser} (${specId})`);
-    } catch (e) {
-      console.error(`[SpecialistFilter] ❌ فشل إرسال رسالة للمتخصص (${specId}):`, e.message);
-    }
+    } catch {}
 
-    // ③ إرسال رسالة للمستخدم في الخاص: نفس رسالته + زر فتح خاص المتخصص
+    // ④ إرسال رسالة للمستخدم في الخاص (إن كان قد فتح محادثة مع البوت)
     try {
-      const specUrl = specUser
-        ? `https://t.me/${specUser}`
-        : `tg://user?id=${specId}`;
-
       await bot.telegram.sendMessage(
         userId,
         `👋 مرحباً ${ctx.from.first_name}!\n\n` +
-        `تم حذف رسالتك من «${ctx.chat.title}» لأنها تخص موضوع *${found.word}*.\n\n` +
-        `📝 *رسالتك كانت:*\n_"${text.slice(0, 300)}"_\n\n` +
-        `اضغط الزر أدناه للتواصل مع المتخصص مباشرةً 👇`,
-        {
-          parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard([
-            [Markup.button.url(`👨‍⚕️ تواصل مع المتخصص @${specUser || 'المتخصص'}`, specUrl)],
-          ]),
-        }
+        `رسالتك في «${ctx.chat.title}» تخص موضوع *${found.word}*.\n\n` +
+        `تم توجيهك للمتخصص @${specUser} — سيتواصل معك قريباً إن شاء الله. 🤝`,
+        { parse_mode: 'Markdown' }
       );
-      console.log(`[SpecialistFilter] ✅ أُرسلت رسالة للمستخدم ${userName} (${userId})`);
-    } catch (e) {
-      console.error(`[SpecialistFilter] ❌ فشل إرسال رسالة للمستخدم (${userId}) — ربما لم يفتح خاص البوت:`, e.message);
-    }
+    } catch {}
 
-    // ④ إيقاف معالجة الرسالة — لا تكمل للفلاتر الأخرى
-    return;
+    return next();
   });
 
   // ── فلتر الكلمات المحظورة ────────────────────────────────────────────
