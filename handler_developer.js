@@ -27,7 +27,8 @@ function devMainKeyboard() {
      Markup.button.callback('👤 مستخدمو البوت',  'dev_bot_users')],
     [Markup.button.callback('📈 استخدام البوت',  'dev_usage'),
      Markup.button.callback('🛡️ حماية المحتوى', 'dev_protect_menu')],
-    [Markup.button.callback('🎲 الإضافة العشوائية', 'adder_start')],
+    [Markup.button.callback('🎲 الإضافة العشوائية', 'adder_start'),
+     Markup.button.callback('🤖 الذكاء الاصطناعي',  'ai_panel')],
   ]);
 }
 

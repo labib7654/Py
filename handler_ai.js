@@ -197,6 +197,7 @@ function panelMarkup() {
     [Markup.button.callback(cfg.replyPrivate ? '✅ الخاص: مفعّل — إيقاف' : '❌ الخاص: معطّل — تفعيل', 'ai_priv')],
     [Markup.button.callback('👁️ إعداد قروبات المراقبة',  'ai_mon')],
     [Markup.button.callback('💬 إعداد قروبات الرد',       'ai_rep')],
+    [Markup.button.callback('🌐 السماح بالرد للكل',       'ai_rep_all')],
     [Markup.button.callback('📊 إحصائيات',                'ai_stats')],
     [Markup.button.callback('🗑️ مسح قاعدة البيانات',     'ai_clr')],
   ]);
@@ -222,6 +223,13 @@ module.exports = function setupAI(bot) {
     if (!isDev(ctx)) return;
     if (ctx.chat.type !== 'private') return ctx.reply('افتح الأمر في الخاص مع البوت.');
     await ctx.replyWithMarkdown(panelText(), panelMarkup());
+  });
+
+  // ── فتح اللوحة من زر المطور ───────────────────────────────
+  bot.action('ai_panel', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    await ctx.answerCbQuery();
+    await ctx.editMessageText(panelText(), { parse_mode: 'Markdown', ...panelMarkup() });
   });
 
   // ── تشغيل/إيقاف ───────────────────────────────────────────
@@ -308,6 +316,21 @@ module.exports = function setupAI(bot) {
     });
     btns.push([Markup.button.callback('🔙 رجوع', 'ai_back')]);
     await ctx.editMessageText(`💬 *قروبات الرد*\n_(${cfg.replyGroups.length} محدد)_`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  // ── السماح بالرد لكل القروبات دفعة واحدة ─────────────────
+  bot.action('ai_rep_all', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    await ctx.answerCbQuery();
+    const db = require('./db');
+    const groups = db.allGroups();
+    if (!groups.length) {
+      return ctx.answerCbQuery('⚠️ لا يوجد قروبات مسجلة', { show_alert: true });
+    }
+    cfg.replyGroups = groups.map(g => g.chatId);
+    saveCfg();
+    await ctx.answerCbQuery(`✅ تم تفعيل الرد في ${cfg.replyGroups.length} قروب`, { show_alert: true });
+    await ctx.editMessageText(panelText(), { parse_mode: 'Markdown', ...panelMarkup() });
   });
 
   // ── إحصائيات ──────────────────────────────────────────────
