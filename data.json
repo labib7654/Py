@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T00:39:17.719Z",
+  "savedAt": "2026-05-18T00:40:15.313Z",
   "botAdmins": [
     6330247540
   ],
@@ -67,7 +67,14 @@
         "canPinMessages": false,
         "canManageTopics": false
       },
-      "auditLog": []
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": false,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     },
     "-2072303291198": {
       "chatId": -2072303291198,
@@ -129,7 +136,14 @@
         "canPinMessages": false,
         "canManageTopics": false
       },
-      "auditLog": []
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": false,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     },
     "-1003969494192": {
       "chatId": -1003969494192,
@@ -380,7 +394,14 @@
         "canPinMessages": false,
         "canManageTopics": false
       },
-      "auditLog": []
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": false,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     },
     "-1002648125233": {
       "chatId": -1002648125233,
@@ -442,7 +463,14 @@
         "canPinMessages": false,
         "canManageTopics": false
       },
-      "auditLog": []
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": false,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     },
     "-1003794953708": {
       "chatId": -1003794953708,
@@ -504,7 +532,14 @@
         "canPinMessages": false,
         "canManageTopics": false
       },
-      "auditLog": []
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": false,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     },
     "-1002985211839": {
       "chatId": -1002985211839,
@@ -566,7 +601,14 @@
         "canPinMessages": false,
         "canManageTopics": false
       },
-      "auditLog": []
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": false,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     }
   },
   "channels": {},
@@ -619,7 +661,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T00:18:09.870Z",
+      "lastSeen": "2026-05-18T00:40:13.078Z",
       "groups": [
         -1003940779079,
         -1003969494192
@@ -893,7 +935,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T00:18:30.590Z",
+      "lastSeen": "2026-05-18T00:38:36.144Z",
       "groups": [
         -1003794953708,
         -1003969494192
