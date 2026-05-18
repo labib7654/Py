@@ -87,6 +87,17 @@ module.exports = function setupGroupHandlers(bot) {
     if (newM.status === 'administrator' && oldM.status !== 'administrator') { if (g) g.admins.set(u.id, { username: u.username || u.first_name || String(u.id), promotedBy: by.id, promotedByUsername: by.username || by.first_name || String(by.id), promotedAt: new Date() }); db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'admin'); }
     if (oldM.status === 'administrator' && newM.status === 'member') { if (g) g.admins.delete(u.id); db.trackMember(chat.id, u.id, u.username || '', u.first_name || '', 'member'); }
 
+    // ── حذف العضو من القائمة عند المغادرة أو الطرد ─────────────────
+    if ((newM.status === 'left' || newM.status === 'kicked') && !u.is_bot) {
+      if (g) {
+        g.members.delete(u.id);
+        g.admins.delete(u.id);
+      }
+      const urec = db.getUser(u.id);
+      if (urec) urec.groups.delete(chat.id);
+      db.saveData();
+    }
+
     // ── فحص منع البوتات (محسّن) ──────────────────────────────────────
     if (g?.antiBot && u.is_bot) {
       try { await bot.telegram.banChatMember(chat.id, u.id); } catch {}
