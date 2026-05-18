@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T12:08:20.521Z",
+  "savedAt": "2026-05-18T12:09:18.755Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -77,7 +77,8 @@
         "rejectedMembers": {},
         "cooldowns": {},
         "verifyTopicId": null
-      }
+      },
+      "specialistWords": []
     },
     "-2072303291198": {
       "chatId": -2072303291198,
@@ -147,7 +148,8 @@
         "rejectedMembers": {},
         "cooldowns": {},
         "verifyTopicId": null
-      }
+      },
+      "specialistWords": []
     },
     "-1003969494192": {
       "chatId": -1003969494192,
@@ -432,7 +434,8 @@
         "rejectedMembers": {},
         "cooldowns": {},
         "verifyTopicId": null
-      }
+      },
+      "specialistWords": []
     },
     "-1003854112996": {
       "chatId": -1003854112996,
@@ -505,7 +508,8 @@
         "rejectedMembers": {},
         "cooldowns": {},
         "verifyTopicId": null
-      }
+      },
+      "specialistWords": []
     },
     "-1002648125233": {
       "chatId": -1002648125233,
@@ -577,7 +581,8 @@
         "rejectedMembers": {},
         "cooldowns": {},
         "verifyTopicId": null
-      }
+      },
+      "specialistWords": []
     },
     "-1003794953708": {
       "chatId": -1003794953708,
@@ -649,7 +654,8 @@
         "rejectedMembers": {},
         "cooldowns": {},
         "verifyTopicId": null
-      }
+      },
+      "specialistWords": []
     },
     "-1002985211839": {
       "chatId": -1002985211839,
@@ -721,7 +727,8 @@
         "rejectedMembers": {},
         "cooldowns": {},
         "verifyTopicId": null
-      }
+      },
+      "specialistWords": []
     }
   },
   "channels": {},
@@ -792,7 +799,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T11:07:06.152Z",
+      "lastSeen": "2026-05-18T12:09:13.050Z",
       "groups": [
         -1003940779079,
         -1003969494192
@@ -811,7 +818,7 @@
       "profileLink": "https://t.me/Labibrd",
       "lastName": "ㅤㅤㅤㅤ",
       "contactedBot": true,
-      "lastContactAt": "2026-05-18T09:51:38.266Z"
+      "lastContactAt": "2026-05-18T12:09:13.050Z"
     },
     "8607336247": {
       "userId": 8607336247,
