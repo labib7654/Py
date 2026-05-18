@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T20:52:58.162Z",
+  "savedAt": "2026-05-18T20:56:44.425Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1472,16 +1472,6 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
-        },
-        "8265840070": {
-          "userId": 8265840070,
-          "username": "BMW0_0",
-          "firstName": "ووة",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:38:57.266Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T20:49:36.712Z"
         },
         "8751278667": {
           "userId": 8751278667,
@@ -3762,10 +3752,9 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T20:49:51.009Z",
+      "lastSeen": "2026-05-18T20:56:43.424Z",
       "groups": [
-        -1003794953708,
-        -1003969494192
+        -1003794953708
       ],
       "channels": [],
       "seenInChats": {
