@@ -17,8 +17,9 @@ const setupGroupHandlers = require('./handler_groups');
 const setupAdminHandlers = require('./handler_admin');
 const setupOwnerHandlers = require('./handler_owner');
 const setupRadar         = require('./handler_radar');
-const setupAdder         = require('./handler_adder');
-
+const setupAdder  
+       = require('./handler_adder');
+const setupAI = require('./handler_ai');
 const db = require('./db');
 
 if (!BOT_TOKEN)    { console.error('❌ BOT_TOKEN غير موجود!');    process.exit(1); }
@@ -86,7 +87,8 @@ async function main() {
   setupDeveloper(bot);
   setupBotAdmins(bot);       // ✅ نظام إدارة مشرفي البوت
   setupRadar(bot);           // ✅ رادار المستخدمين — يسجّل الجميع في كل مكان
-  setupAdder(bot);           // ✅ ميزة الإضافة العشوائية للمطور
+  setupAdder(bot);   
+     setupAI(bot);     // ✅ ميزة الإضافة العشوائية للمطور
   setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)
   setupTopicHandlers(bot);  // ✅ نظام طلبات المواضيع — يجب قبل setupGroupHandlers
   setupGroupHandlers(bot);
