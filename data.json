@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T00:18:58.017Z",
+  "savedAt": "2026-05-18T00:22:58.017Z",
   "botAdmins": [
     6330247540
   ],
@@ -505,6 +505,68 @@
         "canManageTopics": false
       },
       "auditLog": []
+    },
+    "-1002985211839": {
+      "chatId": -1002985211839,
+      "title": "نحن أنصار الله",
+      "type": "supergroup",
+      "ownerId": 7411444902,
+      "ownerUsername": "Labibrd",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "auto-detected",
+      "addedAt": "2026-05-18T00:22:45.032Z",
+      "members": {
+        "6061773220": {
+          "userId": 6061773220,
+          "username": "",
+          "firstName": "☫نبراس ☫",
+          "role": "member",
+          "joinedAt": "2026-05-18T00:22:45.230Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T00:22:45.230Z"
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": []
     }
   },
   "channels": {},
@@ -844,6 +906,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:16:31.531Z",
           "lastSeen": "2026-05-18T00:17:38.349Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6061773220": {
+      "userId": 6061773220,
+      "username": "",
+      "firstName": "☫نبراس ☫",
+      "lastName": "عاشق ❤️‍🔥فلسطين 🇵🇸 تاج 👑راس كل العرب",
+      "profileLink": "tg://user?id=6061773220",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T00:22:45.032Z",
+      "lastSeen": "2026-05-18T00:22:45.230Z",
+      "groups": [
+        -1002985211839
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T00:22:45.230Z",
+          "lastSeen": "2026-05-18T00:22:45.230Z"
         }
       },
       "contactedBot": false,
