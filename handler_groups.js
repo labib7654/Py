@@ -394,7 +394,7 @@ module.exports = function setupGroupHandlers(bot) {
     if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
 
     const lower = text.toLowerCase();
-    const found = g.specialistWords.find(sw => lower.includes(sw.word.toLowerCase()));
+    const found = g.specialistWords.find(sw => sw.word && lower.includes(sw.word.toLowerCase()));
     if (!found) return next();
 
     const userId   = ctx.from.id;
@@ -402,11 +402,22 @@ module.exports = function setupGroupHandlers(bot) {
     const specUser = found.specialistUsername;
     const specId   = found.specialistId;
 
+    console.log(`[SpecialistFilter] كلمة "${found.word}" من ${userName} (${userId}) في ${ctx.chat.title} (${ctx.chat.id})`);
+
     // ① حذف الرسالة الأصلية من المجموعة
-    try { await ctx.deleteMessage(); } catch {}
+    try {
+      await ctx.deleteMessage();
+      console.log(`[SpecialistFilter] ✅ تم حذف الرسالة`);
+    } catch (e) {
+      console.error(`[SpecialistFilter] ❌ فشل حذف الرسالة:`, e.message);
+    }
 
     // ② إشعار المتخصص في خاصه بتفاصيل الطلب
     try {
+      const specUrl = specUser
+        ? `https://t.me/${specUser}`
+        : `tg://user?id=${userId}`;
+
       await bot.telegram.sendMessage(
         specId,
         `📬 *طلب جديد يحتاج مساعدتك*\n\n` +
@@ -421,13 +432,15 @@ module.exports = function setupGroupHandlers(bot) {
           ]),
         }
       );
-    } catch {}
+      console.log(`[SpecialistFilter] ✅ أُرسل إشعار للمتخصص ${specUser} (${specId})`);
+    } catch (e) {
+      console.error(`[SpecialistFilter] ❌ فشل إرسال رسالة للمتخصص (${specId}):`, e.message);
+    }
 
     // ③ إرسال رسالة للمستخدم في الخاص: نفس رسالته + زر فتح خاص المتخصص
     try {
-      // بناء URL المتخصص — نحاول username أولاً ثم deep link بالـ id
-      const specUrl = found.specialistUsername
-        ? `https://t.me/${found.specialistUsername}`
+      const specUrl = specUser
+        ? `https://t.me/${specUser}`
         : `tg://user?id=${specId}`;
 
       await bot.telegram.sendMessage(
@@ -439,13 +452,17 @@ module.exports = function setupGroupHandlers(bot) {
         {
           parse_mode: 'Markdown',
           ...Markup.inlineKeyboard([
-            [Markup.button.url(`👨‍⚕️ تواصل مع المتخصص @${found.specialistUsername || 'المتخصص'}`, specUrl)],
+            [Markup.button.url(`👨‍⚕️ تواصل مع المتخصص @${specUser || 'المتخصص'}`, specUrl)],
           ]),
         }
       );
-    } catch {}
+      console.log(`[SpecialistFilter] ✅ أُرسلت رسالة للمستخدم ${userName} (${userId})`);
+    } catch (e) {
+      console.error(`[SpecialistFilter] ❌ فشل إرسال رسالة للمستخدم (${userId}) — ربما لم يفتح خاص البوت:`, e.message);
+    }
 
-    return next();
+    // ④ إيقاف معالجة الرسالة — لا تكمل للفلاتر الأخرى
+    return;
   });
 
   // ── فلتر الكلمات المحظورة ────────────────────────────────────────────
