@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T08:52:58.105Z",
+  "savedAt": "2026-05-18T08:54:58.106Z",
   "botAdmins": [
     6330247540
   ],
@@ -288,6 +288,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T08:38:01.982Z"
+        },
+        "6275988426": {
+          "userId": 6275988426,
+          "username": "B_7a3j",
+          "firstName": "صياد الارواح",
+          "role": "member",
+          "joinedAt": "2026-05-18T08:53:21.584Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T08:53:21.600Z"
         }
       },
       "admins": {},
@@ -1109,6 +1119,34 @@
       },
       "contactedBot": false,
       "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6275988426": {
+      "userId": 6275988426,
+      "username": "B_7a3j",
+      "firstName": "صياد الارواح",
+      "lastName": "ضننت نفسي اني مهمه في حياه البعض لاكنني عرف اني لاشي😞😞🫤",
+      "profileLink": "https://t.me/B_7a3j",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T08:53:11.496Z",
+      "lastSeen": "2026-05-18T08:53:54.572Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعةالأمير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T08:53:21.584Z",
+          "lastSeen": "2026-05-18T08:53:21.600Z"
+        }
+      },
+      "contactedBot": true,
+      "lastContactAt": "2026-05-18T08:53:11.497Z",
       "bioBanInfo": null
     }
   },
