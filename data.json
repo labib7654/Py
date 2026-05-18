@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T20:23:21.696Z",
+  "savedAt": "2026-05-18T20:23:43.333Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1771,7 +1771,7 @@
       "rules": "",
       "communityId": null,
       "protectContent": false,
-      "antiLinks": false,
+      "antiLinks": true,
       "antiBot": false,
       "logChannelId": null,
       "timedMutes": {},
@@ -1801,7 +1801,8 @@
         "cooldowns": {},
         "verifyTopicId": null
       },
-      "specialistWords": []
+      "specialistWords": [],
+      "autoApproveJoin": true
     },
     "-1002985211839": {
       "chatId": -1002985211839,
@@ -2538,9 +2539,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T20:23:20.693Z",
+      "lastSeen": "2026-05-18T20:23:42.329Z",
       "groups": [
-        -1003794953708
+        -1003794953708,
+        -1003969494192
       ],
       "channels": [],
       "seenInChats": {
