@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T11:47:31.305Z",
+  "savedAt": "2026-05-18T11:56:28.264Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1235,6 +1235,26 @@
           "lastSeen": "2026-05-18T10:55:42.721Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7653200966": {
+      "userId": 7653200966,
+      "username": "",
+      "firstName": "222",
+      "lastName": "",
+      "profileLink": "tg://user?id=7653200966",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T11:56:24.973Z",
+      "lastSeen": "2026-05-18T11:56:24.973Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
