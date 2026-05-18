@@ -73,6 +73,19 @@ module.exports = function setupVerifyActions(bot) {
     // رفع التقييد عن العضو
     await unrestrictUser(bot, chatId, userId);
 
+    // ✅ قبول طلب الانضمام تلقائياً إذا كان المستخدم قد طلب الانضمام عبر الرابط
+    const groupRec = db.getGroup(chatId);
+    if (groupRec) {
+      const jr = groupRec.joinRequests.get(userId);
+      if (jr && jr.status === 'pending_verify') {
+        try {
+          await bot.telegram.approveChatJoinRequest(chatId, userId);
+          jr.status = 'approved_via_verify';
+          db.saveData();
+        } catch (e) { console.log('approveChatJoinRequest:', e.message); }
+      }
+    }
+
     // تحديث رسالة الإشعار
     try {
       await ctx.editMessageText(
@@ -84,11 +97,13 @@ module.exports = function setupVerifyActions(bot) {
     } catch {}
 
     // إشعار الطالب
+    const wasJoinRequest = groupRec?.joinRequests.get(userId)?.status === 'approved_via_verify';
     try {
       await bot.telegram.sendMessage(userId,
         `🎉 *تم قبول طلبك!*\n\n` +
         `أهلاً بك في مجتمع جامعة الأمير سلطان 🎓\n\n` +
         `✅ تم فتح موضوع *${req.data.topicName}* لك.\n` +
+        (wasJoinRequest ? `🔓 تم قبول انضمامك للمجموعة تلقائياً.\n` : '') +
         `يمكنك الآن المشاركة والتفاعل مع زملائك في كليتك!\n\n` +
         `_إذا واجهت أي مشكلة، تواصل مع المشرف._`,
         { parse_mode: 'Markdown' }

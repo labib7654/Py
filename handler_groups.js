@@ -226,6 +226,65 @@ module.exports = function setupGroupHandlers(bot) {
       return;
     }
 
+    // ─── نظام التحقق: إذا كان مفعّلاً → إرسال رسالة للمستخدم للتحقق أولاً ───
+    const { getVerifySettings } = require('./verify_helpers');
+    const vs = getVerifySettings(g);
+
+    if (vs.enabled) {
+      // إذا كان مُعتمَداً مسبقاً → قبول فوري
+      if (vs.approvedMembers.has(u.id)) {
+        try { await bot.telegram.approveChatJoinRequest(chat.id, u.id); } catch {}
+        return;
+      }
+
+      // حفظ طلب الانضمام مرتبطاً بالتحقق
+      g.joinRequests.set(u.id, {
+        userId:     u.id,
+        username:   u.username  || '',
+        firstName:  u.first_name || String(u.id),
+        requestedAt: new Date().toISOString(),
+        status:     'pending_verify', // ← ينتظر التحقق
+        bio:        req.bio || '',
+        inviteLink: req.invite_link?.invite_link || '',
+        chatId:     chat.id,
+      });
+      db.saveData();
+
+      // إرسال رسالة للمستخدم تطلب منه التحقق
+      const botUsername = (await bot.telegram.getMe().catch(() => ({ username: 'Labibytr_bot' }))).username;
+      try {
+        await bot.telegram.sendMessage(u.id,
+          `👋 *أهلاً ${u.first_name}!*\n\n` +
+          `🔐 *لن يتم قبولك في مجتمع ${chat.title}*\n` +
+          `إلا بعد التحقق من هويتك الجامعية.\n\n` +
+          `━━━━━━━━━━━━━━━━━━\n` +
+          `📋 *خطوات الانضمام:*\n\n` +
+          `1️⃣ اضغط على زر *"طلب الانضمام"* في رابط المجموعة (إذا لم تضغط بعد)\n` +
+          `2️⃣ ابدأ التحقق عبر البوت:\n` +
+          `👉 @${botUsername}\n\n` +
+          `✅ بعد إكمال التحقق والموافقة عليك، *سيتم قبول انضمامك تلقائياً.*\n\n` +
+          `_إذا كنت قد ضغطت طلب الانضمام بالفعل، ابدأ البوت مباشرة:_`,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: {
+              inline_keyboard: [[
+                { text: '🤖 ابدأ التحقق الآن', url: `https://t.me/${botUsername}?start=verify_${chat.id}` },
+              ]],
+            },
+          }
+        );
+      } catch (e) {
+        // المستخدم لم يبدأ البوت بعد — نبلغ الأدمن فقط
+        const notifyIds = new Set([g.ownerId, ...g.admins.keys()].filter(Boolean));
+        const msg = `📨 *طلب انضمام بانتظار التحقق*\n\n👤 ${u.first_name}${u.username ? ` (@${u.username})` : ''}\n🆔 \`${u.id}\`\n📌 المجموعة: *${chat.title}*\n\n⚠️ لم يتمكن البوت من إرسال رسالة له (لم يبدأ البوت بعد).`;
+        for (const adminId of notifyIds) {
+          try { await bot.telegram.sendMessage(adminId, msg, { parse_mode: 'Markdown' }); } catch {}
+        }
+      }
+      return;
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     g.joinRequests.set(u.id, {
       userId:    u.id,
       username:  u.username  || '',

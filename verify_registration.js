@@ -31,6 +31,79 @@ const {
 module.exports = function setupVerifyRegistration(bot) {
 
   // ════════════════════════════════════════════════════════════
+  //  🚀 /start verify_<chatId> — بداية التحقق من رابط الانضمام
+  //  يُشغَّل عندما يضغط المستخدم على رابط البوت بعد طلب الانضمام
+  // ════════════════════════════════════════════════════════════
+  bot.start(async (ctx, next) => {
+    if (ctx.chat.type !== 'private') return next();
+
+    const payload = ctx.startPayload || '';
+    const match   = payload.match(/^verify_(-?\d+)$/);
+    if (!match) return next(); // ليس رابط تحقق → أكمل للمعالج التالي
+
+    const chatId = Number(match[1]);
+    const userId = ctx.from.id;
+    const g      = db.getGroup(chatId);
+
+    if (!g) {
+      return ctx.replyWithMarkdown(`❌ *المجموعة غير موجودة أو لم يتم تسجيل البوت فيها.*\n\nتأكد أنك ضغطت *طلب الانضمام* في المجموعة أولاً.`);
+    }
+
+    const vs = getVerifySettings(g);
+    if (!vs.enabled) {
+      return ctx.replyWithMarkdown(`⚠️ *نظام التحقق غير مفعّل في هذه المجموعة.*\n\nتواصل مع المشرف.`);
+    }
+
+    // إذا كان مُعتمَداً مسبقاً
+    if (vs.approvedMembers.has(userId)) {
+      const jr = g.joinRequests.get(userId);
+      if (jr && jr.status === 'pending_verify') {
+        try {
+          await bot.telegram.approveChatJoinRequest(chatId, userId);
+          jr.status = 'approved';
+          db.saveData();
+        } catch {}
+      }
+      return ctx.replyWithMarkdown(
+        `✅ *أنت مُعتمَد مسبقاً!*\n\nتم قبول انضمامك في *${g.title}* تلقائياً.\nيمكنك العودة للمجموعة.`
+      );
+    }
+
+    // تحقق من وجود طلب انضمام
+    const jr = g.joinRequests.get(userId);
+    if (!jr) {
+      return ctx.replyWithMarkdown(
+        `⚠️ *لم يتم العثور على طلب انضمامك.*\n\n` +
+        `📋 *الخطوات الصحيحة:*\n` +
+        `1️⃣ اذهب لرابط المجموعة واضغط *"طلب الانضمام"* أولاً\n` +
+        `2️⃣ ثم عد هنا وابدأ التحقق\n\n` +
+        `_إذا ضغطت طلب الانضمام بالفعل، انتظر لحظة وأعد المحاولة._`
+      );
+    }
+
+    // فحص cooldown رفض سابق
+    const cooldown = vs.cooldowns.get(userId);
+    if (cooldown && cooldown > Date.now()) {
+      const hrs = Math.ceil((cooldown - Date.now()) / 3600000);
+      return ctx.replyWithMarkdown(`⏳ *تم رفض طلبك مؤخراً.*\n\nيمكنك إعادة المحاولة بعد \`${hrs}\` ساعة.`);
+    }
+
+    // فحص طلب معلق
+    const existing = vs.pendingRequests.get(userId);
+    if (existing?.status === 'pending') {
+      return ctx.replyWithMarkdown(
+        `📨 *لديك طلب قيد المراجعة.*\n\nانتظر حتى يراجعه المشرف وستصلك رسالة بالنتيجة.`
+      );
+    }
+
+    // بدء جلسة التحقق
+    const topics = getAvailableTopics(g);
+    sessions.set(userId, { step: 'student_id', chatId, data: {}, topics });
+    await stepWelcome(bot, userId, g.title);
+  });
+
+
+  // ════════════════════════════════════════════════════════════
   //  🔒 اعتراض الأعضاء الجدد — تقييد فوري + بدء التسجيل
   // ════════════════════════════════════════════════════════════
   bot.on('chat_member', async (ctx, next) => {

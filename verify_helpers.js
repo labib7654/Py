@@ -237,9 +237,9 @@ async function checkAndRestrictExistingMember(bot, chatId, userId, g) {
 async function stepWelcome(bot, userId, groupTitle) {
   try {
     await bot.telegram.sendMessage(userId,
-      `🎓 *أهلاً بك في مجتمع جامعة الأمير سلطان!*\n\n` +
-      `انضممت إلى *${groupTitle}*.\n\n` +
-      `لفتح المواضيع وتفعيل حسابك، يرجى إكمال بيانات التسجيل:\n\n` +
+      `🎓 *أهلاً بك في نظام التحقق الجامعي!*\n\n` +
+      `📌 المجموعة: *${groupTitle}*\n\n` +
+      `🔐 *للانضمام يجب التحقق من هويتك الجامعية.*\n\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
       `1⃣ *أدخل رقم القيد الجامعي:*\n\n` +
       `_مثال: 2023001234_`,
