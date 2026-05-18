@@ -222,7 +222,7 @@ module.exports = function setupVerifyActions(bot) {
 
   // ════════════════════════════════════════════════════════════
   //  🗑️ حذف رسائل الخدمة التلقائية (انضمام/مغادرة) من المجموعة
-  //  مثال: "تم قبول انضمام X إلى المجموعة"
+  //  تعمل دائماً بمجرد تفعيل نظام التحقق
   // ════════════════════════════════════════════════════════════
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private') return next();
@@ -234,10 +234,17 @@ module.exports = function setupVerifyActions(bot) {
     const vs = getVerifySettings(g);
     if (!vs.enabled) return next();
 
-    // رسائل الخدمة: انضمام أو مغادرة
-    if (msg.new_chat_members || msg.left_chat_member) {
+    // رسائل الخدمة: انضمام أو مغادرة أو pinned message
+    const isService =
+      msg.new_chat_members     ||  // انضمام
+      msg.left_chat_member     ||  // مغادرة/طرد
+      msg.pinned_message       ||  // تثبيت رسالة (اختياري)
+      msg.new_chat_title       ||  // تغيير اسم المجموعة
+      msg.new_chat_photo;          // تغيير صورة المجموعة
+
+    if (isService) {
       try { await ctx.deleteMessage(); } catch {}
-      return; // لا نكمل
+      return;
     }
 
     return next();
