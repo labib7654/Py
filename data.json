@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T23:18:20.155Z",
+  "savedAt": "2026-05-18T23:22:20.164Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2989,9 +2989,9 @@
           "firstName": "عآئش",
           "role": "owner",
           "joinedAt": "2026-05-18T22:28:27.671Z",
-          "messageCount": 2,
-          "score": 2,
-          "lastMessageAt": "2026-05-18T22:28:35.717Z"
+          "messageCount": 4,
+          "score": 4,
+          "lastMessageAt": "2026-05-18T23:22:10.129Z"
         }
       },
       "admins": {},
@@ -3614,7 +3614,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T23:10:23.636Z",
+      "lastSeen": "2026-05-18T23:20:43.404Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -6961,7 +6961,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-18T22:29:45.530Z",
+      "lastSeen": "2026-05-18T23:22:10.130Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -7004,7 +7004,7 @@
           "chatTitle": "مماحين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T22:28:27.813Z",
-          "lastSeen": "2026-05-18T22:28:35.718Z"
+          "lastSeen": "2026-05-18T23:22:10.130Z"
         }
       },
       "contactedBot": false,
