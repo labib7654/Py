@@ -1,88 +1,99 @@
 // ============================================================
-//  handler_ai.js — نظام الذكاء الاصطناعي v1.0
-//  يرصد الأسئلة والردود في المجموعات → يحفظها → يرد ذكياً
+//  handler_ai.js — نظام الذكاء الاصطناعي v2.0
 // ============================================================
 //
-//  أضف هذه المتغيرات في ملف .env:
-//  ──────────────────────────────────────────────────────────
+//  المتغيرات المطلوبة في Render:
 //  AI_ENABLED=true
-//  AI_PROVIDER=deepseek          ← أو openai
-//  AI_API_KEY=sk-xxxxxxxxxxxx    ← مفتاحك الجديد (اصنع مفتاحاً جديداً)
-//  AI_RESPONSE_MODE=private      ← private | community | both
-//  AI_COMMUNITY_CHAT_ID=-100xxx  ← معرف القروب (لو mode=community/both)
-//  ──────────────────────────────────────────────────────────
+//  AI_PROVIDER=deepseek   (أو openai)
+//  AI_API_KEY=sk-...
 //
-//  التثبيت في index.js — أضف هذين السطرين:
-//  ──────────────────────────────────────────────────────────
-//  const setupAI = require('./handler_ai');   ← في أعلى الملف
-//  setupAI(bot);                               ← بعد باقي الـ setup
-//  ──────────────────────────────────────────────────────────
+//  باقي الإعدادات تُضبط من لوحة التحكم: أرسل /ai للبوت في الخاص
+// ============================================================
 
 'use strict';
 
-const fs   = require('fs');
-const path = require('path');
+const { Markup } = require('telegraf');
+const fs         = require('fs');
+const path       = require('path');
 
-// ─── إعدادات من .env ─────────────────────────────────────────
-const AI_ENABLED       = process.env.AI_ENABLED !== 'false';
-const AI_PROVIDER      = (process.env.AI_PROVIDER      || 'deepseek').toLowerCase();
-const AI_API_KEY       = process.env.AI_API_KEY         || '';
-const AI_RESPONSE_MODE = (process.env.AI_RESPONSE_MODE || 'private').toLowerCase();
-const AI_COMMUNITY_ID  = Number(process.env.AI_COMMUNITY_CHAT_ID || '0');
+// ─── متغيرات البيئة ───────────────────────────────────────────
+const AI_ENABLED  = process.env.AI_ENABLED !== 'false';
+const AI_PROVIDER = (process.env.AI_PROVIDER || 'deepseek').toLowerCase();
+const AI_API_KEY  = process.env.AI_API_KEY || '';
 
-// ملف مستقل لحفظ قاعدة الأسئلة والأجوبة (منفصل عن data.json)
-const QA_FILE = process.env.QA_FILE
-  ? path.resolve(process.env.QA_FILE)
-  : path.join(__dirname, 'qa_store.json');
-
-// ─── إعدادات مزودي الـ AI ─────────────────────────────────────
 const PROVIDERS = {
-  deepseek: { url: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat'  },
-  openai:   { url: 'https://api.openai.com/v1/chat/completions',   model: 'gpt-4o-mini'    },
+  deepseek: { url: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat' },
+  openai:   { url: 'https://api.openai.com/v1/chat/completions',   model: 'gpt-4o-mini'   },
 };
 
-// ─── قاعدة الأسئلة والأجوبة (ذاكرة + ملف) ───────────────────
-// الشكل: Map<hash, { hash, q, a, askedBy, askedByName, chatId, timestamp, count, answeredBy, answeredAt }>
+// ─── ملفات التخزين ────────────────────────────────────────────
+const QA_FILE  = path.join(__dirname, 'qa_store.json');
+const CFG_FILE = path.join(__dirname, 'ai_config.json');
+
+// ═════════════════════════════════════════════════════════════
+//  الإعدادات (تُحفظ في ai_config.json)
+// ═════════════════════════════════════════════════════════════
+let cfg = {
+  enabled:       true,   // تشغيل/إيقاف كامل
+  replyPrivate:  true,   // رد في الخاص
+  replyGroups:   [],     // قروبات يرد فيها البوت (فارغة = لا يرد في قروبات)
+  monitorGroups: [],     // قروبات يراقبها (فارغة = يراقب الكل)
+  minAnswerLen:  15,     // حد أدنى لطول الإجابة المقبولة
+};
+
+function loadCfg() {
+  try {
+    if (fs.existsSync(CFG_FILE)) {
+      cfg = { ...cfg, ...JSON.parse(fs.readFileSync(CFG_FILE, 'utf-8')) };
+    }
+  } catch (e) { console.warn('AI cfg load:', e.message); }
+}
+
+function saveCfg() {
+  try { fs.writeFileSync(CFG_FILE, JSON.stringify(cfg, null, 2), 'utf-8'); }
+  catch (e) { console.error('AI cfg save:', e.message); }
+}
+
+// ═════════════════════════════════════════════════════════════
+//  قاعدة الأسئلة والأجوبة
+// ═════════════════════════════════════════════════════════════
 const qaStore = new Map();
 
-// ─── تحميل القاعدة عند التشغيل ───────────────────────────────
 function loadQA() {
   try {
     if (fs.existsSync(QA_FILE)) {
-      const raw  = fs.readFileSync(QA_FILE, 'utf-8');
-      const data = JSON.parse(raw);
-      if (Array.isArray(data)) {
-        for (const e of data) {
-          if (e && e.hash) qaStore.set(e.hash, e);
-        }
-        console.log(`🧠 AI: تم تحميل ${qaStore.size} سؤال من qa_store.json`);
+      const arr = JSON.parse(fs.readFileSync(QA_FILE, 'utf-8'));
+      if (Array.isArray(arr)) {
+        arr.forEach(e => e?.hash && qaStore.set(e.hash, e));
+        console.log(`🧠 AI: تم تحميل ${qaStore.size} سؤال`);
       }
     }
-  } catch (e) {
-    console.warn('⚠️ AI: لم يتم تحميل qa_store.json:', e.message);
-  }
+  } catch (e) { console.warn('QA load:', e.message); }
 }
 
-// ─── حفظ القاعدة (مؤجّل ثانيتين لتجميع التغييرات) ───────────
-let _saveTimer = null;
+let _saveT = null;
 function saveQA() {
-  if (_saveTimer) clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(() => {
-    _saveTimer = null;
-    try {
-      fs.writeFileSync(QA_FILE, JSON.stringify([...qaStore.values()], null, 2), 'utf-8');
-    } catch (e) {
-      console.error('❌ AI: فشل حفظ qa_store.json:', e.message);
-    }
+  if (_saveT) clearTimeout(_saveT);
+  _saveT = setTimeout(() => {
+    try { fs.writeFileSync(QA_FILE, JSON.stringify([...qaStore.values()], null, 2), 'utf-8'); }
+    catch (e) { console.error('QA save:', e.message); }
   }, 2000);
 }
 
-// ─── هل النص سؤال؟ ────────────────────────────────────────────
+function makeHash(text) {
+  const s = text.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 80);
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
+  return String(Math.abs(h >>> 0));
+}
+
 const Q_WORDS = [
   'كيف','وش','ايش','ايه','إيه','ما هو','ما هي','متى','لماذا','لش',
   'هل','اين','أين','من هو','من هي','ليش','شو','ماذا','كم','وين',
-  'فين','ازاي','امتى','وليش','وكيف','وش هو','وش هي',
+  'فين','ازاي','امتى','وليش','وكيف','وش هو','وش هي','ما معنى',
+  'ما الفرق','شنو','شبيه','علاش','واش','كيفاش',
 ];
+
 function isQuestion(text) {
   if (!text || text.length < 4) return false;
   if (text.includes('?') || text.includes('؟')) return true;
@@ -90,295 +101,315 @@ function isQuestion(text) {
   return Q_WORDS.some(w => t.startsWith(w + ' ') || t.startsWith(w + '،') || t === w);
 }
 
-// ─── هاش النص (مفتاح التخزين) ────────────────────────────────
-function makeHash(text) {
-  const s = text.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 60);
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
-  return String(Math.abs(h >>> 0));
-}
-
-// ─── تسجيل سؤال جديد أو تحديث عداده ────────────────────────
-function recordQuestion(text, from, chatId) {
+function recordQ(text, from, chatId) {
   const h = makeHash(text);
-  const existing = qaStore.get(h);
-  if (existing) {
-    existing.count = (existing.count || 1) + 1;
-    existing.lastAsked = new Date().toISOString();
-  } else {
+  const e = qaStore.get(h);
+  if (e) { e.count = (e.count || 1) + 1; e.lastAsked = new Date().toISOString(); }
+  else {
     qaStore.set(h, {
       hash: h, q: text, a: null,
       askedBy: from.id,
       askedByName: from.first_name || from.username || String(from.id),
-      chatId,
-      timestamp: new Date().toISOString(),
-      lastAsked: new Date().toISOString(),
-      count: 1,
+      chatId, timestamp: new Date().toISOString(),
+      lastAsked: new Date().toISOString(), count: 1,
     });
   }
   saveQA();
   return h;
 }
 
-// ─── تسجيل إجابة (نحفظ الأطول = الأشمل) ─────────────────────
-function recordAnswer(questionHash, answerText, from) {
-  const e = qaStore.get(questionHash);
-  if (!e || !answerText || answerText.length < 5) return;
-  if (!e.a || answerText.length > e.a.length) {
-    e.a            = answerText;
-    e.answeredBy   = from.id;
+function recordA(qHash, ans, from) {
+  const e = qaStore.get(qHash);
+  if (!e || !ans || ans.length < cfg.minAnswerLen) return;
+  if (!e.a || ans.length > e.a.length) {
+    e.a = ans;
+    e.answeredBy = from.id;
     e.answeredByName = from.first_name || from.username || String(from.id);
-    e.answeredAt   = new Date().toISOString();
+    e.answeredAt = new Date().toISOString();
     saveQA();
   }
 }
 
-// ─── البحث عن إجابة قريبة في القاعدة ────────────────────────
-function findCachedAnswer(question) {
-  const words = question.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-  if (!words.length) return null;
-  let best = null, bestScore = 0;
-  for (const e of qaStore.values()) {
-    if (!e.a) continue;
-    const hits  = words.filter(w => e.q.toLowerCase().includes(w)).length;
-    const score = hits / words.length;
-    if (score > bestScore) { bestScore = score; best = e; }
-  }
-  // نعيد فقط إذا كانت المطابقة 50% أو أكثر
-  return bestScore >= 0.5 ? best : null;
-}
-
-// ─── بناء سياق لتغذية الـ AI من أفضل الأسئلة والأجوبة ────────
+// ═════════════════════════════════════════════════════════════
+//  استدعاء الـ AI مع سياق قاعدة المعرفة
+// ═════════════════════════════════════════════════════════════
 function buildContext() {
   const pool = [...qaStore.values()]
-    .filter(e => e.a && e.a.length > 5)
+    .filter(e => e.a && e.a.length >= cfg.minAnswerLen)
     .sort((a, b) => (b.count || 1) - (a.count || 1))
-    .slice(0, 20);
+    .slice(0, 25);
   if (!pool.length) return '';
-  let ctx = 'معرفة مجتمعية (استخدمها كمرجع للإجابة):\n\n';
-  for (const e of pool) ctx += `س: ${e.q}\nج: ${e.a}\n\n`;
+  let ctx = 'قاعدة معرفة المجتمع:\n\n';
+  pool.forEach(e => { ctx += `س: ${e.q}\nج: ${e.a}\n\n`; });
   return ctx;
 }
 
-// ─── استدعاء الـ AI ───────────────────────────────────────────
-async function askAI(question) {
+async function smartAsk(question) {
   const p   = PROVIDERS[AI_PROVIDER] || PROVIDERS.deepseek;
   const ctx = buildContext();
+
   const sys = ctx
-    ? `أنت مساعد ذكي لمجتمع عربي. استخدم المعرفة المتوفرة للإجابة بدقة وإيجاز بالعربية.\n\n${ctx}`
+    ? `أنت مساعد ذكي لمجتمع عربي. مهمتك:
+١. ابحث في قاعدة المعرفة عن إجابة تتوافق مع السؤال حتى لو اختلفت الصياغة أو اللهجة أو حُذفت حروف.
+٢. إذا وجدت إجابة مناسبة استخدمها وأضف عليها إن لزم.
+٣. إذا لم تجد أجب من معرفتك بإيجاز.
+٤. أجب بالعربية مباشرة بدون مقدمات.
+
+${ctx}`
     : 'أنت مساعد ذكي لمجتمع عربي. أجب بإيجاز ووضوح بالعربية.';
 
   const res = await fetch(p.url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AI_API_KEY}` },
     body: JSON.stringify({
-      model: p.model, max_tokens: 600,
+      model: p.model, max_tokens: 700, temperature: 0.3,
       messages: [{ role: 'system', content: sys }, { role: 'user', content: question }],
     }),
   });
 
   if (!res.ok) {
     const err = await res.text().catch(() => '');
-    throw new Error(`API ${res.status}: ${err.slice(0, 120)}`);
+    throw new Error(`${res.status}: ${err.slice(0, 100)}`);
   }
   const data = await res.json();
   return data.choices?.[0]?.message?.content?.trim() || 'لم أتمكن من الإجابة الآن.';
 }
 
 // ═════════════════════════════════════════════════════════════
-//  setupAI — يُستدعى من index.js
+//  لوحة التحكم
+// ═════════════════════════════════════════════════════════════
+function panelText() {
+  const answered = [...qaStore.values()].filter(e => e.a).length;
+  return (
+    `🤖 *لوحة تحكم الذكاء الاصطناعي*\n\n` +
+    `الحالة: ${cfg.enabled ? '🟢 شغّال' : '🔴 موقوف'}\n` +
+    `الرد في الخاص: ${cfg.replyPrivate ? '✅ مفعّل' : '❌ معطّل'}\n` +
+    `قروبات المراقبة: ${cfg.monitorGroups.length === 0 ? 'الكل 👁️' : cfg.monitorGroups.length + ' قروب'}\n` +
+    `قروبات الرد: ${cfg.replyGroups.length === 0 ? 'لا يوجد ❌' : cfg.replyGroups.length + ' قروب'}\n` +
+    `الأسئلة المحفوظة: ${qaStore.size} | المجاب عنها: ${answered}\n` +
+    `_المزود: ${AI_PROVIDER}_`
+  );
+}
+
+function panelMarkup() {
+  return Markup.inlineKeyboard([
+    [Markup.button.callback(cfg.enabled ? '🟢 إيقاف النظام' : '🔴 تشغيل النظام', 'ai_toggle')],
+    [Markup.button.callback(cfg.replyPrivate ? '✅ الخاص: مفعّل — إيقاف' : '❌ الخاص: معطّل — تفعيل', 'ai_priv')],
+    [Markup.button.callback('👁️ إعداد قروبات المراقبة',  'ai_mon')],
+    [Markup.button.callback('💬 إعداد قروبات الرد',       'ai_rep')],
+    [Markup.button.callback('📊 إحصائيات',                'ai_stats')],
+    [Markup.button.callback('🗑️ مسح قاعدة البيانات',     'ai_clr')],
+  ]);
+}
+
+// ═════════════════════════════════════════════════════════════
+//  التثبيت
 // ═════════════════════════════════════════════════════════════
 module.exports = function setupAI(bot) {
+  if (!AI_ENABLED) { console.log('ℹ️ AI معطّل'); return; }
+  if (!AI_API_KEY) { console.warn('⚠️ AI_API_KEY مفقود'); return; }
 
-  if (!AI_ENABLED) {
-    console.log('ℹ️ نظام AI معطّل — فعّله بـ AI_ENABLED=true في .env');
-    return;
-  }
-  if (!AI_API_KEY) {
-    console.warn('⚠️ نظام AI: AI_API_KEY مفقود في .env — تم التخطي');
-    return;
-  }
-
+  loadCfg();
   loadQA();
-  console.log(`🤖 نظام AI نشط | المزود: ${AI_PROVIDER} | الوضع: ${AI_RESPONSE_MODE}`);
+
+  const { DEVELOPER_ID } = require('./config');
+  const isDev = ctx => ctx.from?.id === DEVELOPER_ID;
+
+  console.log(`🤖 AI v2 نشط | ${AI_PROVIDER}`);
+
+  // ── أمر /ai ───────────────────────────────────────────────
+  bot.command('ai', async (ctx) => {
+    if (!isDev(ctx)) return;
+    if (ctx.chat.type !== 'private') return ctx.reply('افتح الأمر في الخاص مع البوت.');
+    await ctx.replyWithMarkdown(panelText(), panelMarkup());
+  });
+
+  // ── تشغيل/إيقاف ───────────────────────────────────────────
+  bot.action('ai_toggle', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    cfg.enabled = !cfg.enabled; saveCfg();
+    await ctx.answerCbQuery(cfg.enabled ? '✅ تم التشغيل' : '⛔ تم الإيقاف');
+    await ctx.editMessageText(panelText(), { parse_mode: 'Markdown', ...panelMarkup() });
+  });
+
+  // ── الخاص ─────────────────────────────────────────────────
+  bot.action('ai_priv', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    cfg.replyPrivate = !cfg.replyPrivate; saveCfg();
+    await ctx.answerCbQuery(cfg.replyPrivate ? '✅ الخاص مفعّل' : '❌ الخاص معطّل');
+    await ctx.editMessageText(panelText(), { parse_mode: 'Markdown', ...panelMarkup() });
+  });
+
+  // ── قروبات المراقبة ────────────────────────────────────────
+  bot.action('ai_mon', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    await ctx.answerCbQuery();
+    const db = require('./db');
+    const groups = db.allGroups();
+    const btns = groups.map(g => {
+      const on = cfg.monitorGroups.includes(g.chatId);
+      return [Markup.button.callback(`${on ? '✅' : '☑️'} ${(g.title || String(g.chatId)).slice(0, 28)}`, `aim_${g.chatId}`)];
+    });
+    btns.push([Markup.button.callback('✅ الكل', 'aim_all'), Markup.button.callback('🔙 رجوع', 'ai_back')]);
+    const note = cfg.monitorGroups.length === 0 ? '_(الكل مراقَب)_' : `_(${cfg.monitorGroups.length} محدد)_`;
+    await ctx.editMessageText(`👁️ *قروبات المراقبة*\n${note}`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  bot.action(/^aim_(-?\d+)$/, async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    const id = Number(ctx.match[1]);
+    const i  = cfg.monitorGroups.indexOf(id);
+    if (i >= 0) cfg.monitorGroups.splice(i, 1); else cfg.monitorGroups.push(id);
+    saveCfg();
+    await ctx.answerCbQuery(i >= 0 ? '❌ أُزيل' : '✅ أُضيف');
+    const db = require('./db');
+    const groups = db.allGroups();
+    const btns = groups.map(g => {
+      const on = cfg.monitorGroups.includes(g.chatId);
+      return [Markup.button.callback(`${on ? '✅' : '☑️'} ${(g.title || String(g.chatId)).slice(0, 28)}`, `aim_${g.chatId}`)];
+    });
+    btns.push([Markup.button.callback('✅ الكل', 'aim_all'), Markup.button.callback('🔙 رجوع', 'ai_back')]);
+    await ctx.editMessageText(`👁️ *قروبات المراقبة*\n_(${cfg.monitorGroups.length} محدد)_`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  bot.action('aim_all', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    cfg.monitorGroups = []; saveCfg();
+    await ctx.answerCbQuery('✅ الكل مراقَب');
+    await ctx.editMessageText(panelText(), { parse_mode: 'Markdown', ...panelMarkup() });
+  });
+
+  // ── قروبات الرد ────────────────────────────────────────────
+  bot.action('ai_rep', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    await ctx.answerCbQuery();
+    const db = require('./db');
+    const groups = db.allGroups();
+    const btns = groups.map(g => {
+      const on = cfg.replyGroups.includes(g.chatId);
+      return [Markup.button.callback(`${on ? '✅' : '☑️'} ${(g.title || String(g.chatId)).slice(0, 28)}`, `air_${g.chatId}`)];
+    });
+    btns.push([Markup.button.callback('🔙 رجوع', 'ai_back')]);
+    await ctx.editMessageText(`💬 *قروبات الرد*\n_(${cfg.replyGroups.length} محدد)_`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  bot.action(/^air_(-?\d+)$/, async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    const id = Number(ctx.match[1]);
+    const i  = cfg.replyGroups.indexOf(id);
+    if (i >= 0) cfg.replyGroups.splice(i, 1); else cfg.replyGroups.push(id);
+    saveCfg();
+    await ctx.answerCbQuery(i >= 0 ? '❌ أُزيل' : '✅ أُضيف');
+    const db = require('./db');
+    const groups = db.allGroups();
+    const btns = groups.map(g => {
+      const on = cfg.replyGroups.includes(g.chatId);
+      return [Markup.button.callback(`${on ? '✅' : '☑️'} ${(g.title || String(g.chatId)).slice(0, 28)}`, `air_${g.chatId}`)];
+    });
+    btns.push([Markup.button.callback('🔙 رجوع', 'ai_back')]);
+    await ctx.editMessageText(`💬 *قروبات الرد*\n_(${cfg.replyGroups.length} محدد)_`, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  // ── إحصائيات ──────────────────────────────────────────────
+  bot.action('ai_stats', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    await ctx.answerCbQuery();
+    const total    = qaStore.size;
+    const answered = [...qaStore.values()].filter(e => e.a).length;
+    const top5     = [...qaStore.values()].filter(e => e.a).sort((a, b) => (b.count || 1) - (a.count || 1)).slice(0, 5);
+    let txt = `📊 *إحصائيات قاعدة المعرفة*\n\nالكلي: *${total}* | مجاب: *${answered}* | بدون إجابة: *${total - answered}*\n\n`;
+    if (top5.length) { txt += `🔥 *الأكثر تكراراً:*\n`; top5.forEach((e, i) => { txt += `${i+1}. _(${e.count}x)_ ${e.q.slice(0,50)}\n`; }); }
+    await ctx.editMessageText(txt, { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', 'ai_back')]]) });
+  });
+
+  // ── مسح ───────────────────────────────────────────────────
+  bot.action('ai_clr', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    await ctx.answerCbQuery();
+    await ctx.editMessageText('⚠️ *هل أنت متأكد من مسح كل الأسئلة والأجوبة؟*', {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([[Markup.button.callback('🗑️ نعم، امسح', 'ai_clr_yes'), Markup.button.callback('❌ إلغاء', 'ai_back')]])
+    });
+  });
+
+  bot.action('ai_clr_yes', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    qaStore.clear(); saveQA();
+    await ctx.answerCbQuery('✅ تم المسح');
+    await ctx.editMessageText(panelText(), { parse_mode: 'Markdown', ...panelMarkup() });
+  });
+
+  // ── رجوع ──────────────────────────────────────────────────
+  bot.action('ai_back', async (ctx) => {
+    if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
+    await ctx.answerCbQuery();
+    await ctx.editMessageText(panelText(), { parse_mode: 'Markdown', ...panelMarkup() });
+  });
 
   // ──────────────────────────────────────────────────────────
-  //  ١. رادار المجموعات — يرصد الأسئلة والردود ويحفظها
+  //  رادار المجموعات
   // ──────────────────────────────────────────────────────────
   bot.on('message', async (ctx, next) => {
     try {
+      if (!cfg.enabled) return next();
       const { from, chat, message: msg } = ctx;
       if (!from || from.is_bot || !msg) return next();
       if (chat.type !== 'group' && chat.type !== 'supergroup') return next();
+
+      const monitored = cfg.monitorGroups.length === 0 || cfg.monitorGroups.includes(chat.id);
+      if (!monitored) return next();
 
       const text = msg.text || msg.caption || '';
       if (!text || text.startsWith('/') || text.length < 4) return next();
 
       if (isQuestion(text)) {
-        // سؤال مباشر
-        recordQuestion(text, from, chat.id);
-      } else if (msg.reply_to_message && text.length > 8) {
-        // ردّ على رسالة → قد يكون إجابة لسؤال
-        const origText = msg.reply_to_message.text || msg.reply_to_message.caption || '';
-        if (origText && isQuestion(origText)) {
-          const h = makeHash(origText);
-          // تأكد السؤال مسجّل
-          if (!qaStore.has(h)) {
-            const origFrom = msg.reply_to_message.from || { id: 0, first_name: 'مجهول' };
-            recordQuestion(origText, origFrom, chat.id);
-          }
-          recordAnswer(h, text, from);
+        recordQ(text, from, chat.id);
+      } else if (msg.reply_to_message && text.length >= cfg.minAnswerLen) {
+        const orig = msg.reply_to_message.text || msg.reply_to_message.caption || '';
+        if (orig && isQuestion(orig)) {
+          const h = makeHash(orig);
+          if (!qaStore.has(h)) recordQ(orig, msg.reply_to_message.from || { id: 0, first_name: 'مجهول' }, chat.id);
+          recordA(h, text, from);
         }
       }
-    } catch (e) {
-      console.error('AI radar error:', e.message);
-    }
+
+      // رد في القروب إن كان محدداً
+      if (cfg.replyGroups.includes(chat.id) && isQuestion(text)) {
+        try {
+          await ctx.sendChatAction('typing');
+          const ans = await smartAsk(text);
+          await ctx.reply(ans, { reply_to_message_id: msg.message_id });
+          const h = makeHash(text);
+          recordA(h, ans, { id: 0, first_name: 'AI' });
+        } catch (e) { console.error('AI group reply:', e.message); }
+      }
+    } catch (e) { console.error('AI radar:', e.message); }
     return next();
   });
 
   // ──────────────────────────────────────────────────────────
-  //  ٢. الرد في الخاص (إذا الوضع = private أو both)
+  //  الرد في الخاص
   // ──────────────────────────────────────────────────────────
-  if (AI_RESPONSE_MODE === 'private' || AI_RESPONSE_MODE === 'both') {
-    bot.on('message', async (ctx, next) => {
+  bot.on('message', async (ctx, next) => {
+    try {
+      if (!cfg.enabled || !cfg.replyPrivate) return next();
       const { from, chat, message: msg } = ctx;
       if (!from || from.is_bot || !msg) return next();
       if (chat.type !== 'private') return next();
-
       const text = msg.text || '';
       if (!text || text.startsWith('/') || text.length < 3) return next();
 
-      try {
-        await ctx.sendChatAction('typing');
+      await ctx.sendChatAction('typing');
+      const ans = await smartAsk(text);
+      await ctx.reply(ans);
 
-        // أولاً: ابحث في قاعدة المعرفة
-        const cached = findCachedAnswer(text);
-        if (cached) {
-          await ctx.reply(
-            `${cached.a}\n\n_💡 من تجارب المجتمع_`,
-            { parse_mode: 'Markdown' }
-          );
-          if (isQuestion(text)) recordQuestion(text, from, chat.id);
-
-          // لو وضع both — أرسل للمجتمع أيضاً
-          if (AI_RESPONSE_MODE === 'both' && AI_COMMUNITY_ID) {
-            bot.telegram.sendMessage(
-              AI_COMMUNITY_ID,
-              `❓ *سؤال:* ${text}\n\n💡 *الإجابة:*\n${cached.a}`,
-              { parse_mode: 'Markdown' }
-            ).catch(() => {});
-          }
-          return;
-        }
-
-        // ثانياً: اسأل الـ AI
-        const answer = await askAI(text);
-        await ctx.reply(answer);
-
-        // احفظ في القاعدة
-        if (isQuestion(text)) {
-          const h = recordQuestion(text, from, chat.id);
-          recordAnswer(h, answer, { id: 0, first_name: 'AI' });
-        }
-
-        // لو وضع both — أرسل للمجتمع أيضاً
-        if (AI_RESPONSE_MODE === 'both' && AI_COMMUNITY_ID) {
-          bot.telegram.sendMessage(
-            AI_COMMUNITY_ID,
-            `❓ *سؤال:* ${text}\n\n🤖 *الإجابة:*\n${answer}`,
-            { parse_mode: 'Markdown' }
-          ).catch(() => {});
-        }
-
-      } catch (e) {
-        console.error('AI private error:', e.message);
-        await ctx.reply('⚠️ حدث خطأ أثناء معالجة سؤالك، حاول مجدداً.');
+      if (isQuestion(text)) {
+        const h = recordQ(text, from, chat.id);
+        recordA(h, ans, { id: 0, first_name: 'AI' });
       }
-    });
-  }
-
-  // ──────────────────────────────────────────────────────────
-  //  ٣. الرد في المجتمع (إذا الوضع = community)
-  //     البوت ينشر سؤال+جواب في المجتمع مباشرة
-  // ──────────────────────────────────────────────────────────
-  if (AI_RESPONSE_MODE === 'community' && AI_COMMUNITY_ID) {
-    bot.on('message', async (ctx, next) => {
-      const { from, chat, message: msg } = ctx;
-      if (!from || from.is_bot || !msg) return next();
-      if (chat.type !== 'private') return next();
-
-      const text = msg.text || '';
-      if (!text || text.startsWith('/') || text.length < 3) return next();
-
-      try {
-        await ctx.sendChatAction('typing');
-        const answer = await askAI(text);
-
-        // أرسل للمجتمع
-        await bot.telegram.sendMessage(
-          AI_COMMUNITY_ID,
-          `❓ *سؤال:* ${text}\n\n🤖 *الإجابة:*\n${answer}`,
-          { parse_mode: 'Markdown' }
-        );
-
-        // أخبر المستخدم أن سؤاله نُشر
-        await ctx.reply('✅ سؤالك تم إرساله للمجتمع، ستجد الإجابة هناك.');
-
-        if (isQuestion(text)) {
-          const h = recordQuestion(text, from, chat.id);
-          recordAnswer(h, answer, { id: 0, first_name: 'AI' });
-        }
-
-      } catch (e) {
-        console.error('AI community error:', e.message);
-        await ctx.reply('⚠️ حدث خطأ، حاول مجدداً.');
-      }
-    });
-  }
-
-  // ──────────────────────────────────────────────────────────
-  //  ٤. أوامر الإدارة (للمطور فقط)
-  // ──────────────────────────────────────────────────────────
-  bot.command('ai_stats', async (ctx) => {
-    const { DEVELOPER_ID } = require('./config');
-    if (ctx.from.id !== DEVELOPER_ID) return;
-
-    const total    = qaStore.size;
-    const answered = [...qaStore.values()].filter(e => e.a).length;
-    const top5     = [...qaStore.values()]
-      .filter(e => e.a)
-      .sort((a, b) => (b.count || 1) - (a.count || 1))
-      .slice(0, 5);
-
-    let text = `🧠 *إحصائيات قاعدة المعرفة*\n\n`;
-    text += `📊 إجمالي الأسئلة المرصودة: *${total}*\n`;
-    text += `✅ مجاب عنها: *${answered}*\n`;
-    text += `❓ بدون إجابة: *${total - answered}*\n`;
-    text += `🤖 المزود: \`${AI_PROVIDER}\` | الوضع: \`${AI_RESPONSE_MODE}\`\n`;
-    if (top5.length) {
-      text += `\n🔥 *الأكثر تكراراً:*\n`;
-      top5.forEach((e, i) => {
-        text += `${i + 1}. _(${e.count}x)_ ${e.q.slice(0, 50)}\n`;
-      });
+    } catch (e) {
+      console.error('AI private:', e.message);
+      await ctx.reply('⚠️ حدث خطأ، حاول مجدداً.').catch(() => {});
     }
-    await ctx.reply(text, { parse_mode: 'Markdown' });
   });
-
-  bot.command('ai_info', async (ctx) => {
-    const { DEVELOPER_ID } = require('./config');
-    if (ctx.from.id !== DEVELOPER_ID) return;
-    await ctx.reply(
-      `⚙️ *إعدادات نظام AI*\n\n` +
-      `• الحالة: ✅ نشط\n` +
-      `• المزود: \`${AI_PROVIDER}\`\n` +
-      `• الوضع: \`${AI_RESPONSE_MODE}\`\n` +
-      `• معرف المجتمع: \`${AI_COMMUNITY_ID || 'غير محدد'}\`\n` +
-      `• ملف القاعدة: \`qa_store.json\`\n\n` +
-      `الأوامر المتاحة:\n` +
-      `/ai_stats — إحصائيات قاعدة المعرفة\n` +
-      `/ai_info — هذه الرسالة`,
-      { parse_mode: 'Markdown' }
-    );
-  });
-
 };
