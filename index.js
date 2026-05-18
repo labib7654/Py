@@ -157,6 +157,37 @@ async function main() {
       }
     });
 
+    // ── قبول تلقائي لطلبات الانضمام بعد 5 دقائق ──────────────────
+    setInterval(async () => {
+      const db     = require('./db');
+      const groups = db.allGroups();
+      const now    = Date.now();
+      const FIVE_MIN = 5 * 60 * 1000;
+
+      for (const g of groups) {
+        if (!g.autoApproveJoin || !g.joinRequestsEnabled) continue;
+        const pending = [...g.joinRequests.values()].filter(r =>
+          r.status === 'pending' && (now - new Date(r.requestedAt).getTime()) >= FIVE_MIN
+        );
+        for (const r of pending) {
+          try {
+            await bot.telegram.approveChatJoinRequest(g.chatId, r.userId);
+            r.status = 'approved_auto';
+            db.trackMember(g.chatId, r.userId, r.username || '', r.firstName || '', 'member');
+            console.log(`🤖 قبول تلقائي: ${r.username || r.userId} في ${g.title}`);
+          } catch (e) {
+            if (e.message?.includes('USER_ALREADY_PARTICIPANT') || e.message?.includes('HIDE_REQUESTER_MISSING')) {
+              r.status = 'approved_auto';
+            } else {
+              console.warn(`⚠️ فشل القبول التلقائي لـ ${r.userId}:`, e.message);
+            }
+          }
+        }
+        if (pending.length > 0) db.saveData();
+      }
+    }, 60 * 1000); // كل دقيقة
+    console.log('🤖 نظام القبول التلقائي مفعّل (فحص كل دقيقة)');
+
     // Keep-Alive كل 14 دقيقة
     setInterval(async () => {
       try {

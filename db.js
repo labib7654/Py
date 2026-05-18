@@ -118,6 +118,7 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
       wordViolations:      new Map(),
       joinRequests:        new Map(),
       joinRequestsEnabled: false,
+      autoApproveJoin:     false,   // قبول تلقائي بعد 5 دقائق
       rules:               '',
       communityId:         null,
       protectContent:      false,

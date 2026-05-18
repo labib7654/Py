@@ -19,6 +19,9 @@ function groupSettingsKeyboard(chatId, s) {
       Markup.button.callback('📨 الطلبات المعلقة', `joinreqs_${chatId}`),
     ],
     [
+      Markup.button.callback(`${s.autoApproveJoin ? '🤖✅' : '🤖❌'} قبول تلقائي (5د)`, `toggle_autoapprove_${chatId}`),
+    ],
+    [
       Markup.button.callback(`${s.protectContent ? '🔒' : '🔓'} حماية المحتوى`, `toggle_protect_${chatId}`),
       Markup.button.callback(`${s.antiLinks      ? '✅' : '❌'} منع الروابط`,   `toggle_antilinks_${chatId}`),
     ],
@@ -597,6 +600,24 @@ module.exports = function setupOwnerHandlers(bot) {
       newState
         ? '🔒 موافقة الانضمام مفعّلة — الطلبات ستصلك في الخاص'
         : '🔓 موافقة الانضمام معطّلة — الدخول مباشر',
+      { show_alert: true }
+    );
+    await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+  });
+
+  // ── تفعيل/تعطيل القبول التلقائي بعد 5 دقائق ───────────────────────
+  bot.action(/^toggle_autoapprove_(-?\d+)$/, async (ctx) => {
+    if (!isOwner(ctx) && !isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ للمالك فقط', { show_alert: true });
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    g.autoApproveJoin = !g.autoApproveJoin;
+    db.saveData();
+    await ctx.answerCbQuery(
+      g.autoApproveJoin
+        ? '🤖✅ القبول التلقائي مفعّل — الطلبات ستُقبل بعد 5 دقائق'
+        : '🤖❌ القبول التلقائي معطّل',
       { show_alert: true }
     );
     await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
