@@ -235,7 +235,7 @@ module.exports = function setupDeveloper(bot) {
           [Markup.button.callback('👥 الأعضاء',        `dev_members_${chatId}`),  Markup.button.callback('⚠️ المحذَّرون',  `dev_warned_${chatId}`)],
           [Markup.button.callback('🔇 المكتومون',       `dev_muted_${chatId}`),   Markup.button.callback('🚫 المحظورون',  `dev_banned_grp_${chatId}`)],
           [Markup.button.callback('📨 طلبات الانضمام', `dev_joinreqs_${chatId}`),Markup.button.callback('📢 بث للمجموعة',`dev_grp_bcast_${chatId}`)],
-          [Markup.button.callback('🧵 إدارة المواضيع', `topics_panel_${chatId}`), Markup.button.callback('⚙️ الإعدادات', `settings_${chatId}`)],
+          [Markup.button.callback('⚙️ الإعدادات',       `settings_${chatId}`)],
           [Markup.button.callback('🔙 رجوع',           'dev_groups')],
         ]),
       }
@@ -608,25 +608,30 @@ module.exports = function setupDeveloper(bot) {
   });
 
   bot.command('gban', async (ctx) => {
-    if (!isDeveloper(ctx)) return;
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.reply('⛔ ليس لديك صلاحية للحظر العالمي.');
     const args     = ctx.message.text.split(' ').slice(1);
     const targetId = Number(args[0]);
     const reason   = args.slice(1).join(' ') || 'لا يوجد سبب';
     if (!targetId) return ctx.reply('❌ مثال: /gban 123456 سبب');
     const user = db.getOrCreateUser(targetId, '', '');
+    if (user.globalBanned) return ctx.reply('⚠️ هذا المستخدم محظور عالمياً بالفعل!');
     user.globalBanned = true; user.bannedReason = reason; user.bannedAt = new Date();
+    db.saveData();
     await ctx.replyWithMarkdown(`🚫 *تم الحظر العالمي*\n\`${targetId}\`\n${reason}`);
     for (const g of db.allGroups()) { try { await bot.telegram.banChatMember(g.chatId, targetId); } catch {} }
   });
 
   bot.command('ungban', async (ctx) => {
-    if (!isDeveloper(ctx)) return;
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.reply('⛔ ليس لديك صلاحية لرفع الحظر العالمي.');
     const targetId = Number(ctx.message.text.split(' ')[1]);
     if (!targetId) return ctx.reply('❌ مثال: /ungban 123456');
     const user = db.getUser(targetId);
-    if (!user) return ctx.reply('❌ المستخدم غير موجود!');
+    if (!user) return ctx.reply('❌ المستخدم غير موجود في قاعدة البيانات!');
+    if (!user.globalBanned) return ctx.reply('⚠️ هذا المستخدم ليس محظوراً عالمياً!');
     user.globalBanned = false; user.bannedReason = ''; user.bannedAt = null;
-    await ctx.replyWithMarkdown(`✅ *رُفع الحظر عن:* \`${targetId}\``);
+    db.saveData();
+    for (const g of db.allGroups()) { try { await bot.telegram.unbanChatMember(g.chatId, targetId); } catch {} }
+    await ctx.replyWithMarkdown(`✅ *رُفع الحظر العالمي عن:* \`${targetId}\\`\nتم رفع الحظر من جميع المجموعات.`);
   });
 
   // ── dev_banned_list ──────────────────────────────────────────
