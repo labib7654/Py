@@ -35,6 +35,7 @@ function back(cb) { return Markup.inlineKeyboard([[Markup.button.callback('🔙 
 
 function memberActionsKeyboard(targetId, chatId, backCb) {
   return Markup.inlineKeyboard([
+    [Markup.button.callback('📋 تفاصيل كاملة', `dev_profile_${targetId}_${chatId}_0`)],
     [Markup.button.callback('⬆️ رفع مشرف',   `promote_${targetId}_${chatId}`),
      Markup.button.callback('⬇️ تنزيل مشرف', `demote_${targetId}_${chatId}`)],
     [Markup.button.callback('🔇 كتم',         `mute_${targetId}_${chatId}`),
@@ -241,12 +242,16 @@ module.exports = function setupDeveloper(bot) {
     );
   });
 
-  bot.action(/^dev_members_(-?\d+)$/, async (ctx) => {
+  // ── dev_members مع pagination وزر تفاصيل لكل عضو ──────────────
+  bot.action(/^dev_members_(-?\d+)(?:_p(\d+))?$/, async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
+    const page   = Number(ctx.match[2] || 0);
+    const PAGE   = 6;
     const g = db.getGroup(chatId);
     if (!g) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
+
     let adminIds = new Set(), ownerLine = '', adminLines = [];
     try {
       const list = await bot.telegram.getChatAdministrators(chatId);
@@ -263,23 +268,45 @@ module.exports = function setupDeveloper(bot) {
         }
       }
     } catch {}
-    const members    = [...g.members.values()].filter(m => !adminIds.has(m.userId) && m.userId !== g.ownerId);
-    let text         = `👥 *أعضاء ${g.title}*\n\n`;
-    if (ownerLine)         text += `${ownerLine}\n\n`;
-    if (adminLines.length) text += `*المشرفون:*\n${adminLines.join('\n')}\n\n`;
+
+    const allMembers = [...g.members.values()].filter(m => !adminIds.has(m.userId) && m.userId !== g.ownerId);
+    const totalPages = Math.ceil(allMembers.length / PAGE) || 1;
+    const slice      = allMembers.slice(page * PAGE, (page + 1) * PAGE);
+
+    let text = `👥 *أعضاء ${g.title}*\n`;
+    text += `📊 الإجمالي: \`${allMembers.length}\` عضو | صفحة ${page + 1}/${totalPages}\n\n`;
+    if (page === 0) {
+      if (ownerLine)         text += `${ownerLine}\n\n`;
+      if (adminLines.length) text += `*المشرفون (${adminLines.length}):*\n${adminLines.join('\n')}\n\n`;
+    }
+
     const memberBtns = [];
-    if (members.length > 0) {
-      text += `*الأعضاء (${members.length}):*\n`;
-      members.slice(0, 8).forEach(m => {
+    if (slice.length > 0) {
+      text += `*الأعضاء العاديون:*\n`;
+      slice.forEach(m => {
         const name  = m.username ? `@${m.username}` : m.firstName;
         const icons = `${(g.warns.get(m.userId)?.length || 0) > 0 ? '⚠️' : ''}${g.mutedUsers.has(m.userId) ? '🔇' : ''}${g.bannedUsers.has(m.userId) ? '🚫' : ''}`;
-        text += `👤 ${name} \`[${m.userId}]\` ${icons} ⭐${m.score || 0}\n`;
-        memberBtns.push([Markup.button.callback(`👤 ${name.slice(0, 20)} ${icons}`, `dev_mact_${m.userId}_${chatId}`)]);
+        text += `👤 ${name} \`[${m.userId}]\` ${icons} 💬${m.messageCount || 0} ⭐${m.score || 0}\n`;
+        memberBtns.push([
+          Markup.button.callback(`👤 ${name.slice(0, 16)} ${icons}`, `dev_mact_${m.userId}_${chatId}`),
+          Markup.button.callback(`🔍 تفاصيل`, `dev_profile_${m.userId}_${chatId}_${page}`),
+        ]);
       });
-    } else { text += '_لا يوجد أعضاء عاديون_'; }
+    } else {
+      text += '_لا يوجد أعضاء عاديون_';
+    }
+
+    const navBtns = [];
+    if (page > 0)              navBtns.push(Markup.button.callback('◀️ السابق', `dev_members_${chatId}_p${page - 1}`));
+    if (page + 1 < totalPages) navBtns.push(Markup.button.callback('التالي ▶️', `dev_members_${chatId}_p${page + 1}`));
+
+    const keyboard = [...memberBtns];
+    if (navBtns.length) keyboard.push(navBtns);
+    keyboard.push([Markup.button.callback('🔙 رجوع', `dev_grp_${chatId}`)]);
+
     await ctx.editMessageText(text, {
       parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([...memberBtns, [Markup.button.callback('🔙 رجوع', `dev_grp_${chatId}`)]]),
+      ...Markup.inlineKeyboard(keyboard),
     });
   });
 
@@ -383,9 +410,97 @@ module.exports = function setupDeveloper(bot) {
     const warns= g?.warns.get(targetId)?.length || 0;
     const gu   = db.getUser(targetId);
     await ctx.editMessageText(
-      `👤 *${name}*\n\n🆔 \`${targetId}\`\n⚠️ التحذيرات: \`${warns}/${g?.maxWarns || 3}\`\n🔇 مكتوم: ${g?.mutedUsers.has(targetId) ? '✅' : '❌'}\n🚫 محظور محلياً: ${g?.bannedUsers.has(targetId) ? '✅' : '❌'}\n🌍 محظور عالمياً: ${gu?.globalBanned ? `✅ — ${gu.bannedReason}` : '❌'}\n📨 رسائل: \`${m?.messageCount || 0}\`\n⭐ نقاط: \`${m?.score || 0}\``,
+      `👤 *${name}*\n\n🆔 \`${targetId}\`\n📋 يوزر: ${m?.username ? `@${m.username}` : '—'}\n⚠️ التحذيرات: \`${warns}/${g?.maxWarns || 3}\`\n🔇 مكتوم: ${g?.mutedUsers.has(targetId) ? '✅' : '❌'}\n🚫 محظور محلياً: ${g?.bannedUsers.has(targetId) ? '✅' : '❌'}\n🌍 محظور عالمياً: ${gu?.globalBanned ? `✅ — ${gu.bannedReason}` : '❌'}\n💬 رسائل: \`${m?.messageCount || 0}\`\n⭐ نقاط: \`${m?.score || 0}\`\n📅 انضم: ${m?.joinedAt ? new Date(m.joinedAt).toLocaleString('ar') : '—'}`,
       { parse_mode: 'Markdown', ...memberActionsKeyboard(targetId, chatId, `dev_members_${chatId}`) }
     );
+  });
+
+  // ── صفحة التفاصيل الشاملة للعضو ────────────────────────────
+  bot.action(/^dev_profile_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    await ctx.answerCbQuery();
+    const targetId = Number(ctx.match[1]);
+    const chatId   = Number(ctx.match[2]);
+    const backPage = Number(ctx.match[3] || 0);
+    const g   = db.getGroup(chatId);
+    const m   = g?.members.get(targetId);
+    const gu  = db.getUser(targetId);
+
+    const name     = m?.username ? `@${m.username}` : (m?.firstName || gu?.firstName || String(targetId));
+    const userId   = targetId;
+    const username = m?.username || gu?.username || '';
+
+    // — حالته في هذا القروب
+    const warns       = g?.warns.get(userId) || [];
+    const isMuted     = g?.mutedUsers.has(userId) || false;
+    const isBanned    = g?.bannedUsers.has(userId) || false;
+    const timedBan    = g?.timedBans?.get(userId);
+    const timedMute   = g?.timedMutes?.get(userId);
+    const isGBanned   = gu?.globalBanned || false;
+    const isBotAdmin  = db.isBotAdmin(userId);
+
+    // — الكلمات المحظورة التي أرسلها
+    const wordVio = g?.wordViolations?.get(userId) || {};
+    const wordVioStr = Object.entries(wordVio).length > 0
+      ? Object.entries(wordVio).map(([w, c]) => `• "${w}" × ${c}`).join('\n')
+      : '_لا يوجد_';
+
+    // — آخر إجراءات من سجل التدقيق
+    const auditEntries = (g?.auditLog || [])
+      .filter(e => e.target?.id === userId || e.by?.id === userId)
+      .slice(0, 5);
+    const auditStr = auditEntries.length > 0
+      ? auditEntries.map(e => {
+          const dt = new Date(e.at).toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' });
+          return `• ${e.action} — ${dt}`;
+        }).join('\n')
+      : '_لا يوجد سجل_';
+
+    // — كل القروبات التي هو فيها (من db)
+    const allGrps = db.allGroups();
+    const memberInGroups = allGrps.filter(gr => gr.members?.has(userId));
+    const ownerInGroups  = allGrps.filter(gr => gr.ownerId === userId);
+    const adminInGroups  = allGrps.filter(gr => gr.admins?.has(userId));
+
+    const grpListStr = memberInGroups.slice(0, 8).map(gr => {
+      const mm = gr.members.get(userId);
+      const joined = mm?.joinedAt ? new Date(mm.joinedAt).toLocaleDateString('ar-SA') : '—';
+      const isOwner = gr.ownerId === userId ? ' 👑' : '';
+      const isAdm   = gr.admins?.has(userId) ? ' 👮' : '';
+      return `• ${gr.title.slice(0, 22)}${isOwner}${isAdm} — ${joined}`;
+    }).join('\n') || '_غير موجود في مجموعات أخرى_';
+
+    let text = '';
+    text += `👤 *تفاصيل: ${name}*\n`;
+    text += `━━━━━━━━━━━━━━━━\n`;
+    text += `🆔 ID: \`${userId}\``;
+    if (username) text += ` ← نسخ\n`;
+    else text += `\n`;
+    text += `📋 يوزر: ${username ? `@${username}` : '_بدون يوزر_'}\n`;
+    text += `📛 الاسم: ${m?.firstName || gu?.firstName || '—'}\n`;
+    text += `\n*📊 في هذا القروب:*\n`;
+    text += `📅 تاريخ الانضمام: ${m?.joinedAt ? new Date(m.joinedAt).toLocaleString('ar-SA', { dateStyle: 'medium', timeStyle: 'medium' }) : '—'}\n`;
+    text += `💬 الرسائل: \`${m?.messageCount || 0}\`\n`;
+    text += `⭐ النقاط: \`${m?.score || 0}\`\n`;
+    text += `⚠️ التحذيرات: \`${warns.length}/${g?.maxWarns || 3}\`\n`;
+    text += `🔇 مكتوم: ${isMuted ? `✅${timedMute ? ` (حتى ${new Date(timedMute).toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' })})` : ''}` : '❌'}\n`;
+    text += `🚫 محظور محلياً: ${isBanned ? `✅${timedBan ? ` (حتى ${new Date(timedBan).toLocaleString('ar-SA', { dateStyle: 'short', timeStyle: 'short' })})` : ''}` : '❌'}\n`;
+    text += `\n*🌍 حالة عالمية:*\n`;
+    text += `🌍 محظور عالمياً: ${isGBanned ? `✅ — ${gu?.bannedReason || ''}` : '❌'}\n`;
+    text += `🤖 مشرف بوت: ${isBotAdmin ? '✅' : '❌'}\n`;
+    text += `👑 مالك في: \`${ownerInGroups.length}\` قروب | 👮 مشرف في: \`${adminInGroups.length}\`\n`;
+    text += `\n*🚫 كلمات محظورة أرسلها:*\n${wordVioStr}\n`;
+    text += `\n*📋 آخر إجراءات عليه:*\n${auditStr}\n`;
+    text += `\n*👥 القروبات (${memberInGroups.length}):*\n${grpListStr}`;
+    if (memberInGroups.length > 8) text += `\n_... و${memberInGroups.length - 8} أخرى_`;
+
+    await ctx.editMessageText(text, {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.callback('⚙️ إجراءات', `dev_mact_${userId}_${chatId}`)],
+        [Markup.button.callback('🔙 رجوع للأعضاء', `dev_members_${chatId}_p${backPage}`)],
+      ]),
+    });
   });
 
   // ── dev_channels ─────────────────────────────────────────────
