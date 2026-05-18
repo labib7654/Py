@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T15:25:56.029Z",
+  "savedAt": "2026-05-18T15:28:54.568Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -359,9 +359,9 @@
           "firstName": ".",
           "role": "member",
           "joinedAt": "2026-05-17T23:47:43.216Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-05-18T14:44:50.650Z"
+          "messageCount": 4,
+          "score": 4,
+          "lastMessageAt": "2026-05-18T15:27:48.501Z"
         },
         "8265840070": {
           "userId": 8265840070,
@@ -2240,7 +2240,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T15:10:47.884Z",
+      "lastSeen": "2026-05-18T15:28:53.093Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -2527,7 +2527,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T23:47:43.215Z",
-      "lastSeen": "2026-05-18T14:44:50.650Z",
+      "lastSeen": "2026-05-18T15:27:48.502Z",
       "groups": [
         -1003969494192
       ],
@@ -2535,10 +2535,10 @@
       "seenInChats": {
         "-1003969494192": {
           "chatId": -1003969494192,
-          "chatTitle": "مجتمع جامعات المملكة",
+          "chatTitle": "مجتمع جامعة الامير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-05-17T23:47:43.216Z",
-          "lastSeen": "2026-05-18T14:44:50.650Z"
+          "lastSeen": "2026-05-18T15:27:48.502Z"
         }
       },
       "contactedBot": false,
@@ -2555,7 +2555,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T09:23:08.291Z",
+      "lastSeen": "2026-05-18T15:28:39.067Z",
       "groups": [
         -1003794953708,
         -1003969494192
