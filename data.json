@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T13:46:40.085Z",
+  "savedAt": "2026-05-18T13:50:40.082Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -163,6 +163,16 @@
       "addedByUsername": "unknown",
       "addedAt": "2026-05-17T20:58:12.197Z",
       "members": {
+        "1087968824": {
+          "userId": 1087968824,
+          "username": "GroupAnonymousBot",
+          "firstName": "Group",
+          "role": "member",
+          "joinedAt": "2026-05-18T13:49:52.695Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T13:49:52.695Z"
+        },
         "8607336247": {
           "userId": 8607336247,
           "username": "",
@@ -297,7 +307,7 @@
           "userId": 6275988426,
           "username": "B_7a3j",
           "firstName": "صياد الارواح",
-          "role": "member",
+          "role": "admin",
           "joinedAt": "2026-05-18T08:53:21.584Z",
           "messageCount": 1,
           "score": 1,
@@ -344,7 +354,14 @@
           "lastMessageAt": "2026-05-18T13:26:59.917Z"
         }
       },
-      "admins": {},
+      "admins": {
+        "6275988426": {
+          "username": "B_7a3j",
+          "promotedBy": 7411444902,
+          "promotedByUsername": "Labibrd",
+          "promotedAt": "2026-05-18T13:49:29.584Z"
+        }
+      },
       "warns": {},
       "maxWarns": 3,
       "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
@@ -800,6 +817,26 @@
       "lastContactAt": null,
       "bioBanInfo": null
     },
+    "1087968824": {
+      "userId": 1087968824,
+      "username": "GroupAnonymousBot",
+      "firstName": "Group",
+      "lastName": "",
+      "profileLink": "https://t.me/GroupAnonymousBot",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T13:49:52.695Z",
+      "lastSeen": "2026-05-18T13:49:52.695Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {},
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
     "1361482400": {
       "userId": 1361482400,
       "username": "BMW51O",
@@ -828,7 +865,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T13:43:21.473Z",
+      "lastSeen": "2026-05-18T13:49:29.582Z",
       "groups": [
         -1003940779079,
         -1003969494192
@@ -1239,7 +1276,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T08:53:11.496Z",
-      "lastSeen": "2026-05-18T13:42:41.070Z",
+      "lastSeen": "2026-05-18T13:49:43.148Z",
       "groups": [
         -1003969494192
       ],
@@ -1247,10 +1284,10 @@
       "seenInChats": {
         "-1003969494192": {
           "chatId": -1003969494192,
-          "chatTitle": "مجتمع جامعةالأمير سلطان",
+          "chatTitle": "مجتمع جامعات المملكة",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T08:53:21.584Z",
-          "lastSeen": "2026-05-18T08:53:21.600Z"
+          "lastSeen": "2026-05-18T13:49:29.583Z"
         }
       },
       "contactedBot": true,
