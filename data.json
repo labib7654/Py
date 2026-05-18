@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T11:02:55.172Z",
+  "savedAt": "2026-05-18T11:04:53.442Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -38,7 +38,8 @@
       "mutedUsers": [],
       "bannedUsers": [
         7574941687,
-        8460422540
+        8460422540,
+        8607336247
       ],
       "bannedWords": [],
       "wordViolations": {},
@@ -166,9 +167,9 @@
           "firstName": ".",
           "role": "member",
           "joinedAt": "2026-05-17T20:58:12.374Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-17T20:58:18.253Z"
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-18T11:02:57.597Z"
         },
         "8152109579": {
           "userId": 8152109579,
@@ -321,7 +322,8 @@
       "mutedUsers": [],
       "bannedUsers": [
         7574941687,
-        8460422540
+        8460422540,
+        8607336247
       ],
       "bannedWords": [
         {
@@ -454,7 +456,8 @@
       "muteNewMembers": false,
       "mutedUsers": [],
       "bannedUsers": [
-        8460422540
+        8460422540,
+        8607336247
       ],
       "bannedWords": [],
       "wordViolations": {},
@@ -525,7 +528,9 @@
       "antiSpam": false,
       "muteNewMembers": false,
       "mutedUsers": [],
-      "bannedUsers": [],
+      "bannedUsers": [
+        8607336247
+      ],
       "bannedWords": [],
       "wordViolations": {},
       "joinRequests": {},
@@ -595,7 +600,9 @@
       "antiSpam": false,
       "muteNewMembers": false,
       "mutedUsers": [],
-      "bannedUsers": [],
+      "bannedUsers": [
+        8607336247
+      ],
       "bannedWords": [],
       "wordViolations": {},
       "joinRequests": {},
@@ -665,7 +672,9 @@
       "antiSpam": false,
       "muteNewMembers": false,
       "mutedUsers": [],
-      "bannedUsers": [],
+      "bannedUsers": [
+        8607336247
+      ],
       "bannedWords": [],
       "wordViolations": {},
       "joinRequests": {},
@@ -798,19 +807,33 @@
       "userId": 8607336247,
       "username": "",
       "firstName": ".",
-      "globalBanned": false,
-      "bannedReason": "",
-      "bannedAt": null,
+      "globalBanned": true,
+      "bannedReason": "نبذة محظورة — كلمة: \"مشاريع\"",
+      "bannedAt": "2026-05-18T11:03:33.843Z",
       "firstSeen": "2026-05-17T20:58:12.017Z",
-      "lastSeen": "2026-05-18T11:01:33.884Z",
+      "lastSeen": "2026-05-18T11:03:33.636Z",
       "groups": [
         -1003969494192
       ],
       "channels": [],
-      "bioBanInfo": null,
-      "seenInChats": {},
+      "bioBanInfo": {
+        "word": "مشاريع",
+        "bio": "ممعي مشاريع وحلول",
+        "bannedAt": "2026-05-18T11:03:33.843Z",
+        "sourceGroup": -1003969494192,
+        "unbanBy": "developer_only"
+      },
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعةالأمير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T11:02:57.597Z",
+          "lastSeen": "2026-05-18T11:02:57.597Z"
+        }
+      },
       "profileLink": "tg://user?id=8607336247",
-      "lastName": "",
+      "lastName": ".",
       "contactedBot": false,
       "lastContactAt": null
     },
@@ -822,12 +845,14 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-18T09:33:23.573Z",
+      "lastSeen": "2026-05-18T11:03:39.368Z",
       "groups": [
         -1003969494192,
         -1003940779079,
         -1003854112996,
-        -1002648125233
+        -1002648125233,
+        -1003794953708,
+        -1002985211839
       ],
       "channels": [],
       "bioBanInfo": null,
