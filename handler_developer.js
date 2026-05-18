@@ -77,6 +77,45 @@ module.exports = function setupDeveloper(bot) {
       }
     }
 
+    // ── رابط التحقق الجامعي: /start verify_{chatId}
+    if (payload.startsWith('verify_')) {
+      const { sessions, getVerifySettings, getAvailableTopics, stepWelcome } = require('./verify_helpers');
+      const chatId = Number(payload.replace('verify_', ''));
+      const g      = db.getGroup(chatId);
+      if (!g) return ctx.reply('❌ المجموعة غير موجودة.');
+
+      const vs = getVerifySettings(g);
+      if (!vs.enabled) return ctx.reply('⚠️ نظام التحقق غير مفعّل حالياً.');
+
+      // معتمد مسبقاً
+      if (vs.approvedMembers.has(u.id))
+        return ctx.reply('✅ أنت معتمد بالفعل! يمكنك المشاركة في موضوع كليتك.');
+
+      // طلب معلق
+      if (vs.pendingRequests.get(u.id)?.status === 'pending')
+        return ctx.reply('📨 لديك طلب قيد المراجعة. انتظر حتى يراجعه المشرف.');
+
+      // cooldown
+      const cd = vs.cooldowns.get(u.id);
+      if (cd && cd > Date.now()) {
+        const hrs = Math.ceil((cd - Date.now()) / 3600000);
+        return ctx.reply(`⏳ يمكنك إعادة المحاولة بعد ${hrs} ساعة.`);
+      }
+
+      // بدء جلسة تسجيل جديدة
+      const topics = getAvailableTopics(g);
+      sessions.set(u.id, { step: 'student_id', chatId, data: {}, topics });
+      // إرسال رسالة الترحيب مباشرة
+      return ctx.replyWithMarkdown(
+        `🎓 *أهلاً بك في مجتمع جامعة الأمير سلطان!*\n\n` +
+        `انضممت إلى *${g.title}*.\n\n` +
+        `لفتح المواضيع وتفعيل حسابك، يرجى إكمال بيانات التسجيل:\n\n` +
+        `━━━━━━━━━━━━━━━━━━\n` +
+        `1⃣ *أدخل رقم القيد الجامعي:*\n\n` +
+        `_مثال: 2023001234_`
+      );
+    }
+
     if (isDeveloperOrBotAdmin(ctx)) {
       const s = db.getStats();
       return ctx.replyWithMarkdown(

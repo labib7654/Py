@@ -221,11 +221,34 @@ module.exports = function setupVerifyActions(bot) {
   });
 
   // ════════════════════════════════════════════════════════════
+  //  🗑️ حذف رسائل الخدمة التلقائية (انضمام/مغادرة) من المجموعة
+  //  مثال: "تم قبول انضمام X إلى المجموعة"
+  // ════════════════════════════════════════════════════════════
+  bot.on('message', async (ctx, next) => {
+    if (!ctx.chat || ctx.chat.type === 'private') return next();
+    const msg = ctx.message;
+    if (!msg) return next();
+
+    const g = db.getGroup(ctx.chat.id);
+    if (!g) return next();
+    const vs = getVerifySettings(g);
+    if (!vs.enabled) return next();
+
+    // رسائل الخدمة: انضمام أو مغادرة
+    if (msg.new_chat_members || msg.left_chat_member) {
+      try { await ctx.deleteMessage(); } catch {}
+      return; // لا نكمل
+    }
+
+    return next();
+  });
+
+  // ════════════════════════════════════════════════════════════
   //  🔒 فلتر الرسائل داخل المجموعة — منع غير المعتمدين
+  //  يشمل General (بدون thread_id) وكل المواضيع
   // ════════════════════════════════════════════════════════════
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
-    if (!ctx.message?.message_thread_id) return next();
 
     const g = db.getGroup(ctx.chat.id);
     if (!g) return next();
@@ -233,21 +256,21 @@ module.exports = function setupVerifyActions(bot) {
     const vs = getVerifySettings(g);
     if (!vs.enabled) return next();
 
-    const topicId = ctx.message.message_thread_id;
     const userId  = ctx.from.id;
+    const topicId = ctx.message?.message_thread_id || 0; // 0 = General
 
     // مشرفون ومطور → مسموح دائماً
     if (isDeveloper(ctx) || await isAdmin(bot, ctx.chat.id, userId)) return next();
 
-    // هل معتمد وهذا موضوعه؟
+    // معتمد وهذا موضوعه المخصص → مسموح
     const approved = vs.approvedMembers.get(userId);
-    if (approved?.topicId === topicId) return next();
+    if (approved && (approved.topicId === topicId || topicId === 0)) return next();
 
-    // هل لديه إذن قديم في هذا الموضوع؟
+    // لديه إذن قديم في هذا الموضوع → مسموح
     const topic = g.topics?.get(topicId);
     if (topic?.approvedUsers?.has(userId)) return next();
 
-    // حذف الرسالة بصمت
+    // غير معتمد → احذف الرسالة بصمت
     try { await ctx.deleteMessage(); } catch {}
   });
 

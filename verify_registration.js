@@ -88,7 +88,37 @@ module.exports = function setupVerifyRegistration(bot) {
     // 4. حفظ session
     sessions.set(u.id, { step: 'student_id', chatId: chat.id, data: {}, topics });
 
-    // 5. بدء التسجيل في الخاص
+    // 5. إرسال رسالة ترحيب في موضوع التحقق داخل المجموعة
+    if (vs2.verifyTopicId) {
+      try {
+        const firstName = u.first_name || String(u.id);
+        const mention   = u.username ? `@${u.username}` : `[${firstName}](tg://user?id=${u.id})`;
+        await bot.telegram.sendMessage(chat.id,
+          `👋 *أهلاً ${mention}!*
+
+` +
+          `🔒 تم تقييد وصولك مؤقتاً حتى اكتمال التحقق الجامعي.
+
+` +
+          `📲 *للتحقق وفتح المواضيع:*
+` +
+          `اضغط على الزر أدناه لبدء التسجيل في المحادثة الخاصة مع البوت.`,
+          {
+            parse_mode: 'Markdown',
+            message_thread_id: vs2.verifyTopicId,
+            reply_markup: {
+              inline_keyboard: [[
+                { text: '✅ بدء التحقق الجامعي', url: `https://t.me/${(await bot.telegram.getMe()).username}?start=verify_${chat.id}` }
+              ]]
+            }
+          }
+        );
+      } catch (e) {
+        console.error('verifyTopic welcome msg:', e.message);
+      }
+    }
+
+    // 6. بدء التسجيل في الخاص أيضاً
     await stepWelcome(bot, u.id, g.title);
 
     return next();
