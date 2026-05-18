@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T15:28:54.568Z",
+  "savedAt": "2026-05-18T15:29:34.353Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1556,6 +1556,13 @@
           "specialistUsername": "salma5ns",
           "addedBy": 7411444902,
           "addedAt": "2026-05-18T13:42:21.513Z"
+        },
+        {
+          "word": "تكليف",
+          "specialistId": 7411444902,
+          "specialistUsername": "Labibrd",
+          "addedBy": 7411444902,
+          "addedAt": "2026-05-18T15:29:33.353Z"
         }
       ],
       "autoApproveJoin": true
@@ -2240,7 +2247,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T15:28:53.093Z",
+      "lastSeen": "2026-05-18T15:29:33.187Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -2260,7 +2267,7 @@
       "profileLink": "https://t.me/Labibrd",
       "lastName": "ㅤㅤㅤㅤ",
       "contactedBot": true,
-      "lastContactAt": "2026-05-18T14:57:59.507Z"
+      "lastContactAt": "2026-05-18T15:29:27.291Z"
     },
     "8607336247": {
       "userId": 8607336247,
