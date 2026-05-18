@@ -37,6 +37,41 @@ const {
 module.exports = function setupVerifyCommands(bot) {
 
   // ════════════════════════════════════════════════════════════
+  //  🆕 تسجيل تلقائي لأي موضوع جديد يُنشأ في المجموعة
+  //  يعمل دون الحاجة لـ /regtopic أو /synctopics
+  // ════════════════════════════════════════════════════════════
+  bot.on('message', async (ctx, next) => {
+    if (!ctx.chat || ctx.chat.type === 'private') return next();
+    const msg = ctx.message;
+    if (!msg?.forum_topic_created) return next();
+
+    const g = db.getGroup(ctx.chat.id);
+    if (!g) return next();
+
+    const topicId = msg.message_thread_id;
+    const name    = msg.forum_topic_created.name;
+    if (!topicId || !name) return next();
+
+    // تسجيل الموضوع تلقائياً إن لم يكن مسجلاً
+    if (!g.topics?.has(topicId)) {
+      getOrCreateTopic(g, topicId, name);
+      db.markDirty();
+
+      const vs = getVerifySettings(g);
+      if (vs.enabled) {
+        try {
+          await bot.telegram.sendMessage(ctx.chat.id,
+            `✅ *تم تسجيل الموضوع تلقائياً*\n\n📌 الاسم: *${name}*\n🆔 \`${topicId}\`\n\n_سيظهر للطلاب عند اختيار كليتهم._`,
+            { parse_mode: 'Markdown', message_thread_id: topicId }
+          );
+        } catch {}
+      }
+    }
+
+    return next();
+  });
+
+  // ════════════════════════════════════════════════════════════
   //  🔄 /synctopics — جلب المواضيع من المجموعة تلقائياً
   // ════════════════════════════════════════════════════════════
   bot.command('synctopics', async (ctx) => {
@@ -44,8 +79,11 @@ module.exports = function setupVerifyCommands(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
 
+    // حذف رسالة الأمر فوراً
+    try { await ctx.deleteMessage(); } catch {}
+
     const g = db.getGroup(ctx.chat.id);
-    if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
+    if (!g) return;
 
     const msg = await ctx.reply('⏳ جاري جلب المواضيع...');
 
@@ -57,9 +95,11 @@ module.exports = function setupVerifyCommands(bot) {
 
       const fetched = result?.topics || [];
       if (!fetched.length) {
-        return bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
+        const noTopicsMsg = await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
           '⚠️ لم أجد مواضيع. تأكد أن المجموعة تدعم المواضيع (Forum) وأن البوت مشرف.'
         );
+        setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 8000);
+        return;
       }
 
       let added = 0, updated = 0;
@@ -86,12 +126,30 @@ module.exports = function setupVerifyCommands(bot) {
         `_هذه هي الكليات التي سيختار منها الطلاب عند التسجيل._`,
         { parse_mode: 'Markdown' }
       );
+
+      // حذف رسالة النتيجة بعد 15 ثانية
+      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 15000);
+
     } catch (e) {
-      await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
-        `❌ *فشل جلب المواضيع*\n\`${e.message}\`\n\n` +
-        `💡 إذا لم يدعم الـ API هذا، استخدم /regtopic داخل كل موضوع يدوياً.`,
-        { parse_mode: 'Markdown' }
-      );
+      // إذا فشل الـ API، نحاول استخدام المواضيع المسجلة تلقائياً
+      const topics = getAvailableTopics(g);
+      if (topics.length > 0) {
+        const list = topics.map((t, i) => `${i + 1}. *${t.name}* \`[${t.id}]\``).join('\n');
+        await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
+          `⚠️ *الـ API لا يدعم getForumTopics*\n\n` +
+          `📋 *المواضيع المسجلة تلقائياً (${topics.length}):*\n${list}\n\n` +
+          `_المواضيع الجديدة تُسجَّل تلقائياً عند إنشائها._`,
+          { parse_mode: 'Markdown' }
+        );
+      } else {
+        await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
+          `❌ *فشل جلب المواضيع*\n\`${e.message}\`\n\n` +
+          `💡 المواضيع الجديدة ستُسجَّل تلقائياً عند إنشائها.\n` +
+          `أو استخدم /regtopic داخل كل موضوع يدوياً.`,
+          { parse_mode: 'Markdown' }
+        );
+      }
+      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 15000);
     }
   });
 
@@ -103,14 +161,20 @@ module.exports = function setupVerifyCommands(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
 
+    // حذف رسالة الأمر
+    try { await ctx.deleteMessage(); } catch {}
+
     const arg = ctx.message.text.split(' ')[1]?.toLowerCase();
-    if (!['on', 'off'].includes(arg))
-      return ctx.reply(
+    if (!['on', 'off'].includes(arg)) {
+      const m = await ctx.reply(
         `⚙️ الاستخدام:\n` +
         `\`/verify_system on\` — لتفعيل نظام التحقق\n` +
         `\`/verify_system off\` — لتعطيله`,
         { parse_mode: 'Markdown' }
       );
+      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, m.message_id).catch(() => {}), 8000);
+      return;
+    }
 
     const g = db.getGroup(ctx.chat.id);
     if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
@@ -119,7 +183,7 @@ module.exports = function setupVerifyCommands(bot) {
     vs.enabled = arg === 'on';
     db.markDirty();
 
-    await ctx.reply(
+    const replyMsg = await ctx.reply(
       arg === 'on'
         ? `🔒 *تم تفعيل نظام التحقق الجامعي*\n\n` +
           `الأعضاء الجدد سيُقيَّدون فوراً ويُطلب منهم إكمال التسجيل.\n\n` +
@@ -130,6 +194,7 @@ module.exports = function setupVerifyCommands(bot) {
         : `🔓 *تم تعطيل نظام التحقق*\n\nالأعضاء الجدد لن يخضعوا للتقييد.`,
       { parse_mode: 'Markdown' }
     );
+    setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, replyMsg.message_id).catch(() => {}), 12000);
   });
 
 
@@ -142,9 +207,14 @@ module.exports = function setupVerifyCommands(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
 
+    try { await ctx.deleteMessage(); } catch {}
+
     const topicId = ctx.message?.message_thread_id;
-    if (!topicId)
-      return ctx.reply('⚠️ أرسل هذا الأمر *داخل موضوع التحقق* مباشرة.', { parse_mode: 'Markdown' });
+    if (!topicId) {
+      const m = await ctx.reply('⚠️ أرسل هذا الأمر *داخل موضوع التحقق* مباشرة.', { parse_mode: 'Markdown' });
+      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, m.message_id).catch(() => {}), 5000);
+      return;
+    }
 
     const g = db.getGroup(ctx.chat.id);
     if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
@@ -153,7 +223,7 @@ module.exports = function setupVerifyCommands(bot) {
     vs.verifyTopicId = topicId;
     db.markDirty();
 
-    await ctx.reply(
+    const _setVfyMsg = await ctx.reply(
       `✅ *تم تحديد موضوع التحقق بنجاح!*
 
 ` +
@@ -163,6 +233,7 @@ module.exports = function setupVerifyCommands(bot) {
       `عند انضمام أي عضو جديد، سيُغلق البوت جميع المواضيع الأخرى تلقائياً ويُبقي هذا الموضوع مفتوحاً.`,
       { parse_mode: 'Markdown' }
     );
+    setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, _setVfyMsg.message_id).catch(() => {}), 10000);
   });
 
   // ════════════════════════════════════════════════════════════
@@ -173,6 +244,7 @@ module.exports = function setupVerifyCommands(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
 
+    try { await ctx.deleteMessage(); } catch {}
     const g = db.getGroup(ctx.chat.id);
     if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
 
@@ -197,6 +269,8 @@ module.exports = function setupVerifyCommands(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
 
+    try { await ctx.deleteMessage(); } catch {}
+
     const arg     = ctx.message.text.split(' ')[1];
     const topicId = arg ? Number(arg) : ctx.message?.message_thread_id;
     if (!topicId)
@@ -213,6 +287,9 @@ module.exports = function setupVerifyCommands(bot) {
     if (ctx.chat.type === 'private') return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
+
+    // حذف رسالة الأمر
+    try { await ctx.deleteMessage(); } catch {}
 
     const g = db.getGroup(ctx.chat.id);
     if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
@@ -248,6 +325,7 @@ module.exports = function setupVerifyCommands(bot) {
       `_تم إرسال رسالة تسجيل لكل عضو تم تقييده_`,
       { parse_mode: 'Markdown' }
     );
+    setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 15000);
   });
 
   // ════════════════════════════════════════════════════════════
@@ -257,6 +335,8 @@ module.exports = function setupVerifyCommands(bot) {
     if (ctx.chat.type === 'private') return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
+
+    try { await ctx.deleteMessage(); } catch {}
 
     const g = db.getGroup(ctx.chat.id);
     if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
@@ -324,6 +404,8 @@ module.exports = function setupVerifyCommands(bot) {
     if (ctx.chat.type === 'private') return;
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
+
+    try { await ctx.deleteMessage(); } catch {}
 
     const g = db.getGroup(ctx.chat.id);
     if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
@@ -436,6 +518,8 @@ module.exports = function setupVerifyCommands(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
 
+    try { await ctx.deleteMessage(); } catch {}
+
     const g = db.getGroup(ctx.chat.id);
     if (!g) return;
 
@@ -480,21 +564,29 @@ module.exports = function setupVerifyCommands(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
 
+    // حذف رسالة الأمر فوراً
+    try { await ctx.deleteMessage(); } catch {}
+
     const topicId = ctx.message.message_thread_id;
-    if (!topicId) return ctx.reply('❌ هذا الأمر يُستخدم داخل موضوع فقط!');
+    if (!topicId) {
+      const m = await ctx.reply('❌ هذا الأمر يُستخدم داخل موضوع فقط!');
+      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, m.message_id).catch(() => {}), 5000);
+      return;
+    }
 
     const g    = db.getGroup(ctx.chat.id);
-    if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
+    if (!g) return;
 
     const name  = ctx.message.text.split(' ').slice(1).join(' ').trim();
     const topic = getOrCreateTopic(g, topicId, name || String(topicId));
     if (name) topic.name = name;
     db.markDirty();
 
-    await ctx.reply(
+    const m = await ctx.reply(
       `✅ *تم تسجيل الموضوع*\n\n🆔 \`${topicId}\`\n📌 الاسم: *${topic.name}*`,
       { parse_mode: 'Markdown' }
     );
+    setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, m.message_id).catch(() => {}), 8000);
   });
 
   // ════════════════════════════════════════════════════════════
