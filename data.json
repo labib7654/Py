@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T12:48:22.350Z",
+  "savedAt": "2026-05-18T12:58:22.351Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1318,6 +1318,26 @@
           "lastSeen": "2026-05-18T12:19:01.081Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8669776181": {
+      "userId": 8669776181,
+      "username": "",
+      "firstName": "ام",
+      "lastName": "",
+      "profileLink": "tg://user?id=8669776181",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T12:55:02.665Z",
+      "lastSeen": "2026-05-18T12:55:02.665Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
