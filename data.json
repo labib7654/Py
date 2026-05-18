@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T20:58:59.756Z",
+  "savedAt": "2026-05-18T21:00:01.731Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2450,6 +2450,15 @@
           "status": "approved_auto",
           "bio": "",
           "inviteLink": "https://t.me/+mMMSMLgl..."
+        },
+        "5058177542": {
+          "userId": 5058177542,
+          "username": "Qegdjfv",
+          "firstName": "علي 8",
+          "requestedAt": "2026-05-18T21:00:00.730Z",
+          "status": "pending",
+          "bio": "",
+          "inviteLink": "https://t.me/+TbtsoGYBwWEzYjdk"
         }
       },
       "joinRequestsEnabled": true,
@@ -9426,6 +9435,26 @@
           "lastSeen": "2026-05-18T20:56:49.701Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "5058177542": {
+      "userId": 5058177542,
+      "username": "Qegdjfv",
+      "firstName": "علي 8",
+      "lastName": "",
+      "profileLink": "https://t.me/Qegdjfv",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T21:00:00.500Z",
+      "lastSeen": "2026-05-18T21:00:00.500Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
