@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T14:27:34.888Z",
+  "savedAt": "2026-05-18T14:29:34.889Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1269,9 +1269,9 @@
           "firstName": ".",
           "role": "member",
           "joinedAt": "2026-05-18T14:24:28.135Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-18T14:28:58.731Z"
         },
         "8333279681": {
           "userId": 8333279681,
@@ -5038,7 +5038,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:24:23.555Z",
-      "lastSeen": "2026-05-18T14:24:28.135Z",
+      "lastSeen": "2026-05-18T14:28:58.731Z",
       "groups": [
         -1003969494192
       ],
@@ -5049,7 +5049,7 @@
           "chatTitle": "مجتمع جامعات المملكة",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:24:28.135Z",
-          "lastSeen": "2026-05-18T14:24:28.135Z"
+          "lastSeen": "2026-05-18T14:28:58.731Z"
         }
       },
       "contactedBot": false,
