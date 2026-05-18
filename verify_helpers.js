@@ -365,6 +365,70 @@ async function openTopicForApprovedUser(bot, chatId, topicId) {
   try { await bot.telegram.reopenForumTopic(chatId, topicId); } catch {}
 }
 
+async function openTopic(bot, chatId, topicId) {
+  try { await bot.telegram.reopenForumTopic(chatId, topicId); } catch {}
+}
+
+async function closeTopic(bot, chatId, topicId) {
+  try { await bot.telegram.closeForumTopic(chatId, topicId); } catch {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  فحص عضو قديم وتقييده إذا لم يكن معتمداً
+//  يُستخدم من /check_unverified وعند تفعيل النظام
+//  يُرسل له رسالة خاصة لإكمال التحقق
+// ═══════════════════════════════════════════════════════════════
+async function checkAndRestrictExistingMember(bot, chatId, userId, g) {
+  const vs = getVerifySettings(g);
+
+  // معتمد مسبقاً → لا شيء
+  if (vs.approvedMembers.has(userId)) return false;
+
+  // له طلب معلق → لا شيء
+  if (vs.pendingRequests.get(userId)?.status === 'pending') return false;
+
+  // تقييد العضو داخل المجموعة
+  const restricted = await restrictUser(bot, chatId, userId);
+
+  if (restricted) {
+    // إرسال رسالة له في الخاص لإكمال التحقق
+    try {
+      const botInfo = await bot.telegram.getMe();
+      await bot.telegram.sendMessage(userId,
+        `🔐 *مرحباً!*\\n\\n` +
+        `تم تقييد وصولك مؤقتاً في *${g.title}*\\n\\n` +
+        `📋 هذه المجموعة تتطلب التحقق من هويتك الجامعية.\\n` +
+        `اضغط الزر أدناه لإكمال خطوات التسجيل والحصول على وصول كامل:`,
+        {
+          parse_mode: 'Markdown',
+          ...require('telegraf').Markup.inlineKeyboard([[
+            require('telegraf').Markup.button.url(
+              '✅ بدء التحقق الجامعي',
+              `https://t.me/${botInfo.username}?start=verify_${chatId}`
+            )
+          ]]),
+        }
+      );
+    } catch {}
+
+    // تسجيل طلب انضمام مؤقت حتى يكتمل التحقق
+    if (!g.joinRequests) g.joinRequests = new Map();
+    if (!g.joinRequests.has(userId)) {
+      g.joinRequests.set(userId, {
+        userId,
+        username:    '',
+        firstName:   String(userId),
+        status:      'pending_verify',
+        requestedAt: new Date(),
+        isExistingMember: true,
+      });
+      db.markDirty();
+    }
+  }
+
+  return restricted;
+}
+
 module.exports = {
   VERIFY_COOLDOWN_MS,
   AUTO_APPROVE_DELAY,
@@ -379,6 +443,9 @@ module.exports = {
   unrestrictUser,
   closeAllTopicsExceptVerify,
   openTopicForApprovedUser,
+  openTopic,
+  closeTopic,
+  checkAndRestrictExistingMember,
   stepWelcome,
   stepSelectUniversity,
   stepMajor,

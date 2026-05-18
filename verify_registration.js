@@ -173,16 +173,36 @@ module.exports = function setupVerifyRegistration(bot) {
       );
     }
 
-    // تحقق من وجود طلب انضمام
+    // تحقق من وجود طلب انضمام (أو عضو قديم تم تسجيله من الفلتر)
     const jr = g.joinRequests?.get(userId);
     if (!jr) {
-      return ctx.replyWithMarkdown(
-        `⚠️ *لم يتم العثور على طلب انضمامك.*\n\n` +
-        `📋 *الخطوات الصحيحة:*\n` +
-        `1️⃣ اذهب لرابط المجموعة واضغط *"طلب الانضمام"* أولاً\n` +
-        `2️⃣ ثم عد هنا وابدأ التحقق\n\n` +
-        `_إذا ضغطت طلب الانضمام بالفعل، انتظر لحظة وأعد المحاولة._`
-      );
+      // إذا كان عضواً في المجموعة فعلاً (عضو قديم لم يتم تسجيله بعد) نسجّله تلقائياً
+      let isMember = false;
+      try {
+        const cm = await bot.telegram.getChatMember(chatId, userId);
+        isMember = ['member', 'restricted'].includes(cm.status);
+      } catch {}
+
+      if (isMember) {
+        if (!g.joinRequests) g.joinRequests = new Map();
+        g.joinRequests.set(userId, {
+          userId,
+          username:         ctx.from.username || '',
+          firstName:        ctx.from.first_name || String(userId),
+          status:           'pending_verify',
+          requestedAt:      new Date(),
+          isExistingMember: true,
+        });
+        db.markDirty();
+      } else {
+        return ctx.replyWithMarkdown(
+          `⚠️ *لم يتم العثور على طلب انضمامك.*\n\n` +
+          `📋 *الخطوات الصحيحة:*\n` +
+          `1️⃣ اذهب لرابط المجموعة واضغط *"طلب الانضمام"* أولاً\n` +
+          `2️⃣ ثم عد هنا وابدأ التحقق\n\n` +
+          `_إذا ضغطت طلب الانضمام بالفعل، انتظر لحظة وأعد المحاولة._`
+        );
+      }
     }
 
     // كوولداون
@@ -415,14 +435,33 @@ module.exports = function setupVerifyRegistration(bot) {
         req.status     = 'approved_auto';
         req.reviewedAt = new Date();
 
-        // قبول طلب الانضمام
+        // قبول/رفع تقييد طلب الانضمام
         const jr = g2.joinRequests?.get(userId);
         if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
-          try {
-            await bot.telegram.approveChatJoinRequest(sess.chatId, userId);
-            jr.status = 'approved_auto';
-          } catch (e) {
-            console.warn('[AutoApprove] فشل قبول الانضمام:', e.message);
+          if (jr.isExistingMember) {
+            // عضو قديم → ارفع التقييد فقط
+            try {
+              await bot.telegram.restrictChatMember(sess.chatId, userId, {
+                permissions: {
+                  can_send_messages: true, can_send_audios: true,
+                  can_send_documents: true, can_send_photos: true,
+                  can_send_videos: true, can_send_video_notes: true,
+                  can_send_voice_notes: true, can_send_polls: true,
+                  can_send_other_messages: true, can_add_web_page_previews: true,
+                },
+              });
+              jr.status = 'approved_auto';
+            } catch (e) {
+              console.warn('[AutoApprove] فشل رفع التقييد:', e.message);
+            }
+          } else {
+            // عضو جديد → قبول طلب الانضمام
+            try {
+              await bot.telegram.approveChatJoinRequest(sess.chatId, userId);
+              jr.status = 'approved_auto';
+            } catch (e) {
+              console.warn('[AutoApprove] فشل قبول الانضمام:', e.message);
+            }
           }
         }
 

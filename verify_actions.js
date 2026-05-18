@@ -16,7 +16,13 @@ const {
   getVerifySettings,
   buildAdminButtons,
   VERIFY_COOLDOWN_MS,
+  checkAndRestrictExistingMember,
 } = require('./verify_helpers');
+
+// تتبع آخر رسالة تحقق أُرسلت للعضو (لتجنب الإزعاج المتكرر)
+// Map: userId -> timestamp
+const _verifyNoticeSent = new Map();
+const NOTICE_COOLDOWN = 10 * 60 * 1000; // 10 دقائق
 
 module.exports = function setupVerifyActions(bot) {
 
@@ -51,15 +57,31 @@ module.exports = function setupVerifyActions(bot) {
       approvedBy:  ctx.from.id,
     });
 
-    // قبول طلب الانضمام عبر Telegram
+    // قبول/رفع تقييد طلب الانضمام
     const jr = g.joinRequests?.get(userId);
     if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
-      try {
-        await bot.telegram.approveChatJoinRequest(chatId, userId);
-        jr.status = 'approved_by_admin';
-      } catch (e) {
-        // قد يكون انتهى الطلب أو انضم بالفعل — ليس خطأ فادحاً
-        console.log('[vfy_allow] approveChatJoinRequest:', e.message);
+      if (jr.isExistingMember) {
+        // عضو قديم → ارفع التقييد
+        try {
+          await bot.telegram.restrictChatMember(chatId, userId, {
+            permissions: {
+              can_send_messages: true, can_send_audios: true,
+              can_send_documents: true, can_send_photos: true,
+              can_send_videos: true, can_send_video_notes: true,
+              can_send_voice_notes: true, can_send_polls: true,
+              can_send_other_messages: true, can_add_web_page_previews: true,
+            },
+          });
+          jr.status = 'approved_by_admin';
+        } catch (e) { console.log('[vfy_allow] unrestrict:', e.message); }
+      } else {
+        // عضو جديد → قبول طلب الانضمام
+        try {
+          await bot.telegram.approveChatJoinRequest(chatId, userId);
+          jr.status = 'approved_by_admin';
+        } catch (e) {
+          console.log('[vfy_allow] approveChatJoinRequest:', e.message);
+        }
       }
     }
 
@@ -233,7 +255,8 @@ module.exports = function setupVerifyActions(bot) {
 
   // ════════════════════════════════════════════════════════════
   //  🔒 فلتر رسائل الأعضاء غير المعتمدين داخل المجموعة
-  //  (يعمل إذا دخل أحدهم بطريقة ما بدون تحقق)
+  //  الأعضاء الجدد: انضموا بدون تحقق (نادر)
+  //  الأعضاء القدامى: موجودون قبل تفعيل النظام → يُقيَّدون ويُرسل لهم رابط تحقق
   // ════════════════════════════════════════════════════════════
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
@@ -246,7 +269,7 @@ module.exports = function setupVerifyActions(bot) {
 
     const userId = ctx.from.id;
 
-    // مشرفون ومطور → مسموح
+    // مشرفون ومطور → مسموح دائماً
     if (isDeveloper(ctx) || await isAdmin(bot, ctx.chat.id, userId)) return next();
 
     // معتمد → مسموح
@@ -259,8 +282,62 @@ module.exports = function setupVerifyActions(bot) {
       return;
     }
 
-    // غير معتمد → احذف بصمت
+    // ── العضو غير معتمد (قديم أو جديد تجاوز الفلتر) ──────────
+    // 1. احذف الرسالة
     try { await ctx.deleteMessage(); } catch {}
+
+    // 2. قيّده داخل المجموعة (إذا لم يكن مقيداً بعد)
+    try {
+      await bot.telegram.restrictChatMember(ctx.chat.id, userId, {
+        permissions: {
+          can_send_messages: false, can_send_audios: false,
+          can_send_documents: false, can_send_photos: false,
+          can_send_videos: false, can_send_video_notes: false,
+          can_send_voice_notes: false, can_send_polls: false,
+          can_send_other_messages: false, can_add_web_page_previews: false,
+        },
+      });
+    } catch {}
+
+    // 3. أرسل له رسالة تحقق في الخاص (مرة كل 10 دقائق)
+    const lastNotice = _verifyNoticeSent.get(userId);
+    if (!lastNotice || (Date.now() - lastNotice) > NOTICE_COOLDOWN) {
+      _verifyNoticeSent.set(userId, Date.now());
+
+      // تسجيله في joinRequests حتى يتمكن من إكمال /start verify_chatId
+      if (!g.joinRequests) g.joinRequests = new Map();
+      if (!g.joinRequests.has(userId)) {
+        g.joinRequests.set(userId, {
+          userId,
+          username:         ctx.from.username || '',
+          firstName:        ctx.from.first_name || String(userId),
+          status:           'pending_verify',
+          requestedAt:      new Date(),
+          isExistingMember: true,
+        });
+        db.markDirty();
+      }
+
+      try {
+        const botInfo = await bot.telegram.getMe();
+        await bot.telegram.sendMessage(userId,
+          `🔐 *مرحباً ${ctx.from.first_name || ''}!*\\n\\n` +
+          `تم تقييد وصولك في *${g.title}* لأن هذه المجموعة تتطلب التحقق من هويتك الجامعية.\\n\\n` +
+          `📋 اضغط الزر أدناه لإكمال خطوات التسجيل والحصول على وصول كامل:`,
+          {
+            parse_mode: 'Markdown',
+            ...require('telegraf').Markup.inlineKeyboard([[
+              require('telegraf').Markup.button.url(
+                '✅ بدء التحقق الجامعي',
+                `https://t.me/${botInfo.username}?start=verify_${ctx.chat.id}`
+              )
+            ]]),
+          }
+        );
+      } catch {
+        // المستخدم حظر البوت أو لم يبدأ محادثة → لا شيء
+      }
+    }
   });
 
 };
