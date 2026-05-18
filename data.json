@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T11:22:53.441Z",
+  "savedAt": "2026-05-18T11:26:53.448Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -416,7 +416,7 @@
       },
       "auditLog": [],
       "verifySystem": {
-        "enabled": false,
+        "enabled": true,
         "pendingRequests": {},
         "approvedMembers": {},
         "rejectedMembers": {},
@@ -930,7 +930,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:41:38.167Z",
-      "lastSeen": "2026-05-17T22:02:30.538Z",
+      "lastSeen": "2026-05-18T11:25:44.174Z",
       "groups": [
         -1003969494192
       ],
