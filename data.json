@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T14:00:41.113Z",
+  "savedAt": "2026-05-18T14:02:40.089Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -455,7 +455,14 @@
           "approvedUsers": [],
           "joinRequests": {},
           "cooldowns": {},
-          "perms": {},
+          "perms": {
+            "canMedia": false,
+            "canLinks": true,
+            "canReply": false,
+            "canPolls": false,
+            "canPin": false,
+            "canSend": false
+          },
           "createdAt": "2026-05-18T13:59:08.907Z"
         }
       },
@@ -1023,7 +1030,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:41:38.167Z",
-      "lastSeen": "2026-05-18T14:00:34.612Z",
+      "lastSeen": "2026-05-18T14:01:22.758Z",
       "groups": [
         -1003969494192
       ],
