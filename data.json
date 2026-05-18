@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T20:50:58.161Z",
+  "savedAt": "2026-05-18T20:52:58.162Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -173,6 +173,16 @@
           "score": 8,
           "lastMessageAt": "2026-05-18T15:00:49.447Z"
         },
+        "1032892579": {
+          "userId": 1032892579,
+          "username": "vqanxcjJ",
+          "firstName": "Feyera",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.358Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
         "1087968824": {
           "userId": 1087968824,
           "username": "GroupAnonymousBot",
@@ -183,12 +193,32 @@
           "score": 3,
           "lastMessageAt": "2026-05-18T14:48:18.901Z"
         },
+        "1114589041": {
+          "userId": 1114589041,
+          "username": "",
+          "firstName": "Pu",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.451Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
         "1250297984": {
           "userId": 1250297984,
           "username": "catan9988",
           "firstName": "cat",
           "role": "member",
           "joinedAt": "2026-05-18T14:25:53.756Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "1443031310": {
+          "userId": 1443031310,
+          "username": "",
+          "firstName": "abdo",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.552Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -213,6 +243,26 @@
           "score": 1,
           "lastMessageAt": "2026-05-18T14:20:55.496Z"
         },
+        "1607750240": {
+          "userId": 1607750240,
+          "username": "",
+          "firstName": "B",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.256Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "1731073023": {
+          "userId": 1731073023,
+          "username": "",
+          "firstName": "Diyori",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.751Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
         "1808512106": {
           "userId": 1808512106,
           "username": "jad122791",
@@ -233,6 +283,16 @@
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:06.221Z"
         },
+        "1877073418": {
+          "userId": 1877073418,
+          "username": "",
+          "firstName": "Алiна",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.055Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
         "1941296472": {
           "userId": 1941296472,
           "username": "emnghisao1",
@@ -249,6 +309,26 @@
           "firstName": "Richard Molly",
           "role": "member",
           "joinedAt": "2026-05-18T14:25:53.759Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "2067364925": {
+          "userId": 2067364925,
+          "username": "",
+          "firstName": "Leo",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.758Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "2074363618": {
+          "userId": 2074363618,
+          "username": "",
+          "firstName": "Min Htet",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.251Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -1402,6 +1482,886 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T20:49:36.712Z"
+        },
+        "8751278667": {
+          "userId": 8751278667,
+          "username": "",
+          "firstName": "Iuptftzabz",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:45.628Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7311358377": {
+          "userId": 7311358377,
+          "username": "Yakiroslej",
+          "firstName": "Farest kill",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.182Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7416726523": {
+          "userId": 7416726523,
+          "username": "",
+          "firstName": "Abdoul",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.194Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8276069997": {
+          "userId": 8276069997,
+          "username": "",
+          "firstName": "Lenna",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.199Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7489040316": {
+          "userId": 7489040316,
+          "username": "",
+          "firstName": "Safiatou dorcas",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.201Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8139165698": {
+          "userId": 8139165698,
+          "username": "",
+          "firstName": "Jacopo",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.252Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8795486942": {
+          "userId": 8795486942,
+          "username": "",
+          "firstName": "Tbspekdtwv",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.258Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6528499679": {
+          "userId": 6528499679,
+          "username": "",
+          "firstName": ".",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.261Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7086831803": {
+          "userId": 7086831803,
+          "username": "",
+          "firstName": "Nana",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.354Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8537248695": {
+          "userId": 8537248695,
+          "username": "",
+          "firstName": "Hplzb",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.357Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6547840669": {
+          "userId": 6547840669,
+          "username": "",
+          "firstName": "Tido",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.453Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8039359245": {
+          "userId": 8039359245,
+          "username": "XoKOWfhO",
+          "firstName": "Jesus",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.456Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8734790186": {
+          "userId": 8734790186,
+          "username": "",
+          "firstName": "Ptkycj",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.458Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7783260392": {
+          "userId": 7783260392,
+          "username": "",
+          "firstName": "Don",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.550Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6140604269": {
+          "userId": 6140604269,
+          "username": "",
+          "firstName": "Josué",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.652Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8798837408": {
+          "userId": 8798837408,
+          "username": "",
+          "firstName": "Ifwyugh",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.753Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7066815039": {
+          "userId": 7066815039,
+          "username": "",
+          "firstName": "Gabriel",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.759Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8034817267": {
+          "userId": 8034817267,
+          "username": "",
+          "firstName": "Tkadpg",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.854Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8502792009": {
+          "userId": 8502792009,
+          "username": "",
+          "firstName": "Charles",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:46.952Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6070001087": {
+          "userId": 6070001087,
+          "username": "",
+          "firstName": "Gladice",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.255Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6643248665": {
+          "userId": 6643248665,
+          "username": "",
+          "firstName": "Morad",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.358Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8758454498": {
+          "userId": 8758454498,
+          "username": "",
+          "firstName": "Tiuzyx",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.360Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8737606116": {
+          "userId": 8737606116,
+          "username": "",
+          "firstName": "Michael",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.361Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8225322225": {
+          "userId": 8225322225,
+          "username": "",
+          "firstName": "Alexander",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.449Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8353311864": {
+          "userId": 8353311864,
+          "username": "",
+          "firstName": "خالد",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.452Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7505082330": {
+          "userId": 7505082330,
+          "username": "SuzanneWilliamsg38",
+          "firstName": "Таисия",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.558Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8128689332": {
+          "userId": 8128689332,
+          "username": "",
+          "firstName": "Yylhrtcb",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.561Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8711249234": {
+          "userId": 8711249234,
+          "username": "",
+          "firstName": "Vfldrf",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.655Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8327403684": {
+          "userId": 8327403684,
+          "username": "",
+          "firstName": "Jhosmel",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.854Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8738410943": {
+          "userId": 8738410943,
+          "username": "",
+          "firstName": "Qoxrndnn",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.855Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6893501830": {
+          "userId": 6893501830,
+          "username": "",
+          "firstName": "Abdul",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.856Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8438610159": {
+          "userId": 8438610159,
+          "username": "",
+          "firstName": "Susan",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.860Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7342337344": {
+          "userId": 7342337344,
+          "username": "",
+          "firstName": "Ivan",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.950Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8312619649": {
+          "userId": 8312619649,
+          "username": "",
+          "firstName": "melstroy",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:47.954Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8351277928": {
+          "userId": 8351277928,
+          "username": "",
+          "firstName": "Stephen",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.052Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7926480511": {
+          "userId": 7926480511,
+          "username": "",
+          "firstName": "Frank",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.058Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8137382228": {
+          "userId": 8137382228,
+          "username": "",
+          "firstName": "Rachel",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.156Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8699783535": {
+          "userId": 8699783535,
+          "username": "",
+          "firstName": "Rgdorduy",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.256Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8782073207": {
+          "userId": 8782073207,
+          "username": "",
+          "firstName": "Xoequlrdyq",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.258Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6978064396": {
+          "userId": 6978064396,
+          "username": "",
+          "firstName": "Jerico",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.351Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8558966587": {
+          "userId": 8558966587,
+          "username": "",
+          "firstName": "Amy",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.352Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8449421224": {
+          "userId": 8449421224,
+          "username": "",
+          "firstName": "Linda",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.358Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8504428671": {
+          "userId": 8504428671,
+          "username": "",
+          "firstName": "Evgbb",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.359Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8766499621": {
+          "userId": 8766499621,
+          "username": "xpgzloy",
+          "firstName": "спайдер",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.455Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8356447572": {
+          "userId": 8356447572,
+          "username": "squarrqt",
+          "firstName": "Astrid",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.554Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6840662200": {
+          "userId": 6840662200,
+          "username": "",
+          "firstName": "Blo",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.650Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8721459076": {
+          "userId": 8721459076,
+          "username": "",
+          "firstName": "Pahejxh",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.653Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8699986510": {
+          "userId": 8699986510,
+          "username": "",
+          "firstName": "Wisok",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.854Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "5406847620": {
+          "userId": 5406847620,
+          "username": "",
+          "firstName": "Jelar Kumar",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.956Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7818096719": {
+          "userId": 7818096719,
+          "username": "",
+          "firstName": "Etzuz",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.957Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7995297978": {
+          "userId": 7995297978,
+          "username": "",
+          "firstName": "narathip",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.959Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8305273982": {
+          "userId": 8305273982,
+          "username": "",
+          "firstName": "Sergey",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:48.960Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7572141265": {
+          "userId": 7572141265,
+          "username": "",
+          "firstName": "Anod",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.060Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8452028619": {
+          "userId": 8452028619,
+          "username": "",
+          "firstName": "Frank",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.152Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "5475341616": {
+          "userId": 5475341616,
+          "username": "",
+          "firstName": "لال محمد",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.154Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6892952461": {
+          "userId": 6892952461,
+          "username": "",
+          "firstName": "Văn",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.154Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8618546826": {
+          "userId": 8618546826,
+          "username": "dahacokcalis",
+          "firstName": "Stephen",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.254Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7780295581": {
+          "userId": 7780295581,
+          "username": "",
+          "firstName": "Briann",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.285Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8021062842": {
+          "userId": 8021062842,
+          "username": "",
+          "firstName": "curly",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.287Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8443352180": {
+          "userId": 8443352180,
+          "username": "",
+          "firstName": "Carmen",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.355Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8352399396": {
+          "userId": 8352399396,
+          "username": "",
+          "firstName": "Mahed",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.360Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8759820038": {
+          "userId": 8759820038,
+          "username": "",
+          "firstName": "Pghjseopjh",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.454Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8570235464": {
+          "userId": 8570235464,
+          "username": "echoinggale650",
+          "firstName": "Максим",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.455Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8467776093": {
+          "userId": 8467776093,
+          "username": "",
+          "firstName": "Jacob",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.455Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7458373560": {
+          "userId": 7458373560,
+          "username": "",
+          "firstName": "Tuang",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.459Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8911946037": {
+          "userId": 8911946037,
+          "username": "febotevirava",
+          "firstName": "Аня",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.459Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8711839607": {
+          "userId": 8711839607,
+          "username": "",
+          "firstName": "Medig",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.460Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6344175121": {
+          "userId": 6344175121,
+          "username": "AnastasiyaZvyagina480",
+          "firstName": "Анастасия",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.460Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8551626834": {
+          "userId": 8551626834,
+          "username": "",
+          "firstName": "Jherwin",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.461Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8488396863": {
+          "userId": 8488396863,
+          "username": "mistyechosMv",
+          "firstName": "Нина",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.553Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8734176771": {
+          "userId": 8734176771,
+          "username": "",
+          "firstName": "Znnem",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.651Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8861773316": {
+          "userId": 8861773316,
+          "username": "goldenwhisperingzip",
+          "firstName": "Ира",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.659Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7918235130": {
+          "userId": 7918235130,
+          "username": "",
+          "firstName": "Drake",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.660Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8167084422": {
+          "userId": 8167084422,
+          "username": "johnsontamara879",
+          "firstName": "Emma",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:49.753Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6518986648": {
+          "userId": 6518986648,
+          "username": "DenrianxPatchela_Yeh",
+          "firstName": "Дементьева",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.057Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8529943811": {
+          "userId": 8529943811,
+          "username": "",
+          "firstName": "Huy",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.161Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8210007978": {
+          "userId": 8210007978,
+          "username": "",
+          "firstName": "Mochi",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.251Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8703143571": {
+          "userId": 8703143571,
+          "username": "",
+          "firstName": "Mvooxa",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.252Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8446130830": {
+          "userId": 8446130830,
+          "username": "dj20jd",
+          "firstName": "Pizza",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.258Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8268731610": {
+          "userId": 8268731610,
+          "username": "radiantdreamscapes181",
+          "firstName": "Григорий",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.350Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7566824009": {
+          "userId": 7566824009,
+          "username": "",
+          "firstName": "why",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.357Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8263476357": {
+          "userId": 8263476357,
+          "username": "twilightdrizzlekBN",
+          "firstName": "Захар",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.663Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "6123048329": {
+          "userId": 6123048329,
+          "username": "",
+          "firstName": "Thanawin",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:50.690Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7687045668": {
+          "userId": 7687045668,
+          "username": "shimmeringhope144",
+          "firstName": "Артемий",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:51.386Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8542507226": {
+          "userId": 8542507226,
+          "username": "playfulwhirlpooldnx",
+          "firstName": "Лев",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:52.575Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7506885900": {
+          "userId": 7506885900,
+          "username": "fourth627130",
+          "firstName": "Влада",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:51:58.733Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8282271973": {
+          "userId": 8282271973,
+          "username": "radiantstreamerNzb",
+          "firstName": "Леонид",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:52:05.374Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8333608206": {
+          "userId": 8333608206,
+          "username": "shadowblade648",
+          "firstName": "Мария",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:52:52.312Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
       "admins": {
@@ -1967,6 +2927,34 @@
       "lastContactAt": null,
       "bioBanInfo": null
     },
+    "1032892579": {
+      "userId": 1032892579,
+      "username": "vqanxcjJ",
+      "firstName": "Feyera",
+      "lastName": "Olani",
+      "profileLink": "https://t.me/vqanxcjJ",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.358Z",
+      "lastSeen": "2026-05-18T20:51:49.358Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.358Z",
+          "lastSeen": "2026-05-18T20:51:49.358Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
     "1087968824": {
       "userId": 1087968824,
       "username": "GroupAnonymousBot",
@@ -1983,6 +2971,34 @@
       ],
       "channels": [],
       "seenInChats": {},
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "1114589041": {
+      "userId": 1114589041,
+      "username": "",
+      "firstName": "Pu",
+      "lastName": "Nhok",
+      "profileLink": "tg://user?id=1114589041",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.451Z",
+      "lastSeen": "2026-05-18T20:51:50.451Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.451Z",
+          "lastSeen": "2026-05-18T20:51:50.451Z"
+        }
+      },
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
@@ -2061,6 +3077,34 @@
       "contactedBot": true,
       "lastContactAt": "2026-05-18T13:45:14.070Z"
     },
+    "1443031310": {
+      "userId": 1443031310,
+      "username": "",
+      "firstName": "abdo",
+      "lastName": "moch",
+      "profileLink": "tg://user?id=1443031310",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.552Z",
+      "lastSeen": "2026-05-18T20:51:47.552Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.552Z",
+          "lastSeen": "2026-05-18T20:51:47.552Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
     "1456265014": {
       "userId": 1456265014,
       "username": "",
@@ -2117,6 +3161,34 @@
       "lastContactAt": null,
       "bioBanInfo": null
     },
+    "1607750240": {
+      "userId": 1607750240,
+      "username": "",
+      "firstName": "B",
+      "lastName": "J",
+      "profileLink": "tg://user?id=1607750240",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.256Z",
+      "lastSeen": "2026-05-18T20:51:50.256Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.256Z",
+          "lastSeen": "2026-05-18T20:51:50.256Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
     "1640436570": {
       "userId": 1640436570,
       "username": "",
@@ -2137,6 +3209,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:20:52.396Z",
           "lastSeen": "2026-05-18T14:20:55.181Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "1731073023": {
+      "userId": 1731073023,
+      "username": "",
+      "firstName": "Diyori",
+      "lastName": "Soiguetie hedou",
+      "profileLink": "tg://user?id=1731073023",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.751Z",
+      "lastSeen": "2026-05-18T20:51:46.751Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.751Z",
+          "lastSeen": "2026-05-18T20:51:46.751Z"
         }
       },
       "contactedBot": false,
@@ -2199,6 +3299,34 @@
       "lastContactAt": null,
       "bioBanInfo": null
     },
+    "1877073418": {
+      "userId": 1877073418,
+      "username": "",
+      "firstName": "Алiна",
+      "lastName": "🍓",
+      "profileLink": "tg://user?id=1877073418",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.055Z",
+      "lastSeen": "2026-05-18T20:51:49.055Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.055Z",
+          "lastSeen": "2026-05-18T20:51:49.055Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
     "1941296472": {
       "userId": 1941296472,
       "username": "emnghisao1",
@@ -2249,6 +3377,62 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:25:53.759Z",
           "lastSeen": "2026-05-18T14:25:53.759Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "2067364925": {
+      "userId": 2067364925,
+      "username": "",
+      "firstName": "Leo",
+      "lastName": "",
+      "profileLink": "tg://user?id=2067364925",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.758Z",
+      "lastSeen": "2026-05-18T20:51:47.758Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.758Z",
+          "lastSeen": "2026-05-18T20:51:47.758Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "2074363618": {
+      "userId": 2074363618,
+      "username": "",
+      "firstName": "Min Htet",
+      "lastName": "",
+      "profileLink": "tg://user?id=2074363618",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.251Z",
+      "lastSeen": "2026-05-18T20:51:48.251Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.251Z",
+          "lastSeen": "2026-05-18T20:51:48.251Z"
         }
       },
       "contactedBot": false,
@@ -5624,6 +6808,2470 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:28:52.987Z",
           "lastSeen": "2026-05-18T20:28:57.901Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8751278667": {
+      "userId": 8751278667,
+      "username": "",
+      "firstName": "Iuptftzabz",
+      "lastName": "Wwlymoe",
+      "profileLink": "tg://user?id=8751278667",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:45.627Z",
+      "lastSeen": "2026-05-18T20:51:45.628Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:45.628Z",
+          "lastSeen": "2026-05-18T20:51:45.628Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7311358377": {
+      "userId": 7311358377,
+      "username": "Yakiroslej",
+      "firstName": "Farest kill",
+      "lastName": "Man",
+      "profileLink": "https://t.me/Yakiroslej",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.180Z",
+      "lastSeen": "2026-05-18T20:51:46.182Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.182Z",
+          "lastSeen": "2026-05-18T20:51:46.182Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7416726523": {
+      "userId": 7416726523,
+      "username": "",
+      "firstName": "Abdoul",
+      "lastName": "Kaba",
+      "profileLink": "tg://user?id=7416726523",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.192Z",
+      "lastSeen": "2026-05-18T20:51:46.194Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.194Z",
+          "lastSeen": "2026-05-18T20:51:46.194Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8276069997": {
+      "userId": 8276069997,
+      "username": "",
+      "firstName": "Lenna",
+      "lastName": "Grace",
+      "profileLink": "tg://user?id=8276069997",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.198Z",
+      "lastSeen": "2026-05-18T20:51:46.199Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.199Z",
+          "lastSeen": "2026-05-18T20:51:46.199Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7489040316": {
+      "userId": 7489040316,
+      "username": "",
+      "firstName": "Safiatou dorcas",
+      "lastName": "Sawadogo",
+      "profileLink": "tg://user?id=7489040316",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.201Z",
+      "lastSeen": "2026-05-18T20:51:46.201Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.201Z",
+          "lastSeen": "2026-05-18T20:51:46.201Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8139165698": {
+      "userId": 8139165698,
+      "username": "",
+      "firstName": "Jacopo",
+      "lastName": "",
+      "profileLink": "tg://user?id=8139165698",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.251Z",
+      "lastSeen": "2026-05-18T20:51:46.252Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.252Z",
+          "lastSeen": "2026-05-18T20:51:46.252Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8795486942": {
+      "userId": 8795486942,
+      "username": "",
+      "firstName": "Tbspekdtwv",
+      "lastName": "Bsxra",
+      "profileLink": "tg://user?id=8795486942",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.257Z",
+      "lastSeen": "2026-05-18T20:51:46.258Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.258Z",
+          "lastSeen": "2026-05-18T20:51:46.258Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6528499679": {
+      "userId": 6528499679,
+      "username": "",
+      "firstName": ".",
+      "lastName": ".",
+      "profileLink": "tg://user?id=6528499679",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.260Z",
+      "lastSeen": "2026-05-18T20:51:46.261Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.261Z",
+          "lastSeen": "2026-05-18T20:51:46.261Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7086831803": {
+      "userId": 7086831803,
+      "username": "",
+      "firstName": "Nana",
+      "lastName": "",
+      "profileLink": "tg://user?id=7086831803",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.354Z",
+      "lastSeen": "2026-05-18T20:51:46.354Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.354Z",
+          "lastSeen": "2026-05-18T20:51:46.354Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8537248695": {
+      "userId": 8537248695,
+      "username": "",
+      "firstName": "Hplzb",
+      "lastName": "Xzgeuxs",
+      "profileLink": "tg://user?id=8537248695",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.357Z",
+      "lastSeen": "2026-05-18T20:51:46.357Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.357Z",
+          "lastSeen": "2026-05-18T20:51:46.357Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6547840669": {
+      "userId": 6547840669,
+      "username": "",
+      "firstName": "Tido",
+      "lastName": "",
+      "profileLink": "tg://user?id=6547840669",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.453Z",
+      "lastSeen": "2026-05-18T20:51:46.453Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.453Z",
+          "lastSeen": "2026-05-18T20:51:46.453Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8039359245": {
+      "userId": 8039359245,
+      "username": "XoKOWfhO",
+      "firstName": "Jesus",
+      "lastName": "",
+      "profileLink": "https://t.me/XoKOWfhO",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.455Z",
+      "lastSeen": "2026-05-18T20:51:46.456Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.456Z",
+          "lastSeen": "2026-05-18T20:51:46.456Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8734790186": {
+      "userId": 8734790186,
+      "username": "",
+      "firstName": "Ptkycj",
+      "lastName": "Aupxbf",
+      "profileLink": "tg://user?id=8734790186",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.458Z",
+      "lastSeen": "2026-05-18T20:51:46.458Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.458Z",
+          "lastSeen": "2026-05-18T20:51:46.458Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7783260392": {
+      "userId": 7783260392,
+      "username": "",
+      "firstName": "Don",
+      "lastName": "Blalock",
+      "profileLink": "tg://user?id=7783260392",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.549Z",
+      "lastSeen": "2026-05-18T20:51:46.550Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.550Z",
+          "lastSeen": "2026-05-18T20:51:46.550Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6140604269": {
+      "userId": 6140604269,
+      "username": "",
+      "firstName": "Josué",
+      "lastName": "",
+      "profileLink": "tg://user?id=6140604269",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.651Z",
+      "lastSeen": "2026-05-18T20:51:46.652Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.652Z",
+          "lastSeen": "2026-05-18T20:51:46.652Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8798837408": {
+      "userId": 8798837408,
+      "username": "",
+      "firstName": "Ifwyugh",
+      "lastName": "Vvlandc",
+      "profileLink": "tg://user?id=8798837408",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.753Z",
+      "lastSeen": "2026-05-18T20:51:46.753Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.753Z",
+          "lastSeen": "2026-05-18T20:51:46.753Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7066815039": {
+      "userId": 7066815039,
+      "username": "",
+      "firstName": "Gabriel",
+      "lastName": "Sosa",
+      "profileLink": "tg://user?id=7066815039",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.759Z",
+      "lastSeen": "2026-05-18T20:51:46.759Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.759Z",
+          "lastSeen": "2026-05-18T20:51:46.759Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8034817267": {
+      "userId": 8034817267,
+      "username": "",
+      "firstName": "Tkadpg",
+      "lastName": "Tgcfvknj",
+      "profileLink": "tg://user?id=8034817267",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.854Z",
+      "lastSeen": "2026-05-18T20:51:46.854Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.854Z",
+          "lastSeen": "2026-05-18T20:51:46.854Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8502792009": {
+      "userId": 8502792009,
+      "username": "",
+      "firstName": "Charles",
+      "lastName": "Lopez",
+      "profileLink": "tg://user?id=8502792009",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:46.952Z",
+      "lastSeen": "2026-05-18T20:51:46.952Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:46.952Z",
+          "lastSeen": "2026-05-18T20:51:46.952Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6070001087": {
+      "userId": 6070001087,
+      "username": "",
+      "firstName": "Gladice",
+      "lastName": "Nebout",
+      "profileLink": "tg://user?id=6070001087",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.255Z",
+      "lastSeen": "2026-05-18T20:51:47.255Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.255Z",
+          "lastSeen": "2026-05-18T20:51:47.255Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6643248665": {
+      "userId": 6643248665,
+      "username": "",
+      "firstName": "Morad",
+      "lastName": "Hk",
+      "profileLink": "tg://user?id=6643248665",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.358Z",
+      "lastSeen": "2026-05-18T20:51:47.358Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.358Z",
+          "lastSeen": "2026-05-18T20:51:47.358Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8758454498": {
+      "userId": 8758454498,
+      "username": "",
+      "firstName": "Tiuzyx",
+      "lastName": "Klnycakrin",
+      "profileLink": "tg://user?id=8758454498",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.360Z",
+      "lastSeen": "2026-05-18T20:51:47.360Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.360Z",
+          "lastSeen": "2026-05-18T20:51:47.360Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8737606116": {
+      "userId": 8737606116,
+      "username": "",
+      "firstName": "Michael",
+      "lastName": "Nunez",
+      "profileLink": "tg://user?id=8737606116",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.361Z",
+      "lastSeen": "2026-05-18T20:51:47.361Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.361Z",
+          "lastSeen": "2026-05-18T20:51:47.361Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8225322225": {
+      "userId": 8225322225,
+      "username": "",
+      "firstName": "Alexander",
+      "lastName": "Hall",
+      "profileLink": "tg://user?id=8225322225",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.449Z",
+      "lastSeen": "2026-05-18T20:51:47.449Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.449Z",
+          "lastSeen": "2026-05-18T20:51:47.449Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8353311864": {
+      "userId": 8353311864,
+      "username": "",
+      "firstName": "خالد",
+      "lastName": "البدوي",
+      "profileLink": "tg://user?id=8353311864",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.452Z",
+      "lastSeen": "2026-05-18T20:51:47.452Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.452Z",
+          "lastSeen": "2026-05-18T20:51:47.452Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7505082330": {
+      "userId": 7505082330,
+      "username": "SuzanneWilliamsg38",
+      "firstName": "Таисия",
+      "lastName": "Евсеева",
+      "profileLink": "https://t.me/SuzanneWilliamsg38",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.558Z",
+      "lastSeen": "2026-05-18T20:51:47.558Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.558Z",
+          "lastSeen": "2026-05-18T20:51:47.558Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8128689332": {
+      "userId": 8128689332,
+      "username": "",
+      "firstName": "Yylhrtcb",
+      "lastName": "",
+      "profileLink": "tg://user?id=8128689332",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.560Z",
+      "lastSeen": "2026-05-18T20:51:47.561Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.561Z",
+          "lastSeen": "2026-05-18T20:51:47.561Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8711249234": {
+      "userId": 8711249234,
+      "username": "",
+      "firstName": "Vfldrf",
+      "lastName": "Bzghbec",
+      "profileLink": "tg://user?id=8711249234",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.655Z",
+      "lastSeen": "2026-05-18T20:51:47.655Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.655Z",
+          "lastSeen": "2026-05-18T20:51:47.655Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8327403684": {
+      "userId": 8327403684,
+      "username": "",
+      "firstName": "Jhosmel",
+      "lastName": "Latuff",
+      "profileLink": "tg://user?id=8327403684",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.854Z",
+      "lastSeen": "2026-05-18T20:51:47.854Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.854Z",
+          "lastSeen": "2026-05-18T20:51:47.854Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8738410943": {
+      "userId": 8738410943,
+      "username": "",
+      "firstName": "Qoxrndnn",
+      "lastName": "Gkyqjqy",
+      "profileLink": "tg://user?id=8738410943",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.855Z",
+      "lastSeen": "2026-05-18T20:51:47.855Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.855Z",
+          "lastSeen": "2026-05-18T20:51:47.855Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6893501830": {
+      "userId": 6893501830,
+      "username": "",
+      "firstName": "Abdul",
+      "lastName": "Samad",
+      "profileLink": "tg://user?id=6893501830",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.856Z",
+      "lastSeen": "2026-05-18T20:51:47.856Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.856Z",
+          "lastSeen": "2026-05-18T20:51:47.856Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8438610159": {
+      "userId": 8438610159,
+      "username": "",
+      "firstName": "Susan",
+      "lastName": "Smith",
+      "profileLink": "tg://user?id=8438610159",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.860Z",
+      "lastSeen": "2026-05-18T20:51:47.860Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.860Z",
+          "lastSeen": "2026-05-18T20:51:47.860Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7342337344": {
+      "userId": 7342337344,
+      "username": "",
+      "firstName": "Ivan",
+      "lastName": "",
+      "profileLink": "tg://user?id=7342337344",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.950Z",
+      "lastSeen": "2026-05-18T20:51:47.950Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.950Z",
+          "lastSeen": "2026-05-18T20:51:47.950Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8312619649": {
+      "userId": 8312619649,
+      "username": "",
+      "firstName": "melstroy",
+      "lastName": "",
+      "profileLink": "tg://user?id=8312619649",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:47.953Z",
+      "lastSeen": "2026-05-18T20:51:47.954Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:47.954Z",
+          "lastSeen": "2026-05-18T20:51:47.954Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8351277928": {
+      "userId": 8351277928,
+      "username": "",
+      "firstName": "Stephen",
+      "lastName": "Carter",
+      "profileLink": "tg://user?id=8351277928",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.052Z",
+      "lastSeen": "2026-05-18T20:51:48.052Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.052Z",
+          "lastSeen": "2026-05-18T20:51:48.052Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7926480511": {
+      "userId": 7926480511,
+      "username": "",
+      "firstName": "Frank",
+      "lastName": "",
+      "profileLink": "tg://user?id=7926480511",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.058Z",
+      "lastSeen": "2026-05-18T20:51:48.058Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.058Z",
+          "lastSeen": "2026-05-18T20:51:48.058Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8137382228": {
+      "userId": 8137382228,
+      "username": "",
+      "firstName": "Rachel",
+      "lastName": "Williams",
+      "profileLink": "tg://user?id=8137382228",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.156Z",
+      "lastSeen": "2026-05-18T20:51:48.156Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.156Z",
+          "lastSeen": "2026-05-18T20:51:48.156Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8699783535": {
+      "userId": 8699783535,
+      "username": "",
+      "firstName": "Rgdorduy",
+      "lastName": "Aubixqxzjo",
+      "profileLink": "tg://user?id=8699783535",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.255Z",
+      "lastSeen": "2026-05-18T20:51:48.256Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.256Z",
+          "lastSeen": "2026-05-18T20:51:48.256Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8782073207": {
+      "userId": 8782073207,
+      "username": "",
+      "firstName": "Xoequlrdyq",
+      "lastName": "Iedsnv",
+      "profileLink": "tg://user?id=8782073207",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.257Z",
+      "lastSeen": "2026-05-18T20:51:48.258Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.258Z",
+          "lastSeen": "2026-05-18T20:51:48.258Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6978064396": {
+      "userId": 6978064396,
+      "username": "",
+      "firstName": "Jerico",
+      "lastName": "Lim",
+      "profileLink": "tg://user?id=6978064396",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.351Z",
+      "lastSeen": "2026-05-18T20:51:48.351Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.351Z",
+          "lastSeen": "2026-05-18T20:51:48.351Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8558966587": {
+      "userId": 8558966587,
+      "username": "",
+      "firstName": "Amy",
+      "lastName": "Clark",
+      "profileLink": "tg://user?id=8558966587",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.352Z",
+      "lastSeen": "2026-05-18T20:51:48.352Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.352Z",
+          "lastSeen": "2026-05-18T20:51:48.352Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8449421224": {
+      "userId": 8449421224,
+      "username": "",
+      "firstName": "Linda",
+      "lastName": "King",
+      "profileLink": "tg://user?id=8449421224",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.358Z",
+      "lastSeen": "2026-05-18T20:51:48.358Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.358Z",
+          "lastSeen": "2026-05-18T20:51:48.358Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8504428671": {
+      "userId": 8504428671,
+      "username": "",
+      "firstName": "Evgbb",
+      "lastName": "Rwecgk",
+      "profileLink": "tg://user?id=8504428671",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.359Z",
+      "lastSeen": "2026-05-18T20:51:48.359Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.359Z",
+          "lastSeen": "2026-05-18T20:51:48.359Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8766499621": {
+      "userId": 8766499621,
+      "username": "xpgzloy",
+      "firstName": "спайдер",
+      "lastName": "",
+      "profileLink": "https://t.me/xpgzloy",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.451Z",
+      "lastSeen": "2026-05-18T20:51:48.455Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.455Z",
+          "lastSeen": "2026-05-18T20:51:48.455Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8356447572": {
+      "userId": 8356447572,
+      "username": "squarrqt",
+      "firstName": "Astrid",
+      "lastName": "Michael",
+      "profileLink": "https://t.me/squarrqt",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.553Z",
+      "lastSeen": "2026-05-18T20:51:48.554Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.554Z",
+          "lastSeen": "2026-05-18T20:51:48.554Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6840662200": {
+      "userId": 6840662200,
+      "username": "",
+      "firstName": "Blo",
+      "lastName": "ck",
+      "profileLink": "tg://user?id=6840662200",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.649Z",
+      "lastSeen": "2026-05-18T20:51:48.650Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.650Z",
+          "lastSeen": "2026-05-18T20:51:48.650Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8721459076": {
+      "userId": 8721459076,
+      "username": "",
+      "firstName": "Pahejxh",
+      "lastName": "Spyhdz",
+      "profileLink": "tg://user?id=8721459076",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.653Z",
+      "lastSeen": "2026-05-18T20:51:48.653Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.653Z",
+          "lastSeen": "2026-05-18T20:51:48.653Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8699986510": {
+      "userId": 8699986510,
+      "username": "",
+      "firstName": "Wisok",
+      "lastName": "",
+      "profileLink": "tg://user?id=8699986510",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.854Z",
+      "lastSeen": "2026-05-18T20:51:48.854Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.854Z",
+          "lastSeen": "2026-05-18T20:51:48.854Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "5406847620": {
+      "userId": 5406847620,
+      "username": "",
+      "firstName": "Jelar Kumar",
+      "lastName": "Subba",
+      "profileLink": "tg://user?id=5406847620",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.956Z",
+      "lastSeen": "2026-05-18T20:51:48.956Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.956Z",
+          "lastSeen": "2026-05-18T20:51:48.956Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7818096719": {
+      "userId": 7818096719,
+      "username": "",
+      "firstName": "Etzuz",
+      "lastName": "Stey",
+      "profileLink": "tg://user?id=7818096719",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.957Z",
+      "lastSeen": "2026-05-18T20:51:48.957Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.957Z",
+          "lastSeen": "2026-05-18T20:51:48.957Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7995297978": {
+      "userId": 7995297978,
+      "username": "",
+      "firstName": "narathip",
+      "lastName": "Motaka",
+      "profileLink": "tg://user?id=7995297978",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.959Z",
+      "lastSeen": "2026-05-18T20:51:48.959Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.959Z",
+          "lastSeen": "2026-05-18T20:51:48.959Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8305273982": {
+      "userId": 8305273982,
+      "username": "",
+      "firstName": "Sergey",
+      "lastName": "",
+      "profileLink": "tg://user?id=8305273982",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:48.960Z",
+      "lastSeen": "2026-05-18T20:51:48.960Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:48.960Z",
+          "lastSeen": "2026-05-18T20:51:48.960Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7572141265": {
+      "userId": 7572141265,
+      "username": "",
+      "firstName": "Anod",
+      "lastName": "Miveyllong",
+      "profileLink": "tg://user?id=7572141265",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.059Z",
+      "lastSeen": "2026-05-18T20:51:49.060Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.060Z",
+          "lastSeen": "2026-05-18T20:51:49.060Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8452028619": {
+      "userId": 8452028619,
+      "username": "",
+      "firstName": "Frank",
+      "lastName": "Robinson",
+      "profileLink": "tg://user?id=8452028619",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.152Z",
+      "lastSeen": "2026-05-18T20:51:49.152Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.152Z",
+          "lastSeen": "2026-05-18T20:51:49.152Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "5475341616": {
+      "userId": 5475341616,
+      "username": "",
+      "firstName": "لال محمد",
+      "lastName": "",
+      "profileLink": "tg://user?id=5475341616",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.154Z",
+      "lastSeen": "2026-05-18T20:51:49.154Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.154Z",
+          "lastSeen": "2026-05-18T20:51:49.154Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6892952461": {
+      "userId": 6892952461,
+      "username": "",
+      "firstName": "Văn",
+      "lastName": "Nguyen",
+      "profileLink": "tg://user?id=6892952461",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.154Z",
+      "lastSeen": "2026-05-18T20:51:49.154Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.154Z",
+          "lastSeen": "2026-05-18T20:51:49.154Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8618546826": {
+      "userId": 8618546826,
+      "username": "dahacokcalis",
+      "firstName": "Stephen",
+      "lastName": "Jackson",
+      "profileLink": "https://t.me/dahacokcalis",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.159Z",
+      "lastSeen": "2026-05-18T20:51:49.254Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.254Z",
+          "lastSeen": "2026-05-18T20:51:49.254Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7780295581": {
+      "userId": 7780295581,
+      "username": "",
+      "firstName": "Briann",
+      "lastName": "",
+      "profileLink": "tg://user?id=7780295581",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.285Z",
+      "lastSeen": "2026-05-18T20:51:49.285Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.285Z",
+          "lastSeen": "2026-05-18T20:51:49.285Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8021062842": {
+      "userId": 8021062842,
+      "username": "",
+      "firstName": "curly",
+      "lastName": "drey",
+      "profileLink": "tg://user?id=8021062842",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.286Z",
+      "lastSeen": "2026-05-18T20:51:49.287Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.287Z",
+          "lastSeen": "2026-05-18T20:51:49.287Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8443352180": {
+      "userId": 8443352180,
+      "username": "",
+      "firstName": "Carmen",
+      "lastName": "Green",
+      "profileLink": "tg://user?id=8443352180",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.354Z",
+      "lastSeen": "2026-05-18T20:51:49.355Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.355Z",
+          "lastSeen": "2026-05-18T20:51:49.355Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8352399396": {
+      "userId": 8352399396,
+      "username": "",
+      "firstName": "Mahed",
+      "lastName": "Sabino",
+      "profileLink": "tg://user?id=8352399396",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.360Z",
+      "lastSeen": "2026-05-18T20:51:49.360Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.360Z",
+          "lastSeen": "2026-05-18T20:51:49.360Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8759820038": {
+      "userId": 8759820038,
+      "username": "",
+      "firstName": "Pghjseopjh",
+      "lastName": "Cevsuwz",
+      "profileLink": "tg://user?id=8759820038",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.454Z",
+      "lastSeen": "2026-05-18T20:51:49.454Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.454Z",
+          "lastSeen": "2026-05-18T20:51:49.454Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8570235464": {
+      "userId": 8570235464,
+      "username": "echoinggale650",
+      "firstName": "Максим",
+      "lastName": "Ширяев",
+      "profileLink": "https://t.me/echoinggale650",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.454Z",
+      "lastSeen": "2026-05-18T20:51:49.455Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.455Z",
+          "lastSeen": "2026-05-18T20:51:49.455Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8467776093": {
+      "userId": 8467776093,
+      "username": "",
+      "firstName": "Jacob",
+      "lastName": "White",
+      "profileLink": "tg://user?id=8467776093",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.455Z",
+      "lastSeen": "2026-05-18T20:51:49.455Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.455Z",
+          "lastSeen": "2026-05-18T20:51:49.455Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7458373560": {
+      "userId": 7458373560,
+      "username": "",
+      "firstName": "Tuang",
+      "lastName": "No",
+      "profileLink": "tg://user?id=7458373560",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.458Z",
+      "lastSeen": "2026-05-18T20:51:49.459Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.459Z",
+          "lastSeen": "2026-05-18T20:51:49.459Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8911946037": {
+      "userId": 8911946037,
+      "username": "febotevirava",
+      "firstName": "Аня",
+      "lastName": "Новикова",
+      "profileLink": "https://t.me/febotevirava",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.459Z",
+      "lastSeen": "2026-05-18T20:51:49.459Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.459Z",
+          "lastSeen": "2026-05-18T20:51:49.459Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8711839607": {
+      "userId": 8711839607,
+      "username": "",
+      "firstName": "Medig",
+      "lastName": "",
+      "profileLink": "tg://user?id=8711839607",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.460Z",
+      "lastSeen": "2026-05-18T20:51:49.460Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.460Z",
+          "lastSeen": "2026-05-18T20:51:49.460Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6344175121": {
+      "userId": 6344175121,
+      "username": "AnastasiyaZvyagina480",
+      "firstName": "Анастасия",
+      "lastName": "",
+      "profileLink": "https://t.me/AnastasiyaZvyagina480",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.460Z",
+      "lastSeen": "2026-05-18T20:51:49.460Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.460Z",
+          "lastSeen": "2026-05-18T20:51:49.460Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8551626834": {
+      "userId": 8551626834,
+      "username": "",
+      "firstName": "Jherwin",
+      "lastName": "Abenojar",
+      "profileLink": "tg://user?id=8551626834",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.461Z",
+      "lastSeen": "2026-05-18T20:51:49.461Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.461Z",
+          "lastSeen": "2026-05-18T20:51:49.461Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8488396863": {
+      "userId": 8488396863,
+      "username": "mistyechosMv",
+      "firstName": "Нина",
+      "lastName": "Фомина",
+      "profileLink": "https://t.me/mistyechosMv",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.552Z",
+      "lastSeen": "2026-05-18T20:51:49.553Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.553Z",
+          "lastSeen": "2026-05-18T20:51:49.553Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8734176771": {
+      "userId": 8734176771,
+      "username": "",
+      "firstName": "Znnem",
+      "lastName": "Tnzqtksezx",
+      "profileLink": "tg://user?id=8734176771",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.557Z",
+      "lastSeen": "2026-05-18T20:51:49.651Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.651Z",
+          "lastSeen": "2026-05-18T20:51:49.651Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8861773316": {
+      "userId": 8861773316,
+      "username": "goldenwhisperingzip",
+      "firstName": "Ира",
+      "lastName": "Костина",
+      "profileLink": "https://t.me/goldenwhisperingzip",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.659Z",
+      "lastSeen": "2026-05-18T20:51:49.659Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.659Z",
+          "lastSeen": "2026-05-18T20:51:49.659Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7918235130": {
+      "userId": 7918235130,
+      "username": "",
+      "firstName": "Drake",
+      "lastName": "Leur",
+      "profileLink": "tg://user?id=7918235130",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.660Z",
+      "lastSeen": "2026-05-18T20:51:49.660Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.660Z",
+          "lastSeen": "2026-05-18T20:51:49.660Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8167084422": {
+      "userId": 8167084422,
+      "username": "johnsontamara879",
+      "firstName": "Emma",
+      "lastName": "Moore",
+      "profileLink": "https://t.me/johnsontamara879",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:49.752Z",
+      "lastSeen": "2026-05-18T20:51:49.753Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:49.753Z",
+          "lastSeen": "2026-05-18T20:51:49.753Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6518986648": {
+      "userId": 6518986648,
+      "username": "DenrianxPatchela_Yeh",
+      "firstName": "Дементьева",
+      "lastName": "Злата",
+      "profileLink": "https://t.me/DenrianxPatchela_Yeh",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.057Z",
+      "lastSeen": "2026-05-18T20:51:50.057Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.057Z",
+          "lastSeen": "2026-05-18T20:51:50.057Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8529943811": {
+      "userId": 8529943811,
+      "username": "",
+      "firstName": "Huy",
+      "lastName": "Le",
+      "profileLink": "tg://user?id=8529943811",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.161Z",
+      "lastSeen": "2026-05-18T20:51:50.161Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.161Z",
+          "lastSeen": "2026-05-18T20:51:50.161Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8210007978": {
+      "userId": 8210007978,
+      "username": "",
+      "firstName": "Mochi",
+      "lastName": "",
+      "profileLink": "tg://user?id=8210007978",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.250Z",
+      "lastSeen": "2026-05-18T20:51:50.251Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.251Z",
+          "lastSeen": "2026-05-18T20:51:50.251Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8703143571": {
+      "userId": 8703143571,
+      "username": "",
+      "firstName": "Mvooxa",
+      "lastName": "Ssjjxvg",
+      "profileLink": "tg://user?id=8703143571",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.252Z",
+      "lastSeen": "2026-05-18T20:51:50.252Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.252Z",
+          "lastSeen": "2026-05-18T20:51:50.252Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8446130830": {
+      "userId": 8446130830,
+      "username": "dj20jd",
+      "firstName": "Pizza",
+      "lastName": "Margarita",
+      "profileLink": "https://t.me/dj20jd",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.258Z",
+      "lastSeen": "2026-05-18T20:51:50.258Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.258Z",
+          "lastSeen": "2026-05-18T20:51:50.258Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8268731610": {
+      "userId": 8268731610,
+      "username": "radiantdreamscapes181",
+      "firstName": "Григорий",
+      "lastName": "Кузнецов",
+      "profileLink": "https://t.me/radiantdreamscapes181",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.349Z",
+      "lastSeen": "2026-05-18T20:51:50.350Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.350Z",
+          "lastSeen": "2026-05-18T20:51:50.350Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7566824009": {
+      "userId": 7566824009,
+      "username": "",
+      "firstName": "why",
+      "lastName": "",
+      "profileLink": "tg://user?id=7566824009",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.357Z",
+      "lastSeen": "2026-05-18T20:51:50.357Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.357Z",
+          "lastSeen": "2026-05-18T20:51:50.357Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8263476357": {
+      "userId": 8263476357,
+      "username": "twilightdrizzlekBN",
+      "firstName": "Захар",
+      "lastName": "Соловьев",
+      "profileLink": "https://t.me/twilightdrizzlekBN",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.663Z",
+      "lastSeen": "2026-05-18T20:51:50.663Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.663Z",
+          "lastSeen": "2026-05-18T20:51:50.663Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6123048329": {
+      "userId": 6123048329,
+      "username": "",
+      "firstName": "Thanawin",
+      "lastName": "Suisamrong",
+      "profileLink": "tg://user?id=6123048329",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:50.690Z",
+      "lastSeen": "2026-05-18T20:51:50.690Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:50.690Z",
+          "lastSeen": "2026-05-18T20:51:50.690Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7687045668": {
+      "userId": 7687045668,
+      "username": "shimmeringhope144",
+      "firstName": "Артемий",
+      "lastName": "Киселев",
+      "profileLink": "https://t.me/shimmeringhope144",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:51.386Z",
+      "lastSeen": "2026-05-18T20:51:51.386Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:51.386Z",
+          "lastSeen": "2026-05-18T20:51:51.386Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8542507226": {
+      "userId": 8542507226,
+      "username": "playfulwhirlpooldnx",
+      "firstName": "Лев",
+      "lastName": "Суворов",
+      "profileLink": "https://t.me/playfulwhirlpooldnx",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:52.574Z",
+      "lastSeen": "2026-05-18T20:51:52.575Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:52.575Z",
+          "lastSeen": "2026-05-18T20:51:52.575Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7506885900": {
+      "userId": 7506885900,
+      "username": "fourth627130",
+      "firstName": "Влада",
+      "lastName": "Трофимова",
+      "profileLink": "https://t.me/fourth627130",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:51:58.733Z",
+      "lastSeen": "2026-05-18T20:51:58.733Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:51:58.733Z",
+          "lastSeen": "2026-05-18T20:51:58.733Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8282271973": {
+      "userId": 8282271973,
+      "username": "radiantstreamerNzb",
+      "firstName": "Леонид",
+      "lastName": "Лебедев",
+      "profileLink": "https://t.me/radiantstreamerNzb",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:52:05.374Z",
+      "lastSeen": "2026-05-18T20:52:05.374Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:52:05.374Z",
+          "lastSeen": "2026-05-18T20:52:05.374Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8333608206": {
+      "userId": 8333608206,
+      "username": "shadowblade648",
+      "firstName": "Мария",
+      "lastName": "Баранова",
+      "profileLink": "https://t.me/shadowblade648",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:52:52.312Z",
+      "lastSeen": "2026-05-18T20:52:52.312Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:52:52.312Z",
+          "lastSeen": "2026-05-18T20:52:52.312Z"
         }
       },
       "contactedBot": false,
