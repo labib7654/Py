@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T23:47:09.227Z",
+  "savedAt": "2026-05-18T23:55:26.144Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3614,7 +3614,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T23:37:23.077Z",
+      "lastSeen": "2026-05-18T23:55:25.143Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -9616,5 +9616,15 @@
       "bioBanInfo": null
     }
   },
-  "communities": {}
+  "communities": {},
+  "aiCfg": {
+    "enabled": true,
+    "replyPrivate": true,
+    "replyGroups": [],
+    "monitorGroups": [
+      -1003794953708
+    ],
+    "minAnswerLen": 15
+  },
+  "aiQA": []
 }
