@@ -91,6 +91,24 @@ const users       = new Map();
 const communities = new Map();
 const botAdmins   = new Set();
 
+// ── بيانات الذكاء الاصطناعي ────────────────────────────────────
+let aiCfg = {
+  enabled:       true,
+  replyPrivate:  true,
+  replyGroups:   [],
+  monitorGroups: [],
+  minAnswerLen:  15,
+};
+const aiQA = new Map(); // hash => { hash, q, a, ... }
+
+function getAiCfg() { return aiCfg; }
+function setAiCfg(updates) { aiCfg = { ...aiCfg, ...updates }; saveData(); }
+function allAiQA() { return [...aiQA.values()]; }
+function setAiQA(hash, entry) { aiQA.set(hash, entry); }
+function getAiQA(hash) { return aiQA.get(hash); }
+function hasAiQA(hash) { return aiQA.has(hash); }
+function clearAiQA() { aiQA.clear(); saveData(); }
+
 // ═══════════════════════════════════════════════════════════════
 //  Groups
 // ═══════════════════════════════════════════════════════════════
@@ -388,6 +406,8 @@ function buildJSON() {
         autoBannedUsers: Object.fromEntries(v.autoBannedUsers || new Map()),
       }])
     ),
+    aiCfg: aiCfg,
+    aiQA: [...aiQA.values()],
   }, null, 2);
 }
 
@@ -453,6 +473,16 @@ function parseData(raw) {
     if (data.botAdmins && Array.isArray(data.botAdmins)) {
       botAdmins.clear();
       data.botAdmins.forEach(id => botAdmins.add(Number(id)));
+    }
+
+    // ── AI data ───────────────────────────────────────────────
+    if (data.aiCfg && typeof data.aiCfg === 'object') {
+      aiCfg = { ...aiCfg, ...data.aiCfg };
+    }
+    if (data.aiQA && Array.isArray(data.aiQA)) {
+      aiQA.clear();
+      data.aiQA.forEach(e => e?.hash && aiQA.set(e.hash, e));
+      console.log(`🧠 AI: تم تحميل ${aiQA.size} سؤال`);
     }
 
     // ── groups ────────────────────────────────────────────────
@@ -700,5 +730,6 @@ module.exports = {
   getStats,
   saveData, markDirty,
   isBotAdmin, addBotAdmin, removeBotAdmin, allBotAdmins, clearBotAdmins,
+  getAiCfg, setAiCfg, allAiQA, getAiQA, setAiQA, hasAiQA, clearAiQA,
   waitReady,
 };

@@ -13,8 +13,7 @@
 'use strict';
 
 const { Markup } = require('telegraf');
-const fs         = require('fs');
-const path       = require('path');
+const db = require('./db');
 
 // ─── متغيرات البيئة ───────────────────────────────────────────
 const AI_ENABLED       = process.env.AI_ENABLED !== 'false';
@@ -28,59 +27,35 @@ const PROVIDERS = {
   openai:   { url: 'https://api.openai.com/v1/chat/completions',   model: 'gpt-4o-mini'   },
 };
 
-// ─── ملفات التخزين ────────────────────────────────────────────
-const QA_FILE  = path.join(__dirname, 'qa_store.json');
-const CFG_FILE = path.join(__dirname, 'ai_config.json');
-
 // ═════════════════════════════════════════════════════════════
-//  الإعدادات (تُحفظ في ai_config.json)
+//  الإعدادات والبيانات — تُحفظ عبر db.js على GitHub تلقائياً
 // ═════════════════════════════════════════════════════════════
-let cfg = {
-  enabled:       true,   // تشغيل/إيقاف كامل
-  replyPrivate:  true,   // رد في الخاص
-  replyGroups:   [],     // قروبات يرد فيها البوت (فارغة = لا يرد في قروبات)
-  monitorGroups: [],     // قروبات يراقبها (فارغة = يراقب الكل)
-  minAnswerLen:  15,     // حد أدنى لطول الإجابة المقبولة
+// cfg — يقرأ ويكتب مباشرة في db (يحفظ على GitHub تلقائياً)
+const cfg = {
+  get enabled()       { return db.getAiCfg().enabled; },
+  set enabled(v)      { db.setAiCfg({ enabled: v }); },
+  get replyPrivate()  { return db.getAiCfg().replyPrivate; },
+  set replyPrivate(v) { db.setAiCfg({ replyPrivate: v }); },
+  get replyGroups()   { return db.getAiCfg().replyGroups; },
+  set replyGroups(v)  { db.setAiCfg({ replyGroups: v }); },
+  get monitorGroups() { return db.getAiCfg().monitorGroups; },
+  set monitorGroups(v){ db.setAiCfg({ monitorGroups: v }); },
+  get minAnswerLen()  { return db.getAiCfg().minAnswerLen; },
+  set minAnswerLen(v) { db.setAiCfg({ minAnswerLen: v }); },
 };
 
-function loadCfg() {
-  try {
-    if (fs.existsSync(CFG_FILE)) {
-      cfg = { ...cfg, ...JSON.parse(fs.readFileSync(CFG_FILE, 'utf-8')) };
-    }
-  } catch (e) { console.warn('AI cfg load:', e.message); }
-}
+// qaStore — يقرأ ويكتب مباشرة في db
+const qaStore = {
+  get:    (h)  => db.getAiQA(h),
+  has:    (h)  => db.hasAiQA(h),
+  set:    (h, e) => { db.setAiQA(h, e); db.saveData(); },
+  values: ()   => db.allAiQA(),
+  get size()   { return db.allAiQA().length; },
+  clear:  ()   => db.clearAiQA(),
+};
 
-function saveCfg() {
-  try { fs.writeFileSync(CFG_FILE, JSON.stringify(cfg, null, 2), 'utf-8'); }
-  catch (e) { console.error('AI cfg save:', e.message); }
-}
-
-// ═════════════════════════════════════════════════════════════
-//  قاعدة الأسئلة والأجوبة
-// ═════════════════════════════════════════════════════════════
-const qaStore = new Map();
-
-function loadQA() {
-  try {
-    if (fs.existsSync(QA_FILE)) {
-      const arr = JSON.parse(fs.readFileSync(QA_FILE, 'utf-8'));
-      if (Array.isArray(arr)) {
-        arr.forEach(e => e?.hash && qaStore.set(e.hash, e));
-        console.log(`🧠 AI: تم تحميل ${qaStore.size} سؤال`);
-      }
-    }
-  } catch (e) { console.warn('QA load:', e.message); }
-}
-
-let _saveT = null;
-function saveQA() {
-  if (_saveT) clearTimeout(_saveT);
-  _saveT = setTimeout(() => {
-    try { fs.writeFileSync(QA_FILE, JSON.stringify([...qaStore.values()], null, 2), 'utf-8'); }
-    catch (e) { console.error('QA save:', e.message); }
-  }, 2000);
-}
+function saveCfg() { db.saveData(); }
+function saveQA()  { db.saveData(); }
 
 function makeHash(text) {
   const s = text.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 80);
@@ -106,8 +81,11 @@ function isQuestion(text) {
 function recordQ(text, from, chatId) {
   const h = makeHash(text);
   const e = qaStore.get(h);
-  if (e) { e.count = (e.count || 1) + 1; e.lastAsked = new Date().toISOString(); }
-  else {
+  if (e) {
+    e.count = (e.count || 1) + 1;
+    e.lastAsked = new Date().toISOString();
+    qaStore.set(h, e);
+  } else {
     qaStore.set(h, {
       hash: h, q: text, a: null,
       askedBy: from.id,
@@ -116,19 +94,18 @@ function recordQ(text, from, chatId) {
       lastAsked: new Date().toISOString(), count: 1,
     });
   }
-  saveQA();
   return h;
 }
 
 function recordA(qHash, ans, from) {
   const e = qaStore.get(qHash);
-  if (!e || !ans || ans.length < cfg.minAnswerLen) return;
+  if (!e || !ans || ans.length < db.getAiCfg().minAnswerLen) return;
   if (!e.a || ans.length > e.a.length) {
     e.a = ans;
     e.answeredBy = from.id;
     e.answeredByName = from.first_name || from.username || String(from.id);
     e.answeredAt = new Date().toISOString();
-    saveQA();
+    qaStore.set(qHash, e);
   }
 }
 
@@ -136,8 +113,8 @@ function recordA(qHash, ans, from) {
 //  استدعاء الـ AI مع سياق قاعدة المعرفة
 // ═════════════════════════════════════════════════════════════
 function buildContext() {
-  const pool = [...qaStore.values()]
-    .filter(e => e.a && e.a.length >= cfg.minAnswerLen)
+  const pool = qaStore.values()
+    .filter(e => e.a && e.a.length >= db.getAiCfg().minAnswerLen)
     .sort((a, b) => (b.count || 1) - (a.count || 1))
     .slice(0, 25);
   if (!pool.length) return '';
@@ -181,7 +158,7 @@ ${ctx}`
 //  لوحة التحكم
 // ═════════════════════════════════════════════════════════════
 function panelText() {
-  const answered = [...qaStore.values()].filter(e => e.a).length;
+  const answered = qaStore.values().filter(e => e.a).length;
   return (
     `🤖 *لوحة تحكم الذكاء الاصطناعي*\n\n` +
     `الحالة: ${cfg.enabled ? '🟢 شغّال' : '🔴 موقوف'}\n` +
@@ -211,9 +188,6 @@ function panelMarkup() {
 module.exports = function setupAI(bot) {
   if (!AI_ENABLED) { console.log('ℹ️ AI معطّل'); return; }
   if (!AI_API_KEY) { console.warn('⚠️ AI_API_KEY مفقود'); return; }
-
-  loadCfg();
-  loadQA();
 
   const { DEVELOPER_ID } = require('./config');
   const isDev = ctx => ctx.from?.id === DEVELOPER_ID;
@@ -254,7 +228,6 @@ module.exports = function setupAI(bot) {
   bot.action('ai_mon', async (ctx) => {
     if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
     await ctx.answerCbQuery();
-    const db = require('./db');
     const groups = db.allGroups();
     const btns = groups.map(g => {
       const on = cfg.monitorGroups.includes(g.chatId);
@@ -268,11 +241,12 @@ module.exports = function setupAI(bot) {
   bot.action(/^aim_(-?\d+)$/, async (ctx) => {
     if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
     const id = Number(ctx.match[1]);
-    const i  = cfg.monitorGroups.indexOf(id);
-    if (i >= 0) cfg.monitorGroups.splice(i, 1); else cfg.monitorGroups.push(id);
+    const arr = [...cfg.monitorGroups];
+    const i  = arr.indexOf(id);
+    if (i >= 0) arr.splice(i, 1); else arr.push(id);
+    cfg.monitorGroups = arr;
     saveCfg();
     await ctx.answerCbQuery(i >= 0 ? '❌ أُزيل' : '✅ أُضيف');
-    const db = require('./db');
     const groups = db.allGroups();
     const btns = groups.map(g => {
       const on = cfg.monitorGroups.includes(g.chatId);
@@ -293,7 +267,6 @@ module.exports = function setupAI(bot) {
   bot.action('ai_rep', async (ctx) => {
     if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
     await ctx.answerCbQuery();
-    const db = require('./db');
     const groups = db.allGroups();
     const btns = groups.map(g => {
       const on = cfg.replyGroups.includes(g.chatId);
@@ -306,11 +279,12 @@ module.exports = function setupAI(bot) {
   bot.action(/^air_(-?\d+)$/, async (ctx) => {
     if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
     const id = Number(ctx.match[1]);
-    const i  = cfg.replyGroups.indexOf(id);
-    if (i >= 0) cfg.replyGroups.splice(i, 1); else cfg.replyGroups.push(id);
+    const arr2 = [...cfg.replyGroups];
+    const i  = arr2.indexOf(id);
+    if (i >= 0) arr2.splice(i, 1); else arr2.push(id);
+    cfg.replyGroups = arr2;
     saveCfg();
     await ctx.answerCbQuery(i >= 0 ? '❌ أُزيل' : '✅ أُضيف');
-    const db = require('./db');
     const groups = db.allGroups();
     const btns = groups.map(g => {
       const on = cfg.replyGroups.includes(g.chatId);
@@ -324,7 +298,6 @@ module.exports = function setupAI(bot) {
   bot.action('ai_rep_all', async (ctx) => {
     if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
     await ctx.answerCbQuery();
-    const db = require('./db');
     const groups = db.allGroups();
     if (!groups.length) {
       return ctx.answerCbQuery('⚠️ لا يوجد قروبات مسجلة', { show_alert: true });
@@ -340,8 +313,8 @@ module.exports = function setupAI(bot) {
     if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
     await ctx.answerCbQuery();
     const total    = qaStore.size;
-    const answered = [...qaStore.values()].filter(e => e.a).length;
-    const top5     = [...qaStore.values()].filter(e => e.a).sort((a, b) => (b.count || 1) - (a.count || 1)).slice(0, 5);
+    const answered = qaStore.values().filter(e => e.a).length;
+    const top5     = qaStore.values().filter(e => e.a).sort((a, b) => (b.count || 1) - (a.count || 1)).slice(0, 5);
     let txt = `📊 *إحصائيات قاعدة المعرفة*\n\nالكلي: *${total}* | مجاب: *${answered}* | بدون إجابة: *${total - answered}*\n\n`;
     if (top5.length) { txt += `🔥 *الأكثر تكراراً:*\n`; top5.forEach((e, i) => { txt += `${i+1}. _(${e.count}x)_ ${e.q.slice(0,50)}\n`; }); }
     await ctx.editMessageText(txt, { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', 'ai_back')]]) });
@@ -359,7 +332,7 @@ module.exports = function setupAI(bot) {
 
   bot.action('ai_clr_yes', async (ctx) => {
     if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
-    qaStore.clear(); saveQA();
+    qaStore.clear();
     await ctx.answerCbQuery('✅ تم المسح');
     await ctx.editMessageText(panelText(), { parse_mode: 'Markdown', ...panelMarkup() });
   });
