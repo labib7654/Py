@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T21:11:21.832Z",
+  "savedAt": "2026-05-18T21:11:32.476Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -153,8 +153,8 @@
     },
     "-1003969494192": {
       "chatId": -1003969494192,
-      "title": "مجتمع جامعةالأمير سلطان",
-      "type": "supergroup",
+      "title": "مجتمع جامعة الامير سلطان",
+      "type": "forum",
       "ownerId": 7411444902,
       "ownerUsername": "Labibrd",
       "ownerVerified": false,
@@ -2393,16 +2393,6 @@
           "score": 0,
           "lastMessageAt": null
         },
-        "8265840070": {
-          "userId": 8265840070,
-          "username": "BMW0_0",
-          "firstName": "ووة",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:57:58.593Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
         "5058177542": {
           "userId": 5058177542,
           "username": "Qegdjfv",
@@ -3821,10 +3811,9 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T20:57:58.613Z",
+      "lastSeen": "2026-05-18T21:11:31.474Z",
       "groups": [
-        -1003794953708,
-        -1003969494192
+        -1003794953708
       ],
       "channels": [],
       "seenInChats": {
