@@ -17,9 +17,11 @@ const fs         = require('fs');
 const path       = require('path');
 
 // ─── متغيرات البيئة ───────────────────────────────────────────
-const AI_ENABLED  = process.env.AI_ENABLED !== 'false';
-const AI_PROVIDER = (process.env.AI_PROVIDER || 'deepseek').toLowerCase();
-const AI_API_KEY  = process.env.AI_API_KEY || '';
+const AI_ENABLED       = process.env.AI_ENABLED !== 'false';
+const AI_PROVIDER      = (process.env.AI_PROVIDER || 'deepseek').toLowerCase();
+const AI_API_KEY       = process.env.AI_API_KEY || '';
+// questions_only = يرد على الأسئلة فقط | all = يرد على كل رسالة
+const AI_RESPONSE_MODE = (process.env.AI_RESPONSE_MODE || 'questions_only').toLowerCase();
 
 const PROVIDERS = {
   deepseek: { url: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat' },
@@ -422,17 +424,18 @@ module.exports = function setupAI(bot) {
       const text = msg.text || '';
       if (!text || text.startsWith('/') || text.length < 3) return next();
 
+      // فقط للأسئلة في الخاص (أو كل الرسائل إذا AI_RESPONSE_MODE=all)
+      if (AI_RESPONSE_MODE !== 'all' && !isQuestion(text)) return next();
+
       await ctx.sendChatAction('typing');
       const ans = await smartAsk(text);
       await ctx.reply(ans);
 
-      if (isQuestion(text)) {
-        const h = recordQ(text, from, chat.id);
-        recordA(h, ans, { id: 0, first_name: 'AI' });
-      }
+      const h = recordQ(text, from, chat.id);
+      recordA(h, ans, { id: 0, first_name: 'AI' });
     } catch (e) {
-      console.error('AI private:', e.message);
-      await ctx.reply('⚠️ حدث خطأ، حاول مجدداً.').catch(() => {});
+      console.error('AI private error:', e.message);
+      await ctx.reply('⚠️ حدث خطأ في الاتصال بالذكاء الاصطناعي، تأكد من صحة AI_API_KEY وحاول مجدداً.').catch(() => {});
     }
   });
 };

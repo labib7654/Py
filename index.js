@@ -87,8 +87,8 @@ async function main() {
   setupDeveloper(bot);
   setupBotAdmins(bot);       // ✅ نظام إدارة مشرفي البوت
   setupRadar(bot);           // ✅ رادار المستخدمين — يسجّل الجميع في كل مكان
-  setupAdder(bot);   
-     setupAI(bot);     // ✅ ميزة الإضافة العشوائية للمطور
+  setupAdder(bot);
+  setupAI(bot);             // ✅ نظام الذكاء الاصطناعي
   setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)
   setupTopicHandlers(bot);  // ✅ نظام طلبات المواضيع — يجب قبل setupGroupHandlers
   setupGroupHandlers(bot);
