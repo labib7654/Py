@@ -705,11 +705,12 @@ module.exports = function setupOwnerHandlers(bot) {
 
   // ── لوحة الصلاحيات ───────────────────────────────────────
   bot.action(/^perms_panel_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId); if (!g) return;
+    const g = db.getGroup(chatId);
+    if (!g) return ctx.answerCbQuery('❌ بيانات المجموعة غير موجودة!', { show_alert: true });
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    await ctx.answerCbQuery();
     await ctx.editMessageText(
       `🎛️ *صلاحيات أعضاء ${g.title}*\n\nاضغط لتفعيل/تعطيل:`,
       { parse_mode: 'Markdown', ...permissionsDashboard(chatId, g.perms) }
@@ -738,6 +739,113 @@ module.exports = function setupOwnerHandlers(bot) {
     try { await applyGroupPermissions(bot, chatId, g.perms); } catch {}
     await ctx.answerCbQuery(`${g.perms[def.key] ? '✅' : '❌'} ${def.label}`);
     await ctx.editMessageReplyMarkup(permissionsDashboard(chatId, g.perms).reply_markup);
+  });
+
+  // ── لوحة إدارة المواضيع ──────────────────────────────────
+  bot.action(/^topics_panel_(-?\d+)$/, async (ctx) => {
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!g) return ctx.answerCbQuery('❌ بيانات المجموعة غير موجودة!', { show_alert: true });
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    await ctx.answerCbQuery();
+
+    const topics = g.topics ? [...g.topics.entries()].filter(([, t]) => !t.archived) : [];
+
+    if (!topics.length) {
+      return ctx.editMessageText(
+        `🧵 *إدارة مواضيع ${g.title}*\n\n📭 لا توجد مواضيع مسجّلة بعد.\n\nاستخدم /synctopics أو /regtopic داخل الموضوع لتسجيله.`,
+        {
+          parse_mode: 'Markdown',
+          ...require('telegraf').Markup.inlineKeyboard([
+            [require('telegraf').Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
+          ]),
+        }
+      );
+    }
+
+    const { Markup: M } = require('telegraf');
+    const rows = topics.map(([tid, t]) => {
+      const lock    = t.locked   ? '🔒' : '🔓';
+      const archive = t.archived ? '📦' : '📂';
+      return [
+        M.button.callback(`${lock} ${t.name.slice(0, 18)}`, `tp_toggle_lock_${tid}_${chatId}`),
+        M.button.callback(`${archive} أرشفة`, `tp_toggle_arch_${tid}_${chatId}`),
+      ];
+    });
+    rows.push([M.button.callback('🔙 رجوع', `settings_${chatId}`)]);
+
+    await ctx.editMessageText(
+      `🧵 *إدارة مواضيع ${g.title}*\n\n` +
+      `📋 المواضيع المسجّلة: \`${topics.length}\`\n\n` +
+      `🔒 = مقفل (اضغط لفتحه) | 🔓 = مفتوح (اضغط لقفله)`,
+      { parse_mode: 'Markdown', ...M.inlineKeyboard(rows) }
+    );
+  });
+
+  // ── تبديل قفل موضوع ──────────────────────────────────────
+  bot.action(/^tp_toggle_lock_(-?\d+)_(-?\d+)$/, async (ctx) => {
+    const topicId = Number(ctx.match[1]);
+    const chatId  = Number(ctx.match[2]);
+    const g = db.getGroup(chatId);
+    if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+
+    const t = g.topics?.get(topicId);
+    if (!t) return ctx.answerCbQuery('❌ الموضوع غير موجود!', { show_alert: true });
+
+    t.locked = !t.locked;
+    try {
+      if (t.locked) await lockTopic(bot, chatId, topicId);
+      else          await unlockTopic(bot, chatId, topicId);
+    } catch {}
+    db.markDirty();
+    await ctx.answerCbQuery(t.locked ? '🔒 تم قفل الموضوع' : '🔓 تم فتح الموضوع');
+
+    // إعادة رسم اللوحة
+    const { Markup: M } = require('telegraf');
+    const topics = [...g.topics.entries()].filter(([, tp]) => !tp.archived);
+    const rows = topics.map(([tid, tp]) => [
+      M.button.callback(`${tp.locked ? '🔒' : '🔓'} ${tp.name.slice(0, 18)}`, `tp_toggle_lock_${tid}_${chatId}`),
+      M.button.callback(`${tp.archived ? '📦' : '📂'} أرشفة`, `tp_toggle_arch_${tid}_${chatId}`),
+    ]);
+    rows.push([M.button.callback('🔙 رجوع', `settings_${chatId}`)]);
+    await ctx.editMessageReplyMarkup(M.inlineKeyboard(rows).reply_markup);
+  });
+
+  // ── تبديل أرشفة موضوع ────────────────────────────────────
+  bot.action(/^tp_toggle_arch_(-?\d+)_(-?\d+)$/, async (ctx) => {
+    const topicId = Number(ctx.match[1]);
+    const chatId  = Number(ctx.match[2]);
+    const g = db.getGroup(chatId);
+    if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+
+    const t = g.topics?.get(topicId);
+    if (!t) return ctx.answerCbQuery('❌ الموضوع غير موجود!', { show_alert: true });
+
+    t.archived = !t.archived;
+    if (t.archived) try { await archiveTopic(bot, chatId, topicId); } catch {}
+    db.markDirty();
+    await ctx.answerCbQuery(t.archived ? '📦 تم الأرشفة' : '📂 تم إلغاء الأرشفة');
+
+    // إعادة رسم اللوحة
+    const { Markup: M } = require('telegraf');
+    const topics = [...g.topics.entries()].filter(([, tp]) => !tp.archived);
+    if (!topics.length) {
+      return ctx.editMessageText(
+        `🧵 *إدارة مواضيع ${g.title}*\n\n📭 لا توجد مواضيع نشطة.`,
+        { parse_mode: 'Markdown', ...M.inlineKeyboard([[M.button.callback('🔙 رجوع', `settings_${chatId}`)]]) }
+      );
+    }
+    const rows = topics.map(([tid, tp]) => [
+      M.button.callback(`${tp.locked ? '🔒' : '🔓'} ${tp.name.slice(0, 18)}`, `tp_toggle_lock_${tid}_${chatId}`),
+      M.button.callback(`${tp.archived ? '📦' : '📂'} أرشفة`, `tp_toggle_arch_${tid}_${chatId}`),
+    ]);
+    rows.push([M.button.callback('🔙 رجوع', `settings_${chatId}`)]);
+    await ctx.editMessageReplyMarkup(M.inlineKeyboard(rows).reply_markup);
   });
 
   // ── سجل الإجراءات ─────────────────────────────────────────
