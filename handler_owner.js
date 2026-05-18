@@ -12,6 +12,13 @@ const pendingAddWord         = new Map();
 const pendingAddSpecialist   = new Map(); // لإضافة كلمة مع متخصص
 
 // ── لوحة الإعدادات الرئيسية ──────────────────────────────────
+// ── تنسيق وقت التأخير للعرض ──────────────────────────────────────────
+function formatDelay(seconds) {
+  if (seconds < 60)   return `${seconds} ث`;
+  if (seconds < 3600) return `${Math.round(seconds / 60)} د`;
+  return `${(seconds / 3600).toFixed(1).replace('.0', '')} س`;
+}
+
 function groupSettingsKeyboard(chatId, s) {
   const com = s.communityId ? require('./db').getCommunity(s.communityId) : null;
   return Markup.inlineKeyboard([
@@ -20,7 +27,8 @@ function groupSettingsKeyboard(chatId, s) {
       Markup.button.callback('📨 الطلبات المعلقة', `joinreqs_${chatId}`),
     ],
     [
-      Markup.button.callback(`${s.autoApproveJoin ? '🤖✅' : '🤖❌'} قبول تلقائي (5د)`, `toggle_autoapprove_${chatId}`),
+      Markup.button.callback(`${s.autoApproveJoin ? '🤖✅' : '🤖❌'} قبول تلقائي`, `toggle_autoapprove_${chatId}`),
+      Markup.button.callback(`⏱ ${formatDelay(s.autoApproveDelay ?? 300)}`, `autoapprove_delay_${chatId}`),
     ],
     [
       Markup.button.callback(`${s.protectContent ? '🔒' : '🔓'} حماية المحتوى`, `toggle_protect_${chatId}`),
@@ -686,9 +694,10 @@ module.exports = function setupOwnerHandlers(bot) {
     await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
   });
 
-  // ── تفعيل/تعطيل القبول التلقائي بعد 5 دقائق ───────────────────────
+  // ── تفعيل/تعطيل القبول التلقائي ────────────────────────────────────
   bot.action(/^toggle_autoapprove_(-?\d+)$/, async (ctx) => {
-    if (!isOwner(ctx) && !isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ للمالك فقط', { show_alert: true });
+    if (!isDeveloper(ctx) && !isBotAdmin(ctx) && !await isAdmin(bot, Number(ctx.match[1]), ctx.from.id))
+      return ctx.answerCbQuery('⛔ للمشرفين فقط', { show_alert: true });
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
@@ -697,11 +706,101 @@ module.exports = function setupOwnerHandlers(bot) {
     db.saveData();
     await ctx.answerCbQuery(
       g.autoApproveJoin
-        ? '🤖✅ القبول التلقائي مفعّل — الطلبات ستُقبل بعد 5 دقائق'
+        ? `🤖✅ القبول التلقائي مفعّل — بعد ${formatDelay(g.autoApproveDelay ?? 300)}`
         : '🤖❌ القبول التلقائي معطّل',
       { show_alert: true }
     );
     await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+  });
+
+  // ── اختيار وقت التأخير للقبول التلقائي ──────────────────────────────
+  bot.action(/^autoapprove_delay_(-?\d+)$/, async (ctx) => {
+    if (!isDeveloper(ctx) && !isBotAdmin(ctx) && !await isAdmin(bot, Number(ctx.match[1]), ctx.from.id))
+      return ctx.answerCbQuery('⛔ للمشرفين فقط', { show_alert: true });
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+
+    const current = g.autoApproveDelay ?? 300;
+
+    // خيارات الوقت: [label, ثواني]
+    const options = [
+      ['⚡ فوري (0 ث)',   0],
+      ['30 ثانية',        30],
+      ['1 دقيقة',         60],
+      ['5 دقائق',         300],
+      ['15 دقيقة',        900],
+      ['30 دقيقة',        1800],
+      ['1 ساعة',          3600],
+      ['2 ساعة',          7200],
+      ['3 ساعات',         10800],
+      ['6 ساعات',         21600],
+      ['12 ساعة',         43200],
+      ['24 ساعة',         86400],
+    ];
+
+    const rows = [];
+    for (let i = 0; i < options.length; i += 3) {
+      rows.push(
+        options.slice(i, i + 3).map(([label, secs]) =>
+          Markup.button.callback(
+            `${secs === current ? '✅ ' : ''}${label}`,
+            `set_approve_delay_${secs}_${chatId}`
+          )
+        )
+      );
+    }
+    rows.push([Markup.button.callback('🔙 رجوع', `back_to_settings_${chatId}`)]);
+
+    await ctx.editMessageText(
+      `⏱ *تحديد وقت القبول التلقائي*\n\n` +
+      `المجموعة: *${g.title}*\n` +
+      `الوقت الحالي: *${formatDelay(current)}*\n\n` +
+      `اختر المدة التي ينتظرها البوت قبل قبول طلب الانضمام:`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard(rows) }
+    );
+  });
+
+  // ── حفظ الوقت المختار ────────────────────────────────────────────────
+  bot.action(/^set_approve_delay_(\d+)_(-?\d+)$/, async (ctx) => {
+    if (!isDeveloper(ctx) && !isBotAdmin(ctx) && !await isAdmin(bot, Number(ctx.match[2]), ctx.from.id))
+      return ctx.answerCbQuery('⛔ للمشرفين فقط', { show_alert: true });
+    await ctx.answerCbQuery();
+    const delay  = Number(ctx.match[1]);
+    const chatId = Number(ctx.match[2]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+
+    g.autoApproveDelay = delay;
+    db.saveData();
+
+    const label = delay === 0 ? 'فوري' : formatDelay(delay);
+    await ctx.answerCbQuery(`✅ تم تعيين الوقت: ${label}`, { show_alert: true });
+
+    // رجوع لصفحة الإعدادات
+    await ctx.editMessageText(
+      `✅ *تم الحفظ*\n\nوقت القبول التلقائي: *${label}*`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع للإعدادات', `back_to_settings_${chatId}`)]])
+      }
+    );
+  });
+
+  // ── زر رجوع لإعدادات المجموعة ────────────────────────────────────────
+  bot.action(/^back_to_settings_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    const settingsText =
+      `⚙️ *إعدادات المجموعة*\n\n` +
+      `📌 *${g.title}*\n` +
+      `🆔 \`${chatId}\``;
+    try {
+      await ctx.editMessageText(settingsText, { parse_mode: 'Markdown', ...groupSettingsKeyboard(chatId, g) });
+    } catch { await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup); }
   });
 
   // ── تبديل حماية المحتوى ──────────────────────────────────

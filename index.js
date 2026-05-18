@@ -134,14 +134,14 @@ async function main() {
 
   // ── قبول تلقائي لطلبات الانضمام بعد 5 دقائق (يعمل في Webhook و Polling) ──
   function startAutoApproveInterval() {
-    const FIVE_MIN = 5 * 60 * 1000;
     setInterval(async () => {
       const groups = db.allGroups();
       const now    = Date.now();
       for (const g of groups) {
         if (!g.autoApproveJoin || !g.joinRequestsEnabled) continue;
+        const delay = ((g.autoApproveDelay ?? 300)) * 1000; // بالميلي ثانية
         const pending = [...g.joinRequests.values()].filter(r =>
-          r.status === 'pending' && (now - new Date(r.requestedAt).getTime()) >= FIVE_MIN
+          r.status === 'pending' && (now - new Date(r.requestedAt).getTime()) >= delay
         );
         for (const r of pending) {
           try {
