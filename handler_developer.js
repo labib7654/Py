@@ -631,7 +631,7 @@ module.exports = function setupDeveloper(bot) {
     user.globalBanned = false; user.bannedReason = ''; user.bannedAt = null;
     db.saveData();
     for (const g of db.allGroups()) { try { await bot.telegram.unbanChatMember(g.chatId, targetId); } catch {} }
-    await ctx.replyWithMarkdown(`✅ *رُفع الحظر العالمي عن:* \`${targetId}\\`\nتم رفع الحظر من جميع المجموعات.`);
+    await ctx.replyWithMarkdown('✅ *رُفع الحظر العالمي عن:* `' + targetId + '`\nتم رفع الحظر من جميع المجموعات.');
   });
 
   // ── dev_banned_list ──────────────────────────────────────────
