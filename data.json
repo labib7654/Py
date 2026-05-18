@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T21:00:01.731Z",
+  "savedAt": "2026-05-18T21:00:59.568Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2402,6 +2402,16 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
+        },
+        "5058177542": {
+          "userId": 5058177542,
+          "username": "Qegdjfv",
+          "firstName": "علي 8",
+          "role": "member",
+          "joinedAt": "2026-05-18T21:00:58.567Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
       "admins": {
@@ -2456,7 +2466,7 @@
           "username": "Qegdjfv",
           "firstName": "علي 8",
           "requestedAt": "2026-05-18T21:00:00.730Z",
-          "status": "pending",
+          "status": "approved_auto",
           "bio": "",
           "inviteLink": "https://t.me/+TbtsoGYBwWEzYjdk"
         }
@@ -3560,7 +3570,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-18T20:57:58.613Z",
+      "lastSeen": "2026-05-18T21:00:58.590Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -9449,12 +9459,20 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T21:00:00.500Z",
-      "lastSeen": "2026-05-18T21:00:00.500Z",
+      "lastSeen": "2026-05-18T21:00:58.591Z",
       "groups": [
         -1003969494192
       ],
       "channels": [],
-      "seenInChats": {},
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T21:00:58.591Z",
+          "lastSeen": "2026-05-18T21:00:58.591Z"
+        }
+      },
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
