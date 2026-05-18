@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T14:12:40.092Z",
+  "savedAt": "2026-05-18T14:16:36.992Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -163,6 +163,16 @@
       "addedByUsername": "unknown",
       "addedAt": "2026-05-17T20:58:12.197Z",
       "members": {
+        "808821004": {
+          "userId": 808821004,
+          "username": "shr5f",
+          "firstName": "شهاب",
+          "role": "member",
+          "joinedAt": "2026-05-18T14:15:32.233Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
         "1087968824": {
           "userId": 1087968824,
           "username": "GroupAnonymousBot",
@@ -307,7 +317,7 @@
           "userId": 6275988426,
           "username": "B_7a3j",
           "firstName": "صياد الارواح",
-          "role": "admin",
+          "role": "member",
           "joinedAt": "2026-05-18T08:53:21.584Z",
           "messageCount": 1,
           "score": 1,
@@ -354,14 +364,7 @@
           "lastMessageAt": "2026-05-18T14:00:38.477Z"
         }
       },
-      "admins": {
-        "6275988426": {
-          "username": "B_7a3j",
-          "promotedBy": 7411444902,
-          "promotedByUsername": "Labibrd",
-          "promotedAt": "2026-05-18T13:49:29.584Z"
-        }
-      },
+      "admins": {},
       "warns": {},
       "maxWarns": 3,
       "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
@@ -856,16 +859,26 @@
       "userId": 808821004,
       "username": "shr5f",
       "firstName": "شهاب",
-      "lastName": "",
+      "lastName": "الدين",
       "profileLink": "https://t.me/shr5f",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T11:02:00.806Z",
-      "lastSeen": "2026-05-18T11:02:34.178Z",
-      "groups": [],
+      "lastSeen": "2026-05-18T14:15:32.233Z",
+      "groups": [
+        -1003969494192
+      ],
       "channels": [],
-      "seenInChats": {},
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعات المملكة",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T14:15:32.233Z",
+          "lastSeen": "2026-05-18T14:15:32.233Z"
+        }
+      },
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
@@ -918,7 +931,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T14:12:31.896Z",
+      "lastSeen": "2026-05-18T14:15:32.232Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -1330,7 +1343,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T08:53:11.496Z",
-      "lastSeen": "2026-05-18T14:12:12.076Z",
+      "lastSeen": "2026-05-18T14:15:22.968Z",
       "groups": [
         -1003969494192,
         -1002648125233
@@ -1342,7 +1355,7 @@
           "chatTitle": "مجتمع جامعات المملكة",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T08:53:21.584Z",
-          "lastSeen": "2026-05-18T13:49:29.583Z"
+          "lastSeen": "2026-05-18T14:15:22.968Z"
         },
         "-1002648125233": {
           "chatId": -1002648125233,
