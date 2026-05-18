@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T11:39:25.764Z",
+  "savedAt": "2026-05-18T11:44:23.664Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -207,9 +207,9 @@
           "firstName": "salman",
           "role": "member",
           "joinedAt": "2026-05-17T21:48:53.794Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-17T21:48:53.794Z"
+          "messageCount": 3,
+          "score": 3,
+          "lastMessageAt": "2026-05-18T11:43:33.986Z"
         },
         "7087803706": {
           "userId": 7087803706,
@@ -930,15 +930,23 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:41:38.167Z",
-      "lastSeen": "2026-05-18T11:25:44.174Z",
+      "lastSeen": "2026-05-18T11:43:33.986Z",
       "groups": [
         -1003969494192
       ],
       "channels": [],
       "bioBanInfo": null,
-      "seenInChats": {},
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعات المملكة",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T11:42:45.376Z",
+          "lastSeen": "2026-05-18T11:43:33.986Z"
+        }
+      },
       "profileLink": "https://t.me/salma5ns",
-      "lastName": "",
+      "lastName": "..",
       "contactedBot": false,
       "lastContactAt": null
     },
