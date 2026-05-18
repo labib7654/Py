@@ -1,68 +1,172 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- *  verify_registration.js — معالجة خطوات التسجيل التفاعلية
+ *  verify_registration.js — معالجة نظام التحقق الجامعي الجديد
  *
- *  يشمل:
- *  • معالج اعتراض الأعضاء الجدد (chat_member)
- *  • معالجة رسائل الخاص (إدخال رقم القيد والتخصص)
- *  • أزرار اختيار الكلية والسنة والتأكيد
- *  • /new_member_check — لمزامنة تلقائية فور انضمام عضو
+ *  المنطق الجديد:
+ *  1. المستخدم يضغط "طلب الانضمام" في المجموعة
+ *  2. chat_join_request يُعترض → يُرسل له رابط البوت الخاص
+ *  3. في الخاص: /start verify_<chatId>
+ *  4. خطوات: نوع المستخدم ← جامعة ← تخصص ← اسم رباعي ← رقم جامعي ← تحقق جوال
+ *  5. بعد الإرسال: قبول تلقائي بعد دقيقتين أو يدوي
  * ═══════════════════════════════════════════════════════════════
  */
 
 const db = require('./db');
 const { isDeveloper, isAdmin } = require('./helpers');
 const {
+  SAUDI_UNIVERSITIES,
+  AUTO_APPROVE_DELAY,
   sessions,
   getVerifySettings,
-  getAvailableTopics,
   buildAdminNotification,
   buildAdminButtons,
   notifyAll,
-  restrictUser,
-  closeAllTopicsExceptVerify,
   stepWelcome,
-  stepCollege,
+  stepSelectUniversity,
   stepMajor,
-  stepYear,
+  stepFullName,
+  stepStudentId,
+  stepPhoneVerify,
+  stepRequestContact,
   stepConfirm,
 } = require('./verify_helpers');
 
 module.exports = function setupVerifyRegistration(bot) {
 
   // ════════════════════════════════════════════════════════════
-  //  🚀 /start verify_<chatId> — بداية التحقق من رابط الانضمام
-  //  يُشغَّل عندما يضغط المستخدم على رابط البوت بعد طلب الانضمام
+  //  📥 chat_join_request — اعتراض طلب الانضمام
+  //  يُشغَّل عندما يضغط أي شخص "طلب الانضمام" في المجموعة
+  // ════════════════════════════════════════════════════════════
+  bot.on('chat_join_request', async (ctx, next) => {
+    const req    = ctx.chatJoinRequest;
+    if (!req) return next();
+
+    const chatId = req.chat.id;
+    const userId = req.from.id;
+    const user   = req.from;
+
+    const g = db.getGroup(chatId);
+    if (!g) return next(); // المجموعة غير مسجلة
+
+    const vs = getVerifySettings(g);
+    if (!vs.enabled) {
+      // نظام التحقق معطل → قبول فوري
+      try { await bot.telegram.approveChatJoinRequest(chatId, userId); } catch {}
+      return next();
+    }
+
+    // تجاهل البوتات
+    if (user.is_bot) {
+      try { await bot.telegram.approveChatJoinRequest(chatId, userId); } catch {}
+      return next();
+    }
+
+    // ── معتمد مسبقاً ─────────────────────────────────────────
+    if (vs.approvedMembers.has(userId)) {
+      try { await bot.telegram.approveChatJoinRequest(chatId, userId); } catch {}
+      try {
+        await bot.telegram.sendMessage(userId,
+          `✅ *أنت مُعتمَد مسبقاً!*\n\nتم قبول انضمامك في *${g.title}* تلقائياً.`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch {}
+      return next();
+    }
+
+    // ── كوولداون من رفض سابق ─────────────────────────────────
+    const cooldown = vs.cooldowns.get(userId);
+    if (cooldown && cooldown > Date.now()) {
+      const hrs = Math.ceil((cooldown - Date.now()) / 3600000);
+      try {
+        await bot.telegram.declineChatJoinRequest(chatId, userId);
+        await bot.telegram.sendMessage(userId,
+          `⏳ *طلبك مرفوض مؤقتاً*\n\nيمكنك إعادة المحاولة بعد \`${hrs}\` ساعة.`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch {}
+      return next();
+    }
+
+    // ── طلب معلق بالفعل ──────────────────────────────────────
+    const existing = vs.pendingRequests.get(userId);
+    if (existing?.status === 'pending') {
+      try {
+        await bot.telegram.sendMessage(userId,
+          `📨 *لديك طلب قيد المراجعة.*\n\nانتظر حتى يراجعه المشرف وستصلك رسالة بالنتيجة.`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch {}
+      return next();
+    }
+
+    // ── تسجيل طلب الانضمام في DB ─────────────────────────────
+    if (!g.joinRequests) g.joinRequests = new Map();
+    g.joinRequests.set(userId, {
+      userId,
+      username:    user.username  || '',
+      firstName:   user.first_name || String(userId),
+      status:      'pending_verify',
+      requestedAt: new Date(),
+    });
+    db.markDirty();
+
+    // ── إرسال رابط التحقق للمستخدم ───────────────────────────
+    const botInfo = await bot.telegram.getMe();
+    try {
+      await bot.telegram.sendMessage(userId,
+        `👋 *أهلاً بك!*\n\n` +
+        `طلبت الانضمام لـ *${g.title}*\n\n` +
+        `🔐 هذه مجموعة تتطلب التحقق من هويتك الجامعية.\n` +
+        `اضغط الزر أدناه لإكمال خطوات التسجيل:`,
+        {
+          parse_mode: 'Markdown',
+          ...require('telegraf').Markup.inlineKeyboard([[
+            require('telegraf').Markup.button.url(
+              '✅ بدء التحقق الجامعي',
+              `https://t.me/${botInfo.username}?start=verify_${chatId}`
+            )
+          ]]),
+        }
+      );
+    } catch (e) {
+      // إذا حظر المستخدم البوت، نقبله مباشرة أو نرفضه حسب الإعداد
+      console.warn(`[JoinRequest] لا يمكن إرسال رسالة لـ ${userId}:`, e.message);
+    }
+  });
+
+
+  // ════════════════════════════════════════════════════════════
+  //  🚀 /start verify_<chatId> — بداية التحقق في الخاص
   // ════════════════════════════════════════════════════════════
   bot.start(async (ctx, next) => {
     if (ctx.chat.type !== 'private') return next();
 
     const payload = ctx.startPayload || '';
     const match   = payload.match(/^verify_(-?\d+)$/);
-    if (!match) return next(); // ليس رابط تحقق → أكمل للمعالج التالي
+    if (!match) return next();
 
     const chatId = Number(match[1]);
     const userId = ctx.from.id;
     const g      = db.getGroup(chatId);
 
     if (!g) {
-      return ctx.replyWithMarkdown(`❌ *المجموعة غير موجودة أو لم يتم تسجيل البوت فيها.*\n\nتأكد أنك ضغطت *طلب الانضمام* في المجموعة أولاً.`);
+      return ctx.replyWithMarkdown(
+        `❌ *المجموعة غير موجودة.*\n\nتأكد أنك ضغطت *طلب الانضمام* في المجموعة أولاً.`
+      );
     }
 
     const vs = getVerifySettings(g);
     if (!vs.enabled) {
-      return ctx.replyWithMarkdown(`⚠️ *نظام التحقق غير مفعّل في هذه المجموعة.*\n\nتواصل مع المشرف.`);
+      // نظام معطل → قبل مباشرة
+      try { await bot.telegram.approveChatJoinRequest(chatId, userId); } catch {}
+      return ctx.replyWithMarkdown(`✅ *تم قبول انضمامك في ${g.title}!*`);
     }
 
-    // إذا كان مُعتمَداً مسبقاً
+    // معتمد مسبقاً
     if (vs.approvedMembers.has(userId)) {
-      const jr = g.joinRequests.get(userId);
+      const jr = g.joinRequests?.get(userId);
       if (jr && jr.status === 'pending_verify') {
-        try {
-          await bot.telegram.approveChatJoinRequest(chatId, userId);
-          jr.status = 'approved';
-          db.saveData();
-        } catch {}
+        try { await bot.telegram.approveChatJoinRequest(chatId, userId); jr.status = 'approved'; db.saveData(); } catch {}
       }
       return ctx.replyWithMarkdown(
         `✅ *أنت مُعتمَد مسبقاً!*\n\nتم قبول انضمامك في *${g.title}* تلقائياً.\nيمكنك العودة للمجموعة.`
@@ -70,7 +174,7 @@ module.exports = function setupVerifyRegistration(bot) {
     }
 
     // تحقق من وجود طلب انضمام
-    const jr = g.joinRequests.get(userId);
+    const jr = g.joinRequests?.get(userId);
     if (!jr) {
       return ctx.replyWithMarkdown(
         `⚠️ *لم يتم العثور على طلب انضمامك.*\n\n` +
@@ -81,14 +185,14 @@ module.exports = function setupVerifyRegistration(bot) {
       );
     }
 
-    // فحص cooldown رفض سابق
+    // كوولداون
     const cooldown = vs.cooldowns.get(userId);
     if (cooldown && cooldown > Date.now()) {
       const hrs = Math.ceil((cooldown - Date.now()) / 3600000);
       return ctx.replyWithMarkdown(`⏳ *تم رفض طلبك مؤخراً.*\n\nيمكنك إعادة المحاولة بعد \`${hrs}\` ساعة.`);
     }
 
-    // فحص طلب معلق
+    // طلب معلق
     const existing = vs.pendingRequests.get(userId);
     if (existing?.status === 'pending') {
       return ctx.replyWithMarkdown(
@@ -97,108 +201,71 @@ module.exports = function setupVerifyRegistration(bot) {
     }
 
     // بدء جلسة التحقق
-    const topics = getAvailableTopics(g);
-    sessions.set(userId, { step: 'student_id', chatId, data: {}, topics });
+    sessions.set(userId, { step: 'type_select', chatId, data: {} });
     await stepWelcome(bot, userId, g.title);
   });
 
 
   // ════════════════════════════════════════════════════════════
-  //  🔒 اعتراض الأعضاء الجدد — تقييد فوري + بدء التسجيل
+  //  🔘 الخطوة 0: نوع المستخدم
   // ════════════════════════════════════════════════════════════
-  bot.on('chat_member', async (ctx, next) => {
-    const upd = ctx.chatMember;
-    if (!upd) return next();
+  bot.action('vs_student', async (ctx) => {
+    await ctx.answerCbQuery();
+    const userId = ctx.from.id;
+    const sess   = sessions.get(userId);
+    if (!sess) return ctx.reply('⚠️ انتهت الجلسة. اضغط الرابط مجدداً.');
 
-    const { chat } = upd;
-    const newM = upd.new_chat_member;
-    const oldM = upd.old_chat_member;
-    const u    = newM.user;
-
-    if (chat.type === 'channel' || u.is_bot) return next();
-
-    // عضو جديد فقط
-    if (!(newM.status === 'member' && (oldM.status === 'left' || oldM.status === 'kicked'))) {
-      return next();
-    }
-
-    const g = db.getGroup(chat.id);
-    if (!g) return next();
-
-    const vs = getVerifySettings(g);
-    if (!vs.enabled) return next();
-
-    // المشرفون والمالك والمطور لا يُقيَّدون
-    const isPriv = isDeveloper({ from: u }) || await isAdmin(bot, chat.id, u.id);
-    if (isPriv) return next();
-
-    // معتمد مسبقاً؟
-    if (vs.approvedMembers.has(u.id)) return next();
-
-    // لديه cooldown من رفض سابق؟
-    const cooldown = vs.cooldowns.get(u.id);
-    if (cooldown && cooldown > Date.now()) {
-      const hrs = Math.ceil((cooldown - Date.now()) / 3600000);
-      try {
-        await bot.telegram.sendMessage(u.id,
-          `⏳ *لا يمكنك التسجيل الآن*\n\nيمكن إعادة المحاولة بعد \`${hrs}\` ساعة.`,
-          { parse_mode: 'Markdown' }
-        );
-      } catch {}
-      return next();
-    }
-
-    // 1. تقييد فوري
-    await restrictUser(bot, chat.id, u.id);
-
-    // 2. إغلاق جميع المواضيع ماعدا موضوع التحقق
-    const vs2 = getVerifySettings(g);
-    await closeAllTopicsExceptVerify(bot, chat.id, vs2.verifyTopicId);
-
-    // 3. جلب المواضيع
-    const topics = getAvailableTopics(g);
-
-    // 4. حفظ session
-    sessions.set(u.id, { step: 'student_id', chatId: chat.id, data: {}, topics });
-
-    // 5. إرسال رسالة ترحيب في موضوع التحقق داخل المجموعة
-    if (vs2.verifyTopicId) {
-      try {
-        const firstName = u.first_name || String(u.id);
-        const mention   = u.username ? `@${u.username}` : `[${firstName}](tg://user?id=${u.id})`;
-        await bot.telegram.sendMessage(chat.id,
-          `👋 *أهلاً ${mention}!*
-
-` +
-          `🔒 تم تقييد وصولك مؤقتاً حتى اكتمال التحقق الجامعي.
-
-` +
-          `📲 *للتحقق وفتح المواضيع:*
-` +
-          `اضغط على الزر أدناه لبدء التسجيل في المحادثة الخاصة مع البوت.`,
-          {
-            parse_mode: 'Markdown',
-            message_thread_id: vs2.verifyTopicId,
-            reply_markup: {
-              inline_keyboard: [[
-                { text: '✅ بدء التحقق الجامعي', url: `https://t.me/${(await bot.telegram.getMe()).username}?start=verify_${chat.id}` }
-              ]]
-            }
-          }
-        );
-      } catch (e) {
-        console.error('verifyTopic welcome msg:', e.message);
-      }
-    }
-
-    // 6. بدء التسجيل في الخاص أيضاً
-    await stepWelcome(bot, u.id, g.title);
-
-    return next();
+    sess.data.type = 'student';
+    sess.step      = 'university';
+    try { await ctx.deleteMessage(); } catch {}
+    await stepSelectUniversity(bot, userId, 0);
   });
 
+  bot.action('vs_applicant', async (ctx) => {
+    await ctx.answerCbQuery();
+    const userId = ctx.from.id;
+    const sess   = sessions.get(userId);
+    if (!sess) return ctx.reply('⚠️ انتهت الجلسة. اضغط الرابط مجدداً.');
+
+    sess.data.type = 'applicant';
+    sess.step      = 'university';
+    try { await ctx.deleteMessage(); } catch {}
+    // للمتقدم نفس الخطوات
+    await stepSelectUniversity(bot, userId, 0);
+  });
+
+
   // ════════════════════════════════════════════════════════════
-  //  💬 معالج الرسائل النصية في الخاص (رقم القيد والتخصص)
+  //  🔘 اختيار الجامعة (بالرقم في المصفوفة)
+  // ════════════════════════════════════════════════════════════
+  bot.action(/^vsu_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const userId = ctx.from.id;
+    const idx    = Number(ctx.match[1]);
+    const sess   = sessions.get(userId);
+    if (!sess) return ctx.reply('⚠️ انتهت الجلسة. اضغط الرابط مجدداً.');
+
+    const uni = SAUDI_UNIVERSITIES[idx];
+    if (!uni) return ctx.answerCbQuery('❌ جامعة غير موجودة!', { show_alert: true });
+
+    sess.data.university = uni;
+    sess.step            = 'major';
+    try { await ctx.deleteMessage(); } catch {}
+    await stepMajor(bot, userId, uni);
+  });
+
+  // تنقل بين صفحات الجامعات
+  bot.action(/^vsu_pg_(\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const userId = ctx.from.id;
+    const page   = Number(ctx.match[1]);
+    try { await ctx.deleteMessage(); } catch {}
+    await stepSelectUniversity(bot, userId, page);
+  });
+
+
+  // ════════════════════════════════════════════════════════════
+  //  💬 معالج الرسائل النصية في الخاص
   // ════════════════════════════════════════════════════════════
   bot.on('message', async (ctx, next) => {
     if (ctx.chat.type !== 'private') return next();
@@ -206,18 +273,27 @@ module.exports = function setupVerifyRegistration(bot) {
     const sess   = sessions.get(userId);
     if (!sess) return next();
 
-    const text = ctx.message.text?.trim() || '';
+    // معالجة مشاركة جهات الاتصال (رقم الجوال)
+    if (ctx.message.contact) {
+      if (sess.step === 'phone') {
+        const contact = ctx.message.contact;
+        // تأكد أن المستخدم شارك رقمه هو وليس رقم شخص آخر
+        if (contact.user_id && contact.user_id !== userId) {
+          return ctx.reply('⚠️ يرجى مشاركة *رقمك الشخصي* فقط، وليس رقم شخص آخر.', { parse_mode: 'Markdown' });
+        }
+        sess.data.phone = contact.phone_number;
+        sess.step       = 'confirm';
 
-    // خطوة رقم القيد
-    if (sess.step === 'student_id') {
-      if (!text || text.length < 5 || !/^\d+/.test(text)) {
-        return ctx.reply('⚠️ رقم القيد يجب أن يبدأ بأرقام ولا يقل عن 5 خانات. حاول مجدداً:');
+        // إغلاق لوحة المفاتيح
+        await ctx.reply('✅ تم استلام رقمك.', {
+          reply_markup: { remove_keyboard: true },
+        });
+        await stepConfirm(bot, userId, sess.data);
       }
-      sess.data.studentId = text;
-      sess.step = 'college';
-      await stepCollege(bot, userId, sess.topics);
       return;
     }
+
+    const text = ctx.message.text?.trim() || '';
 
     // خطوة التخصص
     if (sess.step === 'major') {
@@ -225,52 +301,51 @@ module.exports = function setupVerifyRegistration(bot) {
         return ctx.reply('⚠️ يرجى كتابة اسم التخصص بشكل صحيح (3 أحرف على الأقل):');
       }
       sess.data.major = text;
-      sess.step = 'year';
-      await stepYear(bot, userId);
+      sess.step       = 'full_name';
+      await stepFullName(bot, userId);
+      return;
+    }
+
+    // خطوة الاسم الرباعي
+    if (sess.step === 'full_name') {
+      const parts = text.split(/\s+/).filter(Boolean);
+      if (parts.length < 4) {
+        return ctx.reply('⚠️ يرجى إدخال الاسم الرباعي كاملاً (4 كلمات على الأقل):');
+      }
+      sess.data.fullName = text;
+      sess.step          = 'student_id';
+      await stepStudentId(bot, userId);
+      return;
+    }
+
+    // خطوة الرقم الجامعي
+    if (sess.step === 'student_id') {
+      if (!text || text.length < 5 || !/^\d+/.test(text)) {
+        return ctx.reply('⚠️ رقم القيد يجب أن يبدأ بأرقام ولا يقل عن 5 خانات. حاول مجدداً:');
+      }
+      sess.data.studentId = text;
+      sess.step           = 'phone';
+      await stepPhoneVerify(bot, userId);
       return;
     }
 
     return next();
   });
 
-  // ════════════════════════════════════════════════════════════
-  //  🔘 اختيار الكلية
-  // ════════════════════════════════════════════════════════════
-  bot.action(/^vc_(\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const userId  = ctx.from.id;
-    const topicId = Number(ctx.match[1]);
-    const sess    = sessions.get(userId);
-    if (!sess) return ctx.reply('⚠️ انتهت جلسة التسجيل. أرسل /verify لإعادة البدء.');
-
-    const topic = sess.topics.find(t => t.id === topicId);
-    if (!topic) return ctx.answerCbQuery('❌ الكلية غير موجودة!', { show_alert: true });
-
-    sess.data.college   = topic.name;
-    sess.data.topicId   = topicId;
-    sess.data.topicName = topic.name;
-    sess.step = 'major';
-
-    try { await ctx.deleteMessage(); } catch {}
-    await stepMajor(bot, userId, topic.name);
-  });
 
   // ════════════════════════════════════════════════════════════
-  //  🔘 اختيار السنة الدراسية
+  //  🔘 الموافقة على التحقق → طلب رقم الجوال
   // ════════════════════════════════════════════════════════════
-  bot.action(/^vy_(.+)$/, async (ctx) => {
+  bot.action('vs_phone_agree', async (ctx) => {
     await ctx.answerCbQuery();
     const userId = ctx.from.id;
-    const year   = ctx.match[1];
     const sess   = sessions.get(userId);
-    if (!sess) return ctx.reply('⚠️ انتهت جلسة التسجيل. أرسل /verify.');
-
-    sess.data.year = year;
-    sess.step = 'confirm';
+    if (!sess) return ctx.reply('⚠️ انتهت الجلسة.');
 
     try { await ctx.deleteMessage(); } catch {}
-    await stepConfirm(bot, userId, sess.data);
+    await stepRequestContact(bot, userId);
   });
+
 
   // ════════════════════════════════════════════════════════════
   //  🔘 تأكيد وإرسال الطلب
@@ -279,35 +354,19 @@ module.exports = function setupVerifyRegistration(bot) {
     await ctx.answerCbQuery();
     const userId = ctx.from.id;
     const sess   = sessions.get(userId);
-    if (!sess) return ctx.reply('⚠️ انتهت جلسة التسجيل. أرسل /verify.');
+    if (!sess) return ctx.reply('⚠️ انتهت جلسة التسجيل.');
 
     const g = db.getGroup(sess.chatId);
     if (!g) return ctx.reply('❌ المجموعة غير موجودة. تواصل مع المشرف.');
 
     const vs = getVerifySettings(g);
 
-    // منع الطلبات المتعددة — قاعدة صارمة: طلب واحد فقط
+    // منع الطلبات المتعددة
     const existing = vs.pendingRequests.get(userId);
     if (existing?.status === 'pending') {
       sessions.delete(userId);
       try { await ctx.deleteMessage(); } catch {}
       return ctx.reply('📨 *لديك طلب قيد المراجعة بالفعل.*\n\nانتظر حتى يراجعه المشرف.', { parse_mode: 'Markdown' });
-    }
-
-    // منع التسجيل في أكثر من مجموعة/كلية
-    const alreadyApproved = db.allGroups().find(grp => {
-      const gvs = grp.verifySystem;
-      return gvs?.approvedMembers?.has(userId);
-    });
-    if (alreadyApproved) {
-      sessions.delete(userId);
-      try { await ctx.deleteMessage(); } catch {}
-      return ctx.reply(
-        `⚠️ *أنت معتمد بالفعل في مجموعة أخرى!*\n\n` +
-        `لا يمكن التسجيل في أكثر من كلية واحدة.\n` +
-        `أرسل /mytopics لرؤية وضعك الحالي.`,
-        { parse_mode: 'Markdown' }
-      );
     }
 
     // حفظ الطلب
@@ -328,21 +387,78 @@ module.exports = function setupVerifyRegistration(bot) {
     await ctx.reply(
       `✅ *تم إرسال طلبك بنجاح!*\n\n` +
       `📋 *ملخص بياناتك:*\n` +
-      `🔢 رقم القيد: \`${sess.data.studentId}\`\n` +
-      `🏛️ الكلية: *${sess.data.college}*\n` +
+      `👤 الاسم: *${sess.data.fullName}*\n` +
+      `🏛️ الجامعة: *${sess.data.university}*\n` +
       `📚 التخصص: *${sess.data.major}*\n` +
-      `📅 السنة: *${sess.data.year}*\n\n` +
+      `🔢 الرقم الجامعي: \`${sess.data.studentId}\`\n` +
+      `📱 الجوال: \`${sess.data.phone}\`\n\n` +
       `⏳ *جاري المراجعة...*\n` +
-      `سيتم إشعارك فور اتخاذ القرار.\n\n` +
-      `_قد يستغرق المراجعة بعض الوقت. شكراً لصبرك!_`,
+      `سيتم قبولك تلقائياً خلال دقيقتين، أو يدوياً من المشرف.\n\n` +
+      `_شكراً لصبرك!_`,
       { parse_mode: 'Markdown' }
     );
 
-    // إشعار الإدارة مع تفاصيل كاملة
+    // إشعار الإدارة
     const notifText = buildAdminNotification(g, userId, ctx.from, sess.data);
-    const notifBtns = buildAdminButtons(userId, sess.chatId, sess.data.topicId);
+    const notifBtns = buildAdminButtons(userId, sess.chatId);
     await notifyAll(bot, g, notifText, notifBtns);
+
+    // ── القبول التلقائي بعد دقيقتين ─────────────────────────
+    setTimeout(async () => {
+      const g2  = db.getGroup(sess.chatId);
+      if (!g2) return;
+      const vs2 = getVerifySettings(g2);
+      const req = vs2.pendingRequests.get(userId);
+
+      // إذا لا يزال pending (لم يقبله مشرف ولم يرفضه)
+      if (req && req.status === 'pending') {
+        req.status     = 'approved_auto';
+        req.reviewedAt = new Date();
+
+        // قبول طلب الانضمام
+        const jr = g2.joinRequests?.get(userId);
+        if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
+          try {
+            await bot.telegram.approveChatJoinRequest(sess.chatId, userId);
+            jr.status = 'approved_auto';
+          } catch (e) {
+            console.warn('[AutoApprove] فشل قبول الانضمام:', e.message);
+          }
+        }
+
+        // حفظ الاعتماد
+        vs2.approvedMembers.set(userId, {
+          studentData: { ...sess.data },
+          approvedAt:  new Date(),
+          approvedBy:  'auto',
+        });
+
+        db.markDirty();
+
+        // إشعار الطالب
+        try {
+          await bot.telegram.sendMessage(userId,
+            `🎉 *تم قبول انضمامك تلقائياً!*\n\n` +
+            `أهلاً بك في *${g2.title}* 🎓\n` +
+            `يمكنك الآن الدخول للمجموعة والمشاركة!`,
+            { parse_mode: 'Markdown' }
+          );
+        } catch {}
+
+        // إشعار المشرفين
+        try {
+          await notifyAll(bot, g2,
+            `🤖 *قبول تلقائي*\n\n` +
+            `👤 ${req.firstName}${req.username ? ` (@${req.username})` : ''}\n` +
+            `🆔 \`${userId}\`\n` +
+            `✅ تم قبوله تلقائياً بعد دقيقتين`,
+            null
+          );
+        } catch {}
+      }
+    }, AUTO_APPROVE_DELAY);
   });
+
 
   // ════════════════════════════════════════════════════════════
   //  🔘 إعادة التسجيل من البداية
@@ -353,12 +469,13 @@ module.exports = function setupVerifyRegistration(bot) {
     const sess   = sessions.get(userId);
     if (!sess) return;
 
-    const g = db.getGroup(sess.chatId);
-    sess.data = {};
-    sess.step = 'student_id';
+    const g    = db.getGroup(sess.chatId);
+    sess.data  = {};
+    sess.step  = 'type_select';
     try { await ctx.deleteMessage(); } catch {}
     await stepWelcome(bot, userId, g?.title || 'المجموعة');
   });
+
 
   // ════════════════════════════════════════════════════════════
   //  🔘 إلغاء التسجيل
@@ -368,8 +485,11 @@ module.exports = function setupVerifyRegistration(bot) {
     sessions.delete(ctx.from.id);
     try { await ctx.deleteMessage(); } catch {}
     await ctx.reply(
-      `❌ *تم إلغاء التسجيل.*\n\nإذا أردت إعادة التسجيل لاحقاً، أرسل /verify`,
-      { parse_mode: 'Markdown' }
+      `❌ *تم إلغاء التسجيل.*\n\nإذا أردت إعادة التسجيل، اضغط رابط المجموعة مجدداً.`,
+      {
+        parse_mode:   'Markdown',
+        reply_markup: { remove_keyboard: true },
+      }
     );
   });
 

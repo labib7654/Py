@@ -2,40 +2,31 @@
  * ═══════════════════════════════════════════════════════════════
  *  verify_actions.js — معالجات قبول/رفض/حظر طلبات التحقق
  *
- *  يشمل:
- *  ✅ قبول الطلب (vfy_allow)
- *  ❌ رفض الطلب (vfy_deny)
+ *  ✅ قبول (vfy_allow) → approveChatJoinRequest
+ *  ❌ رفض  (vfy_deny)  → declineChatJoinRequest + cooldown
  *  🚫 رفض وحظر (vfy_ban)
  *  🔍 تفاصيل الطالب (vfy_info)
- *  🔒 فلتر الرسائل داخل المجموعة
- *  🔄 فحص دوري للأعضاء الموجودين
+ *  🔒 فلتر رسائل الأعضاء غير المعتمدين داخل المجموعة
  * ═══════════════════════════════════════════════════════════════
  */
 
 const db = require('./db');
 const { isDeveloper, isAdmin } = require('./helpers');
 const {
-  getOrCreateTopic,
   getVerifySettings,
   buildAdminButtons,
-  unrestrictUser,
-  restrictUser,
-  checkAndRestrictExistingMember,
-  openTopicForApprovedUser,
-  closeTopic,
-  openTopic,
+  VERIFY_COOLDOWN_MS,
 } = require('./verify_helpers');
 
 module.exports = function setupVerifyActions(bot) {
 
   // ════════════════════════════════════════════════════════════
-  //  ✅ قبول الطلب
+  //  ✅ قبول الطلب — يدوياً من المشرف
   // ════════════════════════════════════════════════════════════
-  bot.action(/^vfy_allow_(\d+)_(-?\d+)_(\d+)$/, async (ctx) => {
+  bot.action(/^vfy_allow_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
-    const userId  = Number(ctx.match[1]);
-    const chatId  = Number(ctx.match[2]);
-    const topicId = Number(ctx.match[3]);
+    const userId = Number(ctx.match[1]);
+    const chatId = Number(ctx.match[2]);
 
     const g = db.getGroup(chatId);
     if (!g) return ctx.answerCbQuery('❌ المجموعة غير موجودة!', { show_alert: true });
@@ -55,36 +46,24 @@ module.exports = function setupVerifyActions(bot) {
 
     // حفظ الاعتماد
     vs.approvedMembers.set(userId, {
-      topicId,
-      topicName:   req.data.topicName,
       studentData: { ...req.data },
       approvedAt:  new Date(),
       approvedBy:  ctx.from.id,
     });
 
-    // فتح موضوع الكلية عبر Telegram API الحقيقي
-    const topic = getOrCreateTopic(g, topicId, req.data.topicName);
-    topic.approvedUsers.add(userId);
-    db.markDirty();
-
-    // فتح الموضوع فعلياً في Telegram
-    await openTopicForApprovedUser(bot, chatId, topicId);
-
-    // رفع التقييد عن العضو
-    await unrestrictUser(bot, chatId, userId);
-
-    // ✅ قبول طلب الانضمام تلقائياً إذا كان المستخدم قد طلب الانضمام عبر الرابط
-    const groupRec = db.getGroup(chatId);
-    if (groupRec) {
-      const jr = groupRec.joinRequests.get(userId);
-      if (jr && jr.status === 'pending_verify') {
-        try {
-          await bot.telegram.approveChatJoinRequest(chatId, userId);
-          jr.status = 'approved_via_verify';
-          db.saveData();
-        } catch (e) { console.log('approveChatJoinRequest:', e.message); }
+    // قبول طلب الانضمام عبر Telegram
+    const jr = g.joinRequests?.get(userId);
+    if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
+      try {
+        await bot.telegram.approveChatJoinRequest(chatId, userId);
+        jr.status = 'approved_by_admin';
+      } catch (e) {
+        // قد يكون انتهى الطلب أو انضم بالفعل — ليس خطأ فادحاً
+        console.log('[vfy_allow] approveChatJoinRequest:', e.message);
       }
     }
+
+    db.markDirty();
 
     // تحديث رسالة الإشعار
     try {
@@ -97,21 +76,19 @@ module.exports = function setupVerifyActions(bot) {
     } catch {}
 
     // إشعار الطالب
-    const wasJoinRequest = groupRec?.joinRequests.get(userId)?.status === 'approved_via_verify';
     try {
       await bot.telegram.sendMessage(userId,
         `🎉 *تم قبول طلبك!*\n\n` +
-        `أهلاً بك في مجتمع جامعة الأمير سلطان 🎓\n\n` +
-        `✅ تم فتح موضوع *${req.data.topicName}* لك.\n` +
-        (wasJoinRequest ? `🔓 تم قبول انضمامك للمجموعة تلقائياً.\n` : '') +
-        `يمكنك الآن المشاركة والتفاعل مع زملائك في كليتك!\n\n` +
+        `أهلاً بك في *${g.title}* 🎓\n\n` +
+        `✅ تم قبول انضمامك. يمكنك الآن الدخول والمشاركة!\n\n` +
         `_إذا واجهت أي مشكلة، تواصل مع المشرف._`,
         { parse_mode: 'Markdown' }
       );
     } catch {}
 
-    await ctx.answerCbQuery('✅ تم القبول وفتح الموضوع!', { show_alert: true });
+    await ctx.answerCbQuery('✅ تم القبول وقبول طلب الانضمام!', { show_alert: true });
   });
+
 
   // ════════════════════════════════════════════════════════════
   //  ❌ رفض الطلب
@@ -137,8 +114,17 @@ module.exports = function setupVerifyActions(bot) {
     req.reviewedBy = ctx.from.id;
 
     // cooldown 24 ساعة
-    const { VERIFY_COOLDOWN_MS } = require('./verify_helpers');
     vs.cooldowns.set(userId, Date.now() + VERIFY_COOLDOWN_MS);
+
+    // رفض طلب الانضمام
+    const jr = g.joinRequests?.get(userId);
+    if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
+      try {
+        await bot.telegram.declineChatJoinRequest(chatId, userId);
+        jr.status = 'rejected';
+      } catch (e) { console.log('[vfy_deny] declineChatJoinRequest:', e.message); }
+    }
+
     db.markDirty();
 
     try {
@@ -153,7 +139,7 @@ module.exports = function setupVerifyActions(bot) {
       await bot.telegram.sendMessage(userId,
         `❌ *تم رفض طلبك*\n\n` +
         `للأسف، لم يتم التحقق من بياناتك.\n\n` +
-        `⏳ يمكنك إعادة المحاولة بعد *24 ساعة* عبر الأمر /verify\n\n` +
+        `⏳ يمكنك إعادة المحاولة بعد *24 ساعة* بالضغط على رابط المجموعة مجدداً.\n\n` +
         `_إذا كنت تعتقد أن هذا خطأ، تواصل مع المشرف مباشرة._`,
         { parse_mode: 'Markdown' }
       );
@@ -161,6 +147,7 @@ module.exports = function setupVerifyActions(bot) {
 
     await ctx.answerCbQuery('❌ تم الرفض وإشعار الطالب', { show_alert: true });
   });
+
 
   // ════════════════════════════════════════════════════════════
   //  🚫 رفض + حظر
@@ -180,6 +167,13 @@ module.exports = function setupVerifyActions(bot) {
     const req = vs.pendingRequests.get(userId);
     if (req) { req.status = 'banned'; req.reviewedAt = new Date(); db.markDirty(); }
 
+    // رفض طلب الانضمام
+    const jr = g.joinRequests?.get(userId);
+    if (jr) {
+      try { await bot.telegram.declineChatJoinRequest(chatId, userId); jr.status = 'banned'; db.markDirty(); } catch {}
+    }
+
+    // حظر من المجموعة
     try { await bot.telegram.banChatMember(chatId, userId); } catch {}
 
     try {
@@ -200,6 +194,7 @@ module.exports = function setupVerifyActions(bot) {
     await ctx.answerCbQuery('🚫 تم الرفض والحظر', { show_alert: true });
   });
 
+
   // ════════════════════════════════════════════════════════════
   //  🔍 تفاصيل الطالب
   // ════════════════════════════════════════════════════════════
@@ -211,8 +206,8 @@ module.exports = function setupVerifyActions(bot) {
     const g = db.getGroup(chatId);
     if (!g) return;
 
-    const vs   = getVerifySettings(g);
-    const req  = vs.pendingRequests.get(userId);
+    const vs  = getVerifySettings(g);
+    const req = vs.pendingRequests.get(userId);
     const user = db.getUser(userId);
 
     const info =
@@ -222,52 +217,23 @@ module.exports = function setupVerifyActions(bot) {
       `📅 أول ظهور: ${user?.firstSeen ? new Date(user.firstSeen).toLocaleDateString('ar-SA') : 'غير معروف'}\n` +
       `🌍 محظور عالمياً: ${user?.globalBanned ? `✅ — ${user.bannedReason}` : '❌'}\n\n` +
       `📋 *البيانات المُدخلة:*\n` +
-      `🔢 رقم القيد: \`${req?.data?.studentId || 'غير محدد'}\`\n` +
-      `🏛️ الكلية: *${req?.data?.college || 'غير محدد'}*\n` +
+      `👤 الاسم: *${req?.data?.fullName || 'غير محدد'}*\n` +
+      `🏛️ الجامعة: *${req?.data?.university || 'غير محدد'}*\n` +
       `📚 التخصص: *${req?.data?.major || 'غير محدد'}*\n` +
-      `📅 السنة: *${req?.data?.year || 'غير محدد'}*\n` +
-      `🧵 الموضوع: *${req?.data?.topicName || 'غير محدد'}*\n` +
+      `🔢 الرقم الجامعي: \`${req?.data?.studentId || 'غير محدد'}\`\n` +
+      `📱 الجوال: \`${req?.data?.phone || 'غير محدد'}\`\n` +
       `🕐 تاريخ الطلب: ${req?.submittedAt ? new Date(req.submittedAt).toLocaleString('ar-SA') : 'غير محدد'}`;
 
     await ctx.reply(info, {
       parse_mode: 'Markdown',
-      ...buildAdminButtons(userId, chatId, req?.data?.topicId || 0),
+      ...buildAdminButtons(userId, chatId),
     });
   });
 
-  // ════════════════════════════════════════════════════════════
-  //  🗑️ حذف رسائل الخدمة التلقائية (انضمام/مغادرة) من المجموعة
-  //  تعمل دائماً بمجرد تفعيل نظام التحقق
-  // ════════════════════════════════════════════════════════════
-  bot.on('message', async (ctx, next) => {
-    if (!ctx.chat || ctx.chat.type === 'private') return next();
-    const msg = ctx.message;
-    if (!msg) return next();
-
-    const g = db.getGroup(ctx.chat.id);
-    if (!g) return next();
-    const vs = getVerifySettings(g);
-    if (!vs.enabled) return next();
-
-    // رسائل الخدمة: انضمام أو مغادرة أو pinned message
-    const isService =
-      msg.new_chat_members     ||  // انضمام
-      msg.left_chat_member     ||  // مغادرة/طرد
-      msg.pinned_message       ||  // تثبيت رسالة (اختياري)
-      msg.new_chat_title       ||  // تغيير اسم المجموعة
-      msg.new_chat_photo;          // تغيير صورة المجموعة
-
-    if (isService) {
-      try { await ctx.deleteMessage(); } catch {}
-      return;
-    }
-
-    return next();
-  });
 
   // ════════════════════════════════════════════════════════════
-  //  🔒 فلتر الرسائل داخل المجموعة — منع غير المعتمدين
-  //  يشمل General (بدون thread_id) وكل المواضيع
+  //  🔒 فلتر رسائل الأعضاء غير المعتمدين داخل المجموعة
+  //  (يعمل إذا دخل أحدهم بطريقة ما بدون تحقق)
   // ════════════════════════════════════════════════════════════
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private' || !ctx.from) return next();
@@ -278,57 +244,23 @@ module.exports = function setupVerifyActions(bot) {
     const vs = getVerifySettings(g);
     if (!vs.enabled) return next();
 
-    const userId  = ctx.from.id;
-    const topicId = ctx.message?.message_thread_id || 0; // 0 = General
+    const userId = ctx.from.id;
 
-    // مشرفون ومطور → مسموح دائماً
+    // مشرفون ومطور → مسموح
     if (isDeveloper(ctx) || await isAdmin(bot, ctx.chat.id, userId)) return next();
 
-    // معتمد وهذا موضوعه المخصص → مسموح
-    const approved = vs.approvedMembers.get(userId);
-    if (approved && (approved.topicId === topicId || topicId === 0)) return next();
+    // معتمد → مسموح
+    if (vs.approvedMembers.has(userId)) return next();
 
-    // لديه إذن قديم في هذا الموضوع → مسموح
-    const topic = g.topics?.get(topicId);
-    if (topic?.approvedUsers?.has(userId)) return next();
+    // رسائل خدمة (انضمام/مغادرة) → احذف
+    const msg = ctx.message;
+    if (msg.new_chat_members || msg.left_chat_member) {
+      try { await ctx.deleteMessage(); } catch {}
+      return;
+    }
 
-    // غير معتمد → احذف الرسالة بصمت
+    // غير معتمد → احذف بصمت
     try { await ctx.deleteMessage(); } catch {}
   });
-
-  // ════════════════════════════════════════════════════════════
-  //  🔄 فحص دوري — تقييد الأعضاء الموجودين غير المعتمدين
-  //  يعمل كل 30 دقيقة على كل المجموعات التي نظام التحقق مفعّل فيها
-  // ════════════════════════════════════════════════════════════
-  async function runPeriodicCheck() {
-    const allGroups = db.allGroups();
-    for (const g of allGroups) {
-      const vs = getVerifySettings(g);
-      if (!vs.enabled) continue;
-
-      // جلب أعضاء المجموعة
-      try {
-        // نستخدم العضويات المسجلة في DB
-        for (const [userId] of (g.members || new Map()).entries()) {
-          // تجاهل البوتات (نتحقق من DB)
-          const user = db.getUser(userId);
-          if (!user) continue;
-
-          await checkAndRestrictExistingMember(bot, g.chatId, userId, g);
-
-          // delay صغير لتجنب flood
-          await new Promise(r => setTimeout(r, 200));
-        }
-      } catch (e) {
-        console.error(`[PeriodicCheck] error for ${g.chatId}:`, e.message);
-      }
-    }
-  }
-
-  // بدء الفحص الدوري بعد دقيقة من تشغيل البوت
-  setTimeout(() => {
-    runPeriodicCheck().catch(console.error);
-    setInterval(() => runPeriodicCheck().catch(console.error), 30 * 60 * 1000);
-  }, 60 * 1000);
 
 };

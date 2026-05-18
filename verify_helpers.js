@@ -1,6 +1,7 @@
 /**
  * ═══════════════════════════════════════════════════════════════
  *  verify_helpers.js — دوال مساعدة لنظام التحقق الجامعي
+ *  النظام الجديد: chat_join_request → تحقق كامل → قبول تلقائي
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -10,46 +11,68 @@ const { isDeveloper, isAdmin } = require('./helpers');
 const { DEVELOPER_ID } = require('./config');
 
 // ─── ثوابت ────────────────────────────────────────────────────
-const VERIFY_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 ساعة بعد الرفض
+const VERIFY_COOLDOWN_MS  = 24 * 60 * 60 * 1000; // 24 ساعة بعد الرفض
+const AUTO_APPROVE_DELAY  = 2 * 60 * 1000;        // دقيقتان للقبول التلقائي
 
 // ─── حالة المحادثات الخاصة (session مؤقتة في الذاكرة) ────────
-// Map: userId → { step, chatId, data, topics }
+// Map: userId → { step, chatId, data }
 const sessions = new Map();
+
+// ─── قائمة جامعات المملكة العربية السعودية ───────────────────
+const SAUDI_UNIVERSITIES = [
+  'جامعة الملك سعود',
+  'جامعة الملك عبدالعزيز',
+  'جامعة الملك فهد للبترول والمعادن',
+  'جامعة الملك فيصل',
+  'جامعة الملك خالد',
+  'جامعة الملك عبدالله للعلوم والتقنية (كاوست)',
+  'جامعة القصيم',
+  'جامعة الإمام محمد بن سعود الإسلامية',
+  'جامعة الأمير سلطان',
+  'جامعة طيبة',
+  'جامعة تبوك',
+  'جامعة حائل',
+  'جامعة الجوف',
+  'جامعة نجران',
+  'جامعة جازان',
+  'جامعة الباحة',
+  'جامعة بيشة',
+  'جامعة شقراء',
+  'جامعة المجمعة',
+  'جامعة الأمير سطام بن عبدالعزيز',
+  'جامعة الأمير قاسم',
+  'جامعة حفر الباطن',
+  'جامعة الدمام (الإمام عبدالرحمن)',
+  'جامعة المدينة العالمية',
+  'جامعة دار العلوم',
+  'جامعة أم القرى',
+  'جامعة الطائف',
+  'جامعة سعود الطبية',
+  'جامعة الأمير محمد بن فهد',
+  'جامعة اليمامة',
+  'جامعة الأهلية',
+  'جامعة عفت',
+  'جامعة الإمام عبدالرحمن بن فيصل',
+  'جامعة نورة بنت عبدالرحمن',
+  'جامعة الفيصل',
+  'جامعة زاها',
+  'كلية الفنون التطبيقية',
+  'أخرى',
+];
 
 // ═══════════════════════════════════════════════════════════════
 //  دوال قاعدة البيانات
 // ═══════════════════════════════════════════════════════════════
 
-function getOrCreateTopic(g, topicId, name) {
-  if (!g.topics) g.topics = new Map();
-  if (!g.topics.has(topicId)) {
-    g.topics.set(topicId, {
-      name:          name || String(topicId),
-      locked:        false,
-      archived:      false,
-      approvedUsers: new Set(),
-      joinRequests:  new Map(),
-      cooldowns:     new Map(),
-      createdAt:     new Date(),
-    });
-    db.markDirty();
-  }
-  const t = g.topics.get(topicId);
-  if (!t.joinRequests)  { t.joinRequests  = new Map(); db.markDirty(); }
-  if (!t.cooldowns)     { t.cooldowns     = new Map(); db.markDirty(); }
-  if (!t.approvedUsers) { t.approvedUsers = new Set(); db.markDirty(); }
-  return t;
-}
-
 function getVerifySettings(g) {
   if (!g.verifySystem) {
     g.verifySystem = {
-      enabled:          false,
-      verifyTopicId:    null,    // ← موضوع التحقق (يبقى مفتوحاً للجميع)
-      pendingRequests:  new Map(),
-      approvedMembers:  new Map(),
-      rejectedMembers:  new Map(),
-      cooldowns:        new Map(),
+      enabled:         false,
+      verifyTopicId:   null,
+      pendingRequests: new Map(),
+      approvedMembers: new Map(),
+      rejectedMembers: new Map(),
+      cooldowns:       new Map(),
     };
     db.markDirty();
   }
@@ -58,7 +81,7 @@ function getVerifySettings(g) {
   if (!vs.approvedMembers)       vs.approvedMembers  = new Map();
   if (!vs.rejectedMembers)       vs.rejectedMembers  = new Map();
   if (!vs.cooldowns)             vs.cooldowns        = new Map();
-  if (vs.verifyTopicId === undefined) vs.verifyTopicId = null; // حقل جديد
+  if (vs.verifyTopicId === undefined) vs.verifyTopicId = null;
   return vs;
 }
 
@@ -69,49 +92,8 @@ function getAvailableTopics(g) {
     .map(([id, t]) => ({ id, name: t.name || String(id) }));
 }
 
-
 // ═══════════════════════════════════════════════════════════════
-//  🔒 إدارة المواضيع عبر Telegram API
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * يغلق جميع مواضيع المجموعة ماعدا موضوع التحقق.
- * يُستدعى عند انضمام عضو جديد غير معتمد.
- */
-async function closeAllTopicsExceptVerify(bot, chatId, verifyTopicId) {
-  const g = db.getGroup(chatId);
-  if (!g || !g.topics) return;
-  for (const [topicId] of g.topics.entries()) {
-    if (verifyTopicId && topicId === verifyTopicId) continue;
-    try { await bot.telegram.closeForumTopic(chatId, topicId); } catch {}
-  }
-}
-
-/**
- * يفتح موضوع الكلية بعد قبول الطالب.
- */
-async function openTopicForApprovedUser(bot, chatId, topicId) {
-  try { await bot.telegram.reopenForumTopic(chatId, topicId); } catch {}
-}
-
-/**
- * يغلق موضوعاً محدداً.
- */
-async function closeTopic(bot, chatId, topicId) {
-  try { await bot.telegram.closeForumTopic(chatId, topicId); return true; }
-  catch { return false; }
-}
-
-/**
- * يفتح موضوعاً محدداً.
- */
-async function openTopic(bot, chatId, topicId) {
-  try { await bot.telegram.reopenForumTopic(chatId, topicId); return true; }
-  catch { return false; }
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  دوال الإشعارات
+//  دوال الإشعارات للمشرفين
 // ═══════════════════════════════════════════════════════════════
 
 function buildAdminNotification(g, userId, user, data) {
@@ -123,21 +105,21 @@ function buildAdminNotification(g, userId, user, data) {
     `🆔 \`${userId}\`\n` +
     `🏫 المجموعة: *${g.title}*\n\n` +
     `📋 *البيانات:*\n` +
-    `🔢 رقم القيد: \`${data.studentId}\`\n` +
-    `🏛️ الكلية: *${data.college}*\n` +
+    `👤 الاسم الرباعي: *${data.fullName}*\n` +
+    `🏛️ الجامعة: *${data.university}*\n` +
     `📚 التخصص: *${data.major}*\n` +
-    `📅 السنة: *${data.year}*\n` +
-    `🧵 الموضوع المطلوب: *${data.topicName}*\n\n` +
+    `🔢 الرقم الجامعي: \`${data.studentId}\`\n` +
+    `📱 رقم الجوال: \`${data.phone}\`\n\n` +
     `🕐 ${new Date().toLocaleString('ar-SA')}`
   );
 }
 
-function buildAdminButtons(userId, chatId, topicId) {
+function buildAdminButtons(userId, chatId) {
   return Markup.inlineKeyboard([
-    [Markup.button.callback('✅ قبول وفتح الموضوع', `vfy_allow_${userId}_${chatId}_${topicId}`)],
+    [Markup.button.callback('✅ قبول', `vfy_allow_${userId}_${chatId}`)],
     [
-      Markup.button.callback('❌ رفض',          `vfy_deny_${userId}_${chatId}`),
-      Markup.button.callback('🚫 رفض وحظر',     `vfy_ban_${userId}_${chatId}`),
+      Markup.button.callback('❌ رفض',      `vfy_deny_${userId}_${chatId}`),
+      Markup.button.callback('🚫 رفض وحظر', `vfy_ban_${userId}_${chatId}`),
     ],
     [Markup.button.callback('🔍 تفاصيل الطالب', `vfy_info_${userId}_${chatId}`)],
   ]);
@@ -163,23 +145,182 @@ async function notifyAll(bot, g, text, buttons) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  دوال التقييد ورفع التقييد
+//  خطوات التسجيل الجديدة
 // ═══════════════════════════════════════════════════════════════
 
-async function unrestrictUser(bot, chatId, userId) {
+/**
+ * الخطوة 0: رسالة الترحيب + زرين (طالب / أريد الدخول)
+ */
+async function stepWelcome(bot, userId, groupTitle) {
   try {
-    await bot.telegram.restrictChatMember(chatId, userId, {
-      permissions: {
-        can_send_messages: true, can_send_audios: true,
-        can_send_documents: true, can_send_photos: true,
-        can_send_videos: true, can_send_video_notes: true,
-        can_send_voice_notes: true, can_send_polls: true,
-        can_send_other_messages: true, can_add_web_page_previews: true,
-      },
-    });
-    return true;
-  } catch { return false; }
+    await bot.telegram.sendMessage(userId,
+      `🎓 *أهلاً بك في مجتمع ${groupTitle}!*\n\n` +
+      `🔐 هذه مجموعة خاصة بطلاب الجامعات السعودية.\n` +
+      `يرجى إكمال خطوات التحقق للانضمام.\n\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `*ما وضعك؟*`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('🎓 أنا طالب جامعي', 'vs_student')],
+          [Markup.button.callback('🏫 أريد الدخول للجامعة', 'vs_applicant')],
+        ]),
+      }
+    );
+  } catch (e) { console.error('stepWelcome:', e.message); }
 }
+
+/**
+ * الخطوة 1: اختيار الجامعة (صفحات من أزرار)
+ */
+async function stepSelectUniversity(bot, userId, page = 0) {
+  const PAGE_SIZE = 8;
+  const start     = page * PAGE_SIZE;
+  const slice     = SAUDI_UNIVERSITIES.slice(start, start + PAGE_SIZE);
+
+  const rows = [];
+  for (let i = 0; i < slice.length; i += 2) {
+    const row = [Markup.button.callback(slice[i], `vsu_${start + i}`)];
+    if (slice[i + 1]) row.push(Markup.button.callback(slice[i + 1], `vsu_${start + i + 1}`));
+    rows.push(row);
+  }
+
+  // أزرار التنقل
+  const nav = [];
+  if (page > 0) nav.push(Markup.button.callback('⬅️ السابق', `vsu_pg_${page - 1}`));
+  if (start + PAGE_SIZE < SAUDI_UNIVERSITIES.length) nav.push(Markup.button.callback('التالي ➡️', `vsu_pg_${page + 1}`));
+  if (nav.length) rows.push(nav);
+  rows.push([Markup.button.callback('❌ إلغاء', 'vstep_cancel')]);
+
+  try {
+    await bot.telegram.sendMessage(userId,
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `1️⃣ *اختر جامعتك:*\n` +
+      `_(الصفحة ${page + 1} من ${Math.ceil(SAUDI_UNIVERSITIES.length / PAGE_SIZE)})_`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard(rows) }
+    );
+  } catch (e) { console.error('stepSelectUniversity:', e.message); }
+}
+
+/**
+ * الخطوة 2: إدخال التخصص نصياً
+ */
+async function stepMajor(bot, userId, universityName) {
+  try {
+    await bot.telegram.sendMessage(userId,
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `2️⃣ *اكتب تخصصك في ${universityName}:*\n\n` +
+      `_مثال: هندسة حاسب آلي، نظم المعلومات، المحاسبة_`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (e) { console.error('stepMajor:', e.message); }
+}
+
+/**
+ * الخطوة 3: إدخال الاسم الرباعي
+ */
+async function stepFullName(bot, userId) {
+  try {
+    await bot.telegram.sendMessage(userId,
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `3️⃣ *أدخل اسمك الرباعي:*\n\n` +
+      `_مثال: محمد عبدالله أحمد الغامدي_`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (e) { console.error('stepFullName:', e.message); }
+}
+
+/**
+ * الخطوة 4: إدخال الرقم الجامعي
+ */
+async function stepStudentId(bot, userId) {
+  try {
+    await bot.telegram.sendMessage(userId,
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `4️⃣ *أدخل رقمك الجامعي:*\n\n` +
+      `_مثال: 2023001234_`,
+      { parse_mode: 'Markdown' }
+    );
+  } catch (e) { console.error('stepStudentId:', e.message); }
+}
+
+/**
+ * الخطوة 5: التحقق "أنت إنسان" — مشاركة رقم الجوال
+ */
+async function stepPhoneVerify(bot, userId) {
+  try {
+    await bot.telegram.sendMessage(userId,
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `5️⃣ *التحقق من أنك إنسان حقيقي ومن نفس البلد*\n\n` +
+      `🔐 اضغط الزر أدناه للموافقة على التحقق.\n` +
+      `بعد الضغط سيُطلب منك مشاركة رقم جوالك.\n\n` +
+      `_رقمك يُستخدم للتحقق فقط ولن يُشارَك مع أحد._`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('✅ وافق على التحقق', 'vs_phone_agree')],
+          [Markup.button.callback('❌ إلغاء', 'vstep_cancel')],
+        ]),
+      }
+    );
+  } catch (e) { console.error('stepPhoneVerify:', e.message); }
+}
+
+/**
+ * الخطوة 5b: طلب رقم الهاتف الفعلي عبر زر contact
+ */
+async function stepRequestContact(bot, userId) {
+  try {
+    await bot.telegram.sendMessage(userId,
+      `📱 *اضغط الزر أدناه لمشاركة رقم جوالك:*`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          keyboard: [[{ text: '📱 مشاركة رقم الجوال', request_contact: true }]],
+          resize_keyboard: true,
+          one_time_keyboard: true,
+        },
+      }
+    );
+  } catch (e) { console.error('stepRequestContact:', e.message); }
+}
+
+/**
+ * الخطوة 6: ملخص وتأكيد
+ */
+async function stepConfirm(bot, userId, data) {
+  try {
+    await bot.telegram.sendMessage(userId,
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `✅ *مراجعة بياناتك قبل الإرسال:*\n\n` +
+      `👤 الاسم: *${data.fullName}*\n` +
+      `🏛️ الجامعة: *${data.university}*\n` +
+      `📚 التخصص: *${data.major}*\n` +
+      `🔢 الرقم الجامعي: \`${data.studentId}\`\n` +
+      `📱 رقم الجوال: \`${data.phone}\`\n\n` +
+      `هل البيانات صحيحة؟`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: { remove_keyboard: true },
+      }
+    );
+    // إرسال أزرار التأكيد في رسالة منفصلة (بعد إغلاق الكيبورد)
+    await bot.telegram.sendMessage(userId,
+      `اختر:`,
+      {
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('✅ إرسال الطلب',    'vstep_confirm')],
+          [Markup.button.callback('✏️ تعديل البيانات', 'vstep_restart')],
+          [Markup.button.callback('❌ إلغاء',           'vstep_cancel')],
+        ]),
+      }
+    );
+  } catch (e) { console.error('stepConfirm:', e.message); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  دوال التقييد (للأعضاء الموجودين داخل المجموعة)
+// ═══════════════════════════════════════════════════════════════
 
 async function restrictUser(bot, chatId, userId) {
   try {
@@ -196,154 +337,54 @@ async function restrictUser(bot, chatId, userId) {
   } catch { return false; }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  فحص عضو موجود (غير معتمد) وتقييده وإرسال التسجيل له
-// ═══════════════════════════════════════════════════════════════
-
-async function checkAndRestrictExistingMember(bot, chatId, userId, g) {
-  const vs = getVerifySettings(g);
-  if (!vs.enabled) return;
-
-  // تجاهل المعتمدين والمعلق طلباتهم
-  if (vs.approvedMembers.has(userId)) return;
-  if (vs.pendingRequests.get(userId)?.status === 'pending') return;
-
-  // تجاهل الكوولداون
-  const cooldown = vs.cooldowns.get(userId);
-  if (cooldown && cooldown > Date.now()) return;
-
-  // جلب معلومات العضو للتحقق من أنه ليس مشرفاً
+async function unrestrictUser(bot, chatId, userId) {
   try {
-    const member = await bot.telegram.getChatMember(chatId, userId);
-    if (['administrator', 'creator'].includes(member.status)) return;
-    if (member.status === 'left' || member.status === 'kicked') return;
-  } catch { return; }
+    await bot.telegram.restrictChatMember(chatId, userId, {
+      permissions: {
+        can_send_messages: true, can_send_audios: true,
+        can_send_documents: true, can_send_photos: true,
+        can_send_videos: true, can_send_video_notes: true,
+        can_send_voice_notes: true, can_send_polls: true,
+        can_send_other_messages: true, can_add_web_page_previews: true,
+      },
+    });
+    return true;
+  } catch { return false; }
+}
 
-  // تقييد
-  await restrictUser(bot, chatId, userId);
-
-  // بدء جلسة تسجيل إن لم تكن موجودة
-  if (!sessions.has(userId)) {
-    const topics = getAvailableTopics(g);
-    sessions.set(userId, { step: 'student_id', chatId, data: {}, topics });
-    await stepWelcome(bot, userId, g.title);
+async function closeAllTopicsExceptVerify(bot, chatId, verifyTopicId) {
+  const g = db.getGroup(chatId);
+  if (!g || !g.topics) return;
+  for (const [topicId] of g.topics.entries()) {
+    if (verifyTopicId && topicId === verifyTopicId) continue;
+    try { await bot.telegram.closeForumTopic(chatId, topicId); } catch {}
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  خطوات التسجيل التفاعلية
-// ═══════════════════════════════════════════════════════════════
-
-async function stepWelcome(bot, userId, groupTitle) {
-  try {
-    await bot.telegram.sendMessage(userId,
-      `🎓 *أهلاً بك في نظام التحقق الجامعي!*\n\n` +
-      `📌 المجموعة: *${groupTitle}*\n\n` +
-      `🔐 *للانضمام يجب التحقق من هويتك الجامعية.*\n\n` +
-      `━━━━━━━━━━━━━━━━━━\n` +
-      `1⃣ *أدخل رقم القيد الجامعي:*\n\n` +
-      `_مثال: 2023001234_`,
-      { parse_mode: 'Markdown' }
-    );
-  } catch (e) { console.error('stepWelcome:', e.message); }
-}
-
-async function stepCollege(bot, userId, topics) {
-  if (!topics.length) {
-    return bot.telegram.sendMessage(userId,
-      `⚠️ *لا توجد كليات مسجّلة حالياً.*\n\nيرجى التواصل مع المشرف.`,
-      { parse_mode: 'Markdown' }
-    );
-  }
-  const rows = [];
-  for (let i = 0; i < topics.length; i += 2) {
-    const row = [Markup.button.callback(`🏛️ ${topics[i].name}`, `vc_${topics[i].id}`)];
-    if (topics[i + 1]) row.push(Markup.button.callback(`🏛️ ${topics[i + 1].name}`, `vc_${topics[i + 1].id}`));
-    rows.push(row);
-  }
-  rows.push([Markup.button.callback('❌ إلغاء التسجيل', 'vstep_cancel')]);
-
-  await bot.telegram.sendMessage(userId,
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `2⃣ *اختر كليتك:*\n\n` +
-    `_اضغط على اسم كليتك_`,
-    { parse_mode: 'Markdown', ...Markup.inlineKeyboard(rows) }
-  );
-}
-
-async function stepMajor(bot, userId, collegeName) {
-  await bot.telegram.sendMessage(userId,
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `3⃣ *اكتب تخصصك في كلية ${collegeName}:*\n\n` +
-    `_مثال: هندسة حاسب آلي، نظم المعلومات، المحاسبة..._`,
-    { parse_mode: 'Markdown' }
-  );
-}
-
-async function stepYear(bot, userId) {
-  await bot.telegram.sendMessage(userId,
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `4⃣ *اختر سنتك الدراسية:*`,
-    {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([
-        [
-          Markup.button.callback('1⃣ السنة الأولى',   'vy_السنة الأولى'),
-          Markup.button.callback('2⃣ السنة الثانية',  'vy_السنة الثانية'),
-        ],
-        [
-          Markup.button.callback('3⃣ السنة الثالثة',  'vy_السنة الثالثة'),
-          Markup.button.callback('4⃣ السنة الرابعة',  'vy_السنة الرابعة'),
-        ],
-        [
-          Markup.button.callback('5⃣ السنة الخامسة',  'vy_السنة الخامسة'),
-          Markup.button.callback('🎓 دراسات عليا',     'vy_دراسات عليا'),
-        ],
-        [Markup.button.callback('❌ إلغاء التسجيل',    'vstep_cancel')],
-      ]),
-    }
-  );
-}
-
-async function stepConfirm(bot, userId, data) {
-  await bot.telegram.sendMessage(userId,
-    `━━━━━━━━━━━━━━━━━━\n` +
-    `✅ *مراجعة بياناتك قبل الإرسال:*\n\n` +
-    `🔢 رقم القيد: \`${data.studentId}\`\n` +
-    `🏛️ الكلية: *${data.college}*\n` +
-    `📚 التخصص: *${data.major}*\n` +
-    `📅 السنة: *${data.year}*\n\n` +
-    `هل البيانات صحيحة؟`,
-    {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([
-        [Markup.button.callback('✅ إرسال الطلب',   'vstep_confirm')],
-        [Markup.button.callback('✏️ تعديل البيانات', 'vstep_restart')],
-        [Markup.button.callback('❌ إلغاء',          'vstep_cancel')],
-      ]),
-    }
-  );
+async function openTopicForApprovedUser(bot, chatId, topicId) {
+  try { await bot.telegram.reopenForumTopic(chatId, topicId); } catch {}
 }
 
 module.exports = {
   VERIFY_COOLDOWN_MS,
+  AUTO_APPROVE_DELAY,
+  SAUDI_UNIVERSITIES,
   sessions,
-  getOrCreateTopic,
   getVerifySettings,
   getAvailableTopics,
   buildAdminNotification,
   buildAdminButtons,
   notifyAll,
-  unrestrictUser,
   restrictUser,
-  checkAndRestrictExistingMember,
+  unrestrictUser,
   closeAllTopicsExceptVerify,
   openTopicForApprovedUser,
-  closeTopic,
-  openTopic,
   stepWelcome,
-  stepCollege,
+  stepSelectUniversity,
   stepMajor,
-  stepYear,
+  stepFullName,
+  stepStudentId,
+  stepPhoneVerify,
+  stepRequestContact,
   stepConfirm,
 };
