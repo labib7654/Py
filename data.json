@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T00:11:54.116Z",
+  "savedAt": "2026-05-18T00:13:54.117Z",
   "botAdmins": [
     6330247540
   ],
@@ -416,6 +416,68 @@
         "canManageTopics": false
       },
       "auditLog": []
+    },
+    "-1003794953708": {
+      "chatId": -1003794953708,
+      "title": "حلوين",
+      "type": "supergroup",
+      "ownerId": 8265840070,
+      "ownerUsername": "BMW0_0",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "auto-detected",
+      "addedAt": "2026-05-18T00:11:59.587Z",
+      "members": {
+        "8265840070": {
+          "userId": 8265840070,
+          "username": "BMW0_0",
+          "firstName": "ووة",
+          "role": "member",
+          "joinedAt": "2026-05-18T00:11:59.786Z",
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-18T00:12:02.939Z"
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": []
     }
   },
   "channels": {},
@@ -720,6 +782,26 @@
           "lastSeen": "2026-05-17T23:47:43.778Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8265840070": {
+      "userId": 8265840070,
+      "username": "BMW0_0",
+      "firstName": "ووة",
+      "lastName": "",
+      "profileLink": "https://t.me/BMW0_0",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T00:11:55.945Z",
+      "lastSeen": "2026-05-18T00:12:02.939Z",
+      "groups": [
+        -1003794953708
+      ],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
