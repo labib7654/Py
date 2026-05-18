@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T08:50:58.105Z",
+  "savedAt": "2026-05-18T08:52:58.105Z",
   "botAdmins": [
     6330247540
   ],
@@ -235,9 +235,9 @@
           "firstName": "جامعة",
           "role": "member",
           "joinedAt": "2026-05-17T22:35:33.272Z",
-          "messageCount": 2,
-          "score": 2,
-          "lastMessageAt": "2026-05-17T22:52:10.841Z"
+          "messageCount": 7,
+          "score": 7,
+          "lastMessageAt": "2026-05-18T08:52:26.529Z"
         },
         "6740522308": {
           "userId": 6740522308,
@@ -265,9 +265,9 @@
           "firstName": "ㅤㅤㅤㅤ",
           "role": "member",
           "joinedAt": "2026-05-18T00:18:09.869Z",
-          "messageCount": 4,
-          "score": 4,
-          "lastMessageAt": "2026-05-18T08:50:47.354Z"
+          "messageCount": 9,
+          "score": 9,
+          "lastMessageAt": "2026-05-18T08:51:27.726Z"
         },
         "8603034665": {
           "userId": 8603034665,
@@ -330,7 +330,53 @@
       "timedMutes": {},
       "timedBans": {},
       "joinRequestCooldown": {},
-      "topics": {},
+      "topics": {
+        "3": {
+          "name": "3",
+          "locked": false,
+          "archived": true,
+          "approvedUsers": [],
+          "joinRequests": {},
+          "cooldowns": {},
+          "createdAt": "2026-05-18T08:51:27.726Z"
+        },
+        "51": {
+          "name": "51",
+          "locked": false,
+          "archived": true,
+          "approvedUsers": [],
+          "joinRequests": {},
+          "cooldowns": {},
+          "createdAt": "2026-05-18T08:51:22.287Z"
+        },
+        "52": {
+          "name": "52",
+          "locked": false,
+          "archived": true,
+          "approvedUsers": [],
+          "joinRequests": {},
+          "cooldowns": {},
+          "createdAt": "2026-05-18T08:51:16.265Z"
+        },
+        "53": {
+          "name": "53",
+          "locked": false,
+          "archived": true,
+          "approvedUsers": [],
+          "joinRequests": {},
+          "cooldowns": {},
+          "createdAt": "2026-05-18T08:51:01.679Z"
+        },
+        "54": {
+          "name": "54",
+          "locked": false,
+          "archived": true,
+          "approvedUsers": [],
+          "joinRequests": {},
+          "cooldowns": {},
+          "createdAt": "2026-05-18T08:51:10.813Z"
+        }
+      },
       "topicSettings": {
         "requireApprovalToJoin": true,
         "autoLockOnCreate": false,
@@ -688,7 +734,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T08:50:47.355Z",
+      "lastSeen": "2026-05-18T08:52:26.311Z",
       "groups": [
         -1003940779079,
         -1003969494192
@@ -701,7 +747,7 @@
           "chatTitle": "مجتمع جامعةالأمير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:18:09.870Z",
-          "lastSeen": "2026-05-18T08:50:47.355Z"
+          "lastSeen": "2026-05-18T08:51:27.726Z"
         }
       },
       "profileLink": "https://t.me/Labibrd",
@@ -737,7 +783,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-18T00:10:00.618Z",
+      "lastSeen": "2026-05-18T08:52:26.529Z",
       "groups": [
         -1003969494192,
         -1003940779079,
