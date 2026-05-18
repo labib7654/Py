@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T20:28:57.039Z",
+  "savedAt": "2026-05-18T20:29:17.128Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1758,9 +1758,9 @@
           "firstName": "عآئش",
           "role": "member",
           "joinedAt": "2026-05-18T20:28:52.987Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T20:28:53.460Z"
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-18T20:28:57.901Z"
         }
       },
       "admins": {},
@@ -1811,7 +1811,15 @@
         "cooldowns": {},
         "verifyTopicId": null
       },
-      "specialistWords": [],
+      "specialistWords": [
+        {
+          "word": "تك",
+          "specialistId": 8265840070,
+          "specialistUsername": "BMW0_0",
+          "addedBy": 8265840070,
+          "addedAt": "2026-05-18T20:29:16.127Z"
+        }
+      ],
       "autoApproveJoin": true
     },
     "-1002985211839": {
@@ -2549,7 +2557,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T20:28:31.281Z",
+      "lastSeen": "2026-05-18T20:29:15.943Z",
       "groups": [
         -1003794953708,
         -1003969494192
@@ -5583,7 +5591,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-18T20:28:53.460Z",
+      "lastSeen": "2026-05-18T20:28:57.901Z",
       "groups": [
         -1003794953708
       ],
@@ -5594,7 +5602,7 @@
           "chatTitle": "حلوين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:28:52.987Z",
-          "lastSeen": "2026-05-18T20:28:53.460Z"
+          "lastSeen": "2026-05-18T20:28:57.901Z"
         }
       },
       "contactedBot": false,
