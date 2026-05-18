@@ -1012,10 +1012,11 @@ ${statusLine}
         `📋 لا توجد مواضيع مسجّلة بعد.
 
 ` +
-        `استخدم /synctopics داخل المجموعة لجلب المواضيع تلقائياً.`,
+        `يمكنك إنشاء موضوع جديد أو استخدام /synctopics داخل المجموعة.`,
         {
           parse_mode: 'Markdown',
           ...Markup.inlineKeyboard([
+            [Markup.button.callback('➕ إنشاء موضوع جديد', `tp_create_${chatId}`)],
             [Markup.button.callback('🔄 تفعيل التحقق', `vfy_toggle_${chatId}`),
              Markup.button.callback('🔙 رجوع', `owner_panel_${chatId}`)],
           ])
@@ -1023,16 +1024,22 @@ ${statusLine}
       );
     }
 
-    // بناء أزرار المواضيع — كل موضوع له زر فتح/إغلاق
+    // بناء أزرار المواضيع — كل موضوع له زر إدارة كامل
     const topicBtns = topics.map(([tid, t]) => {
-      const icon    = t.locked ? '🔒' : '🔓';
+      const icon     = t.locked ? '🔒' : '🔓';
       const isVerify = tid === vs.verifyTopicId ? ' ✅' : '';
+      const members  = t.approvedUsers?.size || 0;
       return [
-        Markup.button.callback(`${icon} ${t.name.slice(0, 22)}${isVerify}`, `tp_toggle_${tid}_${chatId}`),
-        Markup.button.callback('📌 تحقق', `tp_setvfy_${tid}_${chatId}`),
+        Markup.button.callback(
+          `${icon} ${t.name.slice(0, 20)}${isVerify} (${members})`,
+          `tp_manage_${tid}_${chatId}`
+        ),
       ];
     });
 
+    topicBtns.push([
+      Markup.button.callback('➕ إنشاء موضوع جديد', `tp_create_${chatId}`),
+    ]);
     topicBtns.push([
       Markup.button.callback(`${vs.enabled ? '🔴 تعطيل التحقق' : '🟢 تفعيل التحقق'}`, `vfy_toggle_${chatId}`),
     ]);
@@ -1042,16 +1049,17 @@ ${statusLine}
     ]);
     topicBtns.push([Markup.button.callback('🔙 رجوع', `owner_panel_${chatId}`)]);
 
+    const totalMembers = topics.reduce((a, [, t]) => a + (t.approvedUsers?.size || 0), 0);
     await ctx.editMessageText(
       `🧵 *إدارة مواضيع ${g.title}*
 
 ${statusLine}
 📌 موضوع التحقق: *${verifyTopicName}*
+` +
+      `📊 المواضيع: \`${topics.length}\` | الأعضاء المعتمدون: \`${totalMembers}\`
 
 ` +
-      `🔒 = مغلق | 🔓 = مفتوح | ✅ = موضوع التحقق
-` +
-      `اضغط 📌 لتعيين موضوع التحقق`,
+      `اضغط على أي موضوع لإدارته`,
       { parse_mode: 'Markdown', ...Markup.inlineKeyboard(topicBtns) }
     );
   });
@@ -1154,6 +1162,320 @@ ${statusLine}
     // إعادة رسم اللوحة
     const topicBtns = await buildTopicsMarkupRaw(bot, g, chatId);
     return ctx.editMessageReplyMarkup(Markup.inlineKeyboard(topicBtns).reply_markup);
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  🧵 لوحة إدارة المواضيع المتطورة
+  // ════════════════════════════════════════════════════════════
+
+  // جلسات انتظار الإدخال النصي من المستخدم
+  const topicInputSessions = new Map();
+  // { userId → { action:'create'|'rename', chatId, topicId?, step } }
+
+  // ── بناء لوحة موضوع واحد ────────────────────────────────────
+  async function buildTopicDetailKeyboard(chatId, topicId, t, vs) {
+    const isVerify = topicId === vs?.verifyTopicId;
+    return Markup.inlineKeyboard([
+      [
+        Markup.button.callback(t.locked ? '🔓 فتح الموضوع' : '🔒 إغلاق الموضوع', `tp_toggle_${topicId}_${chatId}`),
+        Markup.button.callback('✏️ تعديل الاسم', `tp_rename_${topicId}_${chatId}`),
+      ],
+      [
+        Markup.button.callback('🔐 الصلاحيات', `tp_perms_${topicId}_${chatId}`),
+        Markup.button.callback(isVerify ? '✅ موضوع التحقق' : '📌 تعيين للتحقق', `tp_setvfy_${topicId}_${chatId}`),
+      ],
+      [
+        Markup.button.callback('📌 تثبيت رسالة', `tp_pin_${topicId}_${chatId}`),
+        Markup.button.callback('🗄️ أرشفة', `tp_archive_${topicId}_${chatId}`),
+      ],
+      [
+        Markup.button.callback('🗑️ حذف الموضوع', `tp_delete_${topicId}_${chatId}`),
+      ],
+      [Markup.button.callback('🔙 رجوع للمواضيع', `topics_panel_${chatId}`)],
+    ]);
+  }
+
+  // ── صفحة إدارة موضوع واحد ────────────────────────────────────
+  bot.action(/^tp_manage_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const topicId = Number(ctx.match[1]);
+    const chatId  = Number(ctx.match[2]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return;
+
+    const t = g.topics?.get(topicId);
+    if (!t) return ctx.answerCbQuery('❌ موضوع غير موجود', { show_alert: true });
+
+    const { getVerifySettings } = require('./verify_helpers');
+    const vs = getVerifySettings(g);
+
+    const statusIcon  = t.locked ? '🔒 مغلق' : '🔓 مفتوح';
+    const verifyMark  = topicId === vs.verifyTopicId ? '\n✅ *موضوع التحقق الرسمي*' : '';
+    const approvedCnt = t.approvedUsers?.size || 0;
+
+    const keyboard = await buildTopicDetailKeyboard(chatId, topicId, t, vs);
+    await ctx.editMessageText(
+      `🧵 *${t.name}*\n\n` +
+      `🆔 ID: \`${topicId}\`\n` +
+      `📊 الحالة: ${statusIcon}\n` +
+      `👥 أعضاء معتمدون: \`${approvedCnt}\`${verifyMark}`,
+      { parse_mode: 'Markdown', ...keyboard }
+    );
+  });
+
+  // ── لوحة صلاحيات موضوع ──────────────────────────────────────
+  bot.action(/^tp_perms_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const topicId = Number(ctx.match[1]);
+    const chatId  = Number(ctx.match[2]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return;
+
+    const t = g.topics?.get(topicId) || {};
+    const perms = t.perms || {};
+
+    const btn = (label, key) =>
+      Markup.button.callback(`${perms[key] !== false ? '✅' : '❌'} ${label}`, `tp_perm_${key}_${topicId}_${chatId}`);
+
+    await ctx.editMessageText(
+      `🔐 *صلاحيات موضوع: ${t.name || topicId}*\n\nاضغط لتفعيل/تعطيل:`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [btn('إرسال رسائل', 'canSend'),   btn('إرسال وسائط', 'canMedia')],
+          [btn('إرسال استطلاعات', 'canPolls'), btn('إرسال روابط', 'canLinks')],
+          [btn('تثبيت رسائل', 'canPin'),   btn('الردود', 'canReply')],
+          [Markup.button.callback('🔙 رجوع', `tp_manage_${topicId}_${chatId}`)],
+        ]),
+      }
+    );
+  });
+
+  // تبديل صلاحية واحدة في الموضوع
+  bot.action(/^tp_perm_(\w+)_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const permKey = ctx.match[1];
+    const topicId = Number(ctx.match[2]);
+    const chatId  = Number(ctx.match[3]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return;
+
+    if (!g.topics.has(topicId)) return;
+    const t = g.topics.get(topicId);
+    if (!t.perms) t.perms = {};
+    t.perms[permKey] = t.perms[permKey] === false ? true : false;
+    db.markDirty();
+
+    const perms = t.perms;
+    const btn = (label, key) =>
+      Markup.button.callback(`${perms[key] !== false ? '✅' : '❌'} ${label}`, `tp_perm_${key}_${topicId}_${chatId}`);
+
+    await ctx.editMessageReplyMarkup(
+      Markup.inlineKeyboard([
+        [btn('إرسال رسائل', 'canSend'),   btn('إرسال وسائط', 'canMedia')],
+        [btn('إرسال استطلاعات', 'canPolls'), btn('إرسال روابط', 'canLinks')],
+        [btn('تثبيت رسائل', 'canPin'),   btn('الردود', 'canReply')],
+        [Markup.button.callback('🔙 رجوع', `tp_manage_${topicId}_${chatId}`)],
+      ]).reply_markup
+    );
+    await ctx.answerCbQuery(`${t.perms[permKey] !== false ? '✅' : '❌'} تم تعديل الصلاحية`, { show_alert: false });
+  });
+
+  // ── تعديل اسم موضوع ─────────────────────────────────────────
+  bot.action(/^tp_rename_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const topicId = Number(ctx.match[1]);
+    const chatId  = Number(ctx.match[2]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return;
+
+    const t = g.topics?.get(topicId);
+    if (!t) return;
+
+    topicInputSessions.set(ctx.from.id, { action: 'rename', chatId, topicId });
+
+    await ctx.editMessageText(
+      `✏️ *تعديل اسم الموضوع*\n\nالاسم الحالي: *${t.name}*\n\nأرسل الاسم الجديد الآن:`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', `tp_manage_${topicId}_${chatId}`)]]),
+      }
+    );
+  });
+
+  // ── إنشاء موضوع جديد ─────────────────────────────────────────
+  bot.action(/^tp_create_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return;
+
+    topicInputSessions.set(ctx.from.id, { action: 'create', chatId });
+
+    await ctx.editMessageText(
+      `➕ *إنشاء موضوع جديد*\n\nأرسل اسم الموضوع الجديد:`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', `topics_panel_${chatId}`)]]),
+      }
+    );
+  });
+
+  // ── حذف موضوع ───────────────────────────────────────────────
+  bot.action(/^tp_delete_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const topicId = Number(ctx.match[1]);
+    const chatId  = Number(ctx.match[2]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return;
+
+    const t = g.topics?.get(topicId);
+    if (!t) return;
+
+    await ctx.editMessageText(
+      `🗑️ *تأكيد حذف الموضوع*\n\nهل تريد حذف *${t.name}* نهائياً؟\n⚠️ هذا الإجراء لا يمكن التراجع عنه.`,
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [
+            Markup.button.callback('✅ نعم، احذف', `tp_delconfirm_${topicId}_${chatId}`),
+            Markup.button.callback('❌ إلغاء', `tp_manage_${topicId}_${chatId}`),
+          ],
+        ]),
+      }
+    );
+  });
+
+  bot.action(/^tp_delconfirm_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const topicId = Number(ctx.match[1]);
+    const chatId  = Number(ctx.match[2]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return;
+
+    const t = g.topics?.get(topicId);
+    const name = t?.name || topicId;
+
+    try {
+      await bot.telegram.callApi('deleteForumTopic', {
+        chat_id:           chatId,
+        message_thread_id: topicId,
+      });
+      g.topics.delete(topicId);
+      db.markDirty();
+      await ctx.answerCbQuery(`🗑️ تم حذف "${name}"`, { show_alert: true });
+    } catch (e) {
+      await ctx.answerCbQuery(`❌ فشل الحذف: ${e.message}`, { show_alert: true });
+    }
+
+    // إعادة لوحة المواضيع
+    const topicBtns = await buildTopicsMarkupRaw(bot, g, chatId);
+    return ctx.editMessageText(
+      `🧵 *إدارة مواضيع ${g.title}*\n\n✅ تم حذف الموضوع: *${name}*`,
+      { parse_mode: 'Markdown', ...Markup.inlineKeyboard(topicBtns) }
+    );
+  });
+
+  // ── أرشفة موضوع ─────────────────────────────────────────────
+  bot.action(/^tp_archive_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const topicId = Number(ctx.match[1]);
+    const chatId  = Number(ctx.match[2]);
+    const g = db.getGroup(chatId);
+    if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id)) return;
+
+    const t = g.topics?.get(topicId);
+    if (!t) return ctx.answerCbQuery('❌ غير موجود', { show_alert: true });
+
+    try {
+      await bot.telegram.callApi('closeForumTopic', { chat_id: chatId, message_thread_id: topicId });
+      t.locked = true; t.archived = true;
+      db.markDirty();
+      await ctx.answerCbQuery(`🗄️ تم أرشفة "${t.name}"`, { show_alert: true });
+    } catch {}
+
+    const topicBtns = await buildTopicsMarkupRaw(bot, g, chatId);
+    return ctx.editMessageReplyMarkup(Markup.inlineKeyboard(topicBtns).reply_markup);
+  });
+
+  // ── استقبال النص (إنشاء / تعديل اسم) ────────────────────────
+  bot.on('text', async (ctx, next) => {
+    if (ctx.chat.type !== 'private') return next();
+    const sess = topicInputSessions.get(ctx.from.id);
+    if (!sess) return next();
+
+    topicInputSessions.delete(ctx.from.id);
+    const newName = ctx.message.text.trim();
+    if (!newName || newName.startsWith('/')) return next();
+
+    const g = db.getGroup(sess.chatId);
+    if (!g) return ctx.reply('❌ المجموعة غير موجودة.');
+
+    if (sess.action === 'rename') {
+      const t = g.topics?.get(sess.topicId);
+      if (!t) return ctx.reply('❌ الموضوع غير موجود.');
+      const oldName = t.name;
+      try {
+        await bot.telegram.callApi('editForumTopic', {
+          chat_id:           sess.chatId,
+          message_thread_id: sess.topicId,
+          name:              newName,
+        });
+        t.name = newName;
+        db.markDirty();
+        await ctx.reply(
+          `✅ تم تعديل اسم الموضوع\n*${oldName}* → *${newName}*`,
+          {
+            parse_mode: 'Markdown',
+            ...Markup.inlineKeyboard([[
+              Markup.button.callback('🔙 رجوع للموضوع', `tp_manage_${sess.topicId}_${sess.chatId}`)
+            ]]),
+          }
+        );
+      } catch (e) {
+        await ctx.reply(`❌ فشل التعديل: ${e.message}`);
+      }
+
+    } else if (sess.action === 'create') {
+      try {
+        const result = await bot.telegram.callApi('createForumTopic', {
+          chat_id: sess.chatId,
+          name:    newName,
+        });
+        const newTopicId = result.message_thread_id;
+        g.topics.set(newTopicId, {
+          name:         newName,
+          locked:       false,
+          archived:     false,
+          approvedUsers: new Set(),
+          joinRequests:  new Map(),
+          cooldowns:     new Map(),
+          perms:         {},
+          createdAt:     new Date(),
+        });
+        db.markDirty();
+        await ctx.reply(
+          `✅ تم إنشاء الموضوع *${newName}*\n🆔 ID: \`${newTopicId}\``,
+          {
+            parse_mode: 'Markdown',
+            ...Markup.inlineKeyboard([[
+              Markup.button.callback('⚙️ إدارة الموضوع', `tp_manage_${newTopicId}_${sess.chatId}`),
+              Markup.button.callback('🔙 كل المواضيع',   `topics_panel_${sess.chatId}`),
+            ]]),
+          }
+        );
+      } catch (e) {
+        await ctx.reply(`❌ فشل الإنشاء: ${e.message}\n\nتأكد أن المجموعة تدعم المواضيع (Supergroup + Topics مفعّل)`);
+      }
+    }
   });
 
 };
