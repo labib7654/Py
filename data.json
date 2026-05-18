@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T22:14:53.396Z",
+  "savedAt": "2026-05-18T22:15:50.174Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2402,6 +2402,26 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
+        },
+        "8265840070": {
+          "userId": 8265840070,
+          "username": "BMW0_0",
+          "firstName": "ووة",
+          "role": "member",
+          "joinedAt": "2026-05-18T22:14:56.176Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8240566312": {
+          "userId": 8240566312,
+          "username": "g_1_11111",
+          "firstName": "عآئش",
+          "role": "member",
+          "joinedAt": "2026-05-18T22:15:48.093Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
       "admins": {
@@ -2700,6 +2720,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:12:12.076Z"
+        },
+        "8240566312": {
+          "userId": 8240566312,
+          "username": "g_1_11111",
+          "firstName": "عآئش",
+          "role": "member",
+          "joinedAt": "2026-05-18T22:15:45.419Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T22:15:45.419Z"
         }
       },
       "admins": {},
@@ -2873,6 +2903,16 @@
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-05-18T00:26:11.222Z"
+        },
+        "8240566312": {
+          "userId": 8240566312,
+          "username": "g_1_11111",
+          "firstName": "عآئش",
+          "role": "member",
+          "joinedAt": "2026-05-18T22:15:36.566Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T22:15:36.566Z"
         }
       },
       "admins": {},
@@ -3811,9 +3851,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T22:14:52.395Z",
+      "lastSeen": "2026-05-18T22:15:04.015Z",
       "groups": [
-        -1003794953708
+        -1003794953708,
+        -1003969494192
       ],
       "channels": [],
       "seenInChats": {
@@ -3822,7 +3863,7 @@
           "chatTitle": "مجتمع جامعة الامير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:16:31.531Z",
-          "lastSeen": "2026-05-18T21:55:08.762Z"
+          "lastSeen": "2026-05-18T22:14:56.176Z"
         },
         "-1003794953708": {
           "chatId": -1003794953708,
@@ -6844,9 +6885,12 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-18T20:28:57.901Z",
+      "lastSeen": "2026-05-18T22:15:48.093Z",
       "groups": [
-        -1003794953708
+        -1003794953708,
+        -1002985211839,
+        -1002648125233,
+        -1003969494192
       ],
       "channels": [],
       "seenInChats": {
@@ -6856,6 +6900,27 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:28:52.987Z",
           "lastSeen": "2026-05-18T20:28:57.901Z"
+        },
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T22:15:36.566Z",
+          "lastSeen": "2026-05-18T22:15:36.566Z"
+        },
+        "-1002648125233": {
+          "chatId": -1002648125233,
+          "chatTitle": "⁨(قٌٍَِْــًٌٌٍَُِّْــXـٌـاَُّ&هـــRًٍُــرًٌٍُِّ⁩ و ⁨لبيب⁩",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T22:15:45.420Z",
+          "lastSeen": "2026-05-18T22:15:45.420Z"
+        },
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T22:15:48.093Z",
+          "lastSeen": "2026-05-18T22:15:48.093Z"
         }
       },
       "contactedBot": false,
