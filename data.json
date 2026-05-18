@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T22:26:37.788Z",
+  "savedAt": "2026-05-18T22:29:36.227Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2980,6 +2980,78 @@
       },
       "specialistWords": [],
       "autoApproveJoin": true
+    },
+    "-1003595180224": {
+      "chatId": -1003595180224,
+      "title": "مماحين",
+      "type": "supergroup",
+      "ownerId": 8240566312,
+      "ownerUsername": "g_1_11111",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "auto-detected",
+      "addedAt": "2026-05-18T22:28:27.639Z",
+      "members": {
+        "8240566312": {
+          "userId": 8240566312,
+          "username": "g_1_11111",
+          "firstName": "عآئش",
+          "role": "owner",
+          "joinedAt": "2026-05-18T22:28:27.671Z",
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-18T22:28:35.717Z"
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": true,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "specialistWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": true,
+      "autoApproveJoin": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": true,
+      "antiBot": true,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": true,
+        "verifyTopicId": null,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     }
   },
   "channels": {},
@@ -3552,7 +3624,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T22:22:32.410Z",
+      "lastSeen": "2026-05-18T22:27:59.404Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -6901,12 +6973,13 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-18T22:16:16.121Z",
+      "lastSeen": "2026-05-18T22:29:33.757Z",
       "groups": [
         -1003794953708,
         -1002985211839,
         -1002648125233,
-        -1003969494192
+        -1003969494192,
+        -1003595180224
       ],
       "channels": [],
       "seenInChats": {
@@ -6937,6 +7010,13 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T22:15:48.093Z",
           "lastSeen": "2026-05-18T22:15:57.535Z"
+        },
+        "-1003595180224": {
+          "chatId": -1003595180224,
+          "chatTitle": "مماحين",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T22:28:27.813Z",
+          "lastSeen": "2026-05-18T22:28:35.718Z"
         }
       },
       "contactedBot": false,
