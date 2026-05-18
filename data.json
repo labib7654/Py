@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T14:21:34.885Z",
+  "savedAt": "2026-05-18T14:23:34.885Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -163,6 +163,16 @@
       "addedByUsername": "unknown",
       "addedAt": "2026-05-17T20:58:12.197Z",
       "members": {
+        "808821004": {
+          "userId": 808821004,
+          "username": "shr5f",
+          "firstName": "شهاب",
+          "role": "member",
+          "joinedAt": "2026-05-18T14:23:32.710Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T14:23:32.710Z"
+        },
         "1087968824": {
           "userId": 1087968824,
           "username": "GroupAnonymousBot",
@@ -289,9 +299,9 @@
           "firstName": "salman",
           "role": "member",
           "joinedAt": "2026-05-17T21:48:53.794Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-05-18T11:43:33.986Z"
+          "messageCount": 4,
+          "score": 4,
+          "lastMessageAt": "2026-05-18T14:23:17.036Z"
         },
         "7087803706": {
           "userId": 7087803706,
@@ -1222,6 +1232,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:12.969Z"
+        },
+        "7643543626": {
+          "userId": 7643543626,
+          "username": "",
+          "firstName": "ralu",
+          "role": "member",
+          "joinedAt": "2026-05-18T14:23:30.417Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
       "admins": {
@@ -1726,16 +1746,26 @@
       "userId": 808821004,
       "username": "shr5f",
       "firstName": "شهاب",
-      "lastName": "",
+      "lastName": "الدين",
       "profileLink": "https://t.me/shr5f",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T11:02:00.806Z",
-      "lastSeen": "2026-05-18T11:02:34.178Z",
-      "groups": [],
+      "lastSeen": "2026-05-18T14:23:32.710Z",
+      "groups": [
+        -1003969494192
+      ],
       "channels": [],
-      "seenInChats": {},
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعات المملكة",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T14:23:32.710Z",
+          "lastSeen": "2026-05-18T14:23:32.710Z"
+        }
+      },
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
@@ -2133,7 +2163,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:41:38.167Z",
-      "lastSeen": "2026-05-18T14:01:22.758Z",
+      "lastSeen": "2026-05-18T14:23:17.037Z",
       "groups": [
         -1003969494192
       ],
@@ -2145,7 +2175,7 @@
           "chatTitle": "مجتمع جامعات المملكة",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T11:42:45.376Z",
-          "lastSeen": "2026-05-18T11:43:33.986Z"
+          "lastSeen": "2026-05-18T14:23:17.037Z"
         }
       },
       "profileLink": "https://t.me/salma5ns",
@@ -4768,6 +4798,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:21:12.913Z",
           "lastSeen": "2026-05-18T14:21:12.969Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7643543626": {
+      "userId": 7643543626,
+      "username": "",
+      "firstName": "ralu",
+      "lastName": "gheorghica",
+      "profileLink": "tg://user?id=7643543626",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T14:23:30.417Z",
+      "lastSeen": "2026-05-18T14:23:30.417Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعات المملكة",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T14:23:30.417Z",
+          "lastSeen": "2026-05-18T14:23:30.417Z"
         }
       },
       "contactedBot": false,
