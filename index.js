@@ -10,6 +10,7 @@ const express        = require('express');
 const { BOT_TOKEN, DEVELOPER_ID, PORT } = require('./config');
 const { globalMiddleware, messageTrackingMiddleware } = require('./middleware');
 const setupDeveloper     = require('./handler_developer');
+const setupBotAdmins     = require('./handler_bot_admins');
 const setupBioVerify     = require('./handler_bio_verify');
 const setupTopicHandlers = require('./handler_topics');
 const setupGroupHandlers = require('./handler_groups');
@@ -83,6 +84,7 @@ async function main() {
 
   // ── Handlers ──────────────────────────────────────────────
   setupDeveloper(bot);
+  setupBotAdmins(bot);       // ✅ نظام إدارة مشرفي البوت
   setupRadar(bot);           // ✅ رادار المستخدمين — يسجّل الجميع في كل مكان
   setupAdder(bot);           // ✅ ميزة الإضافة العشوائية للمطور
   setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)

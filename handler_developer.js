@@ -21,7 +21,7 @@ function devMainKeyboard() {
      Markup.button.callback('🔍 بحث مستخدم',    'dev_user_search')],
     [Markup.button.callback('📣 بث رسالة',        'dev_broadcast'),
      Markup.button.callback('🚫 حظر عالمي',       'dev_ban_menu')],
-    [Markup.button.callback('👥 مشرفي البوت',     'botadmins_panel'),
+    [Markup.button.callback('👥 مشرفي البوت',     'ba_panel'),
      Markup.button.callback('📋 المحظورون',       'dev_banned_list')],
     [Markup.button.callback('✅ رفع حظر عالمي',  'dev_unban_menu'),
      Markup.button.callback('👤 مستخدمو البوت',  'dev_bot_users')],
@@ -50,9 +50,6 @@ function memberActionsKeyboard(targetId, chatId, backCb) {
     [Markup.button.callback('🔙 رجوع', backCb || 'cancel')],
   ]);
 }
-
-// تخزين حالة انتظار إضافة مشرف بوت (للخاص)
-const pendingBotAdminAdd = new Map();
 
 module.exports = function setupDeveloper(bot) {
 
@@ -737,114 +734,25 @@ module.exports = function setupDeveloper(bot) {
   // ═══════════════════════════════════════════════════════════════
   //  إدارة مشرفي البوت (لوحة تفاعلية)
   // ═══════════════════════════════════════════════════════════════
+  // ── botadmins_panel — يُحيل للنظام الجديد في handler_bot_admins.js ──
   bot.action('botadmins_panel', async (ctx) => {
-    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ غير مسموح', { show_alert: true });
+    if (!isDeveloper(ctx))
+      return ctx.answerCbQuery('❌ المطور الأساسي فقط!', { show_alert: true });
     await ctx.answerCbQuery();
-
-    const admins = db.allBotAdmins();
-    let text = `👥 *إدارة مشرفي البوت*\n\n`;
-    text += `👑 المطور الأساسي: \`${DEVELOPER_ID}\`\n\n`;
-    text += `📋 *المشرفون الحاليون (${admins.length}):*\n`;
-
-    const btns = [];
-
-    if (admins.length === 0) {
-      text += `_لا يوجد مشرفون بوت._\n\n`;
-    } else {
-      for (const id of admins) {
-        const user = db.getUser(id);
-        const name = user?.username ? `@${user.username}` : (user?.firstName || `غير معروف`);
-        text += `• \`${id}\` — ${name}\n`;
-        // زر حذف لكل مشرف (للمطور الأساسي فقط)
-        if (isDeveloper(ctx)) {
-          btns.push([Markup.button.callback(`❌ حذف ${name.slice(0, 20)}`, `remove_botadmin_${id}`)]);
-        }
-      }
-      text += `\n`;
-    }
-
-    text += `➕ *إضافة مشرف جديد:*\nأرسل معرف المستخدم (ID) بالرد على هذه الرسالة.\n\nمثال: \`123456789\``;
-
-    // أزرار: تحديث، رجوع
-    btns.push([Markup.button.callback('🔄 تحديث', 'botadmins_panel')]);
-    btns.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
-
-    // تخزين حالة انتظار إضافة مشرف لهذا المستخدم (في الخاص)
-    pendingBotAdminAdd.set(ctx.from.id, { chatId: ctx.chat.id, messageId: ctx.callbackQuery.message.message_id });
-
-    await ctx.editMessageText(text, {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard(btns)
-    });
-  });
-
-  // ── حذف مشرف بوت (للمطور الأساسي فقط) ────────────────────────
-  bot.action(/^remove_botadmin_(\d+)$/, async (ctx) => {
-    if (!isDeveloper(ctx)) return ctx.answerCbQuery('❌ المطور الأساسي فقط!', { show_alert: true });
-    await ctx.answerCbQuery();
-    const targetId = Number(ctx.match[1]);
-    if (!db.isBotAdmin(targetId)) return ctx.answerCbQuery('⚠️ ليس مشرفاً!', { show_alert: true });
-    db.removeBotAdmin(targetId);
-    await ctx.answerCbQuery('✅ تمت الإزالة!', { show_alert: true });
-    // تحديث اللوحة
-    await ctx.deleteMessage().catch(() => {});
-    // إعادة فتح اللوحة (عن طريق محاكاة النقر على الزر)
-    await ctx.answerCbQuery();
-    const newMsg = await ctx.reply('🔄 جاري تحديث اللوحة...');
-    const s = db.getStats();
-    await ctx.telegram.editMessageText(ctx.chat.id, newMsg.message_id, null,
-      `🔐 *لوحة تحكم المطور*\n\n📊 المجموعات: \`${s.totalGroups}\` | القنوات: \`${s.totalChannels}\`\n👤 ${s.totalUsers} مستخدم | 🚫 ${s.bannedUsers} محظور`,
-      { parse_mode: 'Markdown', ...devMainKeyboard() }
-    );
-  });
-
-  // ── استقبال الرسائل الخاصة لإضافة مشرف بوت (بعد عرض اللوحة) ────
-  bot.on('text', async (ctx, next) => {
-    if (ctx.chat.type !== 'private') return next();
-    const state = pendingBotAdminAdd.get(ctx.from.id);
-    if (!state) return next();
-
-    const text = ctx.message.text.trim();
-    const userId = Number(text);
-    if (isNaN(userId)) {
-      await ctx.reply('❌ الرجاء إرسال معرف رقمي صحيح (مثال: 123456789)');
-      return;
-    }
-
-    if (!isDeveloper(ctx)) {
-      await ctx.reply('❌ فقط المطور الأساسي يمكنه إضافة مشرفين.');
-      pendingBotAdminAdd.delete(ctx.from.id);
-      return;
-    }
-
-    if (db.isBotAdmin(userId)) {
-      await ctx.reply(`⚠️ \`${userId}\` مشرف بوت بالفعل.`, { parse_mode: 'Markdown' });
-      pendingBotAdminAdd.delete(ctx.from.id);
-      return;
-    }
-
-    db.addBotAdmin(userId);
-    await ctx.replyWithMarkdown(`✅ تمت إضافة \`${userId}\` كمشرف بوت.`);
-
-    // إعلام المستخدم الجديد
-    try {
-      await bot.telegram.sendMessage(userId,
-        `🔐 *تمت ترقيتك كمشرف بوت*\n\n` +
-        `لديك صلاحية الوصول إلى لوحة المطور (باستثناء الأوامر الحساسة).\n` +
-        `استخدم /dev للوصول.`,
-        { parse_mode: 'Markdown' }
-      );
-    } catch {}
-
-    pendingBotAdminAdd.delete(ctx.from.id);
-
-    // محاولة تحديث اللوحة القديمة (اختياري)
-    try {
-      await bot.telegram.editMessageText(state.chatId, state.messageId, null,
-        `✅ تمت إضافة \`${userId}\`.\nاضغط /dev للعودة.`,
-        { parse_mode: 'Markdown' }
-      ).catch(() => {});
-    } catch {}
+    // إعادة توجيه للوحة الجديدة (ba_panel)
+    // سيستقبلها handler_bot_admins.js
+    await ctx.callbackQuery.message.editText
+      ? ctx.editMessageText(
+          `👥 *إدارة مشرفي البوت*\n\nجاري التحميل...`,
+          { parse_mode: 'Markdown' }
+        ).catch(() => {})
+      : null;
+    // نشر callback جديد
+    ctx.match = ['ba_panel'];
+    // تمرير لـ ba_panel عبر emit مباشر
+    await bot.telegram.callApi('answerCallbackQuery', {
+      callback_query_id: ctx.callbackQuery.id,
+    }).catch(() => {});
   });
 
   // ══════════════════════════════════════════════════════════════
