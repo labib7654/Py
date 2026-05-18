@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T02:20:09.855Z",
+  "savedAt": "2026-05-18T02:30:09.856Z",
   "botAdmins": [
     6330247540
   ],
@@ -993,6 +993,26 @@
       "bannedAt": null,
       "firstSeen": "2026-05-18T01:57:25.727Z",
       "lastSeen": "2026-05-18T01:57:25.727Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {},
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8603034665": {
+      "userId": 8603034665,
+      "username": "",
+      "firstName": "امل",
+      "lastName": "",
+      "profileLink": "tg://user?id=8603034665",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T02:28:25.327Z",
+      "lastSeen": "2026-05-18T02:28:25.327Z",
       "groups": [
         -1003969494192
       ],
