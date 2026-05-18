@@ -8,7 +8,8 @@ const {
 } = require('./helpers');
 
 // ── Map لتتبع جلسات إضافة كلمات محظورة ───────────────────────
-const pendingAddWord = new Map();
+const pendingAddWord         = new Map();
+const pendingAddSpecialist   = new Map(); // لإضافة كلمة مع متخصص
 
 // ── لوحة الإعدادات الرئيسية ──────────────────────────────────
 function groupSettingsKeyboard(chatId, s) {
@@ -40,8 +41,11 @@ function groupSettingsKeyboard(chatId, s) {
       Markup.button.callback('📋 القواعد',        `edit_rules_${chatId}`),
     ],
     [
-      Markup.button.callback('🔤 كلمات محظورة', `bwords_list_${chatId}`),
-      Markup.button.callback('⚙️ حد التحذيرات', `set_maxwarns_${chatId}`),
+      Markup.button.callback('🔤 كلمات محظورة',   `bwords_list_${chatId}`),
+      Markup.button.callback('⚙️ حد التحذيرات',  `set_maxwarns_${chatId}`),
+    ],
+    [
+      Markup.button.callback('👨‍⚕️ كلمات المتخصصين', `specwords_list_${chatId}`),
     ],
     [
       Markup.button.callback('🧵 إدارة المواضيع', `topics_panel_${chatId}`),
@@ -365,6 +369,83 @@ module.exports = function setupOwnerHandlers(bot) {
     let text   = `🔤 *الكلمات المحظورة* (${g.bannedWords.length})\n\n`;
     g.bannedWords.forEach((bw, i) => {
       text += `${i + 1}. \`${bw.word}\` ${ar[bw.action] || ''} — بعد \`${bw.threshold || 1}\` مرة\n`;
+    });
+    await ctx.replyWithMarkdown(text);
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  الكلمات مع المتخصص (specialistWords)
+  // ════════════════════════════════════════════════════════════
+
+  // /addspecword <كلمة> @متخصص
+  bot.command('addspecword', async (ctx) => {
+    if (ctx.chat.type === 'private') return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+    const args = ctx.message.text.split(' ').slice(1);
+    const word = args[0];
+    const specMention = args[1]; // @username أو reply
+    const g = db.getGroup(ctx.chat.id); if (!g) return;
+    if (!word) return ctx.replyWithMarkdown(
+      '📌 الاستخدام:\n`/addspecword <كلمة> @متخصص`\n\nأو رد على رسالة المتخصص:\n`/addspecword <كلمة>`'
+    );
+
+    // تحديد المتخصص — إما عبر reply أو @username
+    let specialist = null;
+    if (ctx.message.reply_to_message) {
+      const u = ctx.message.reply_to_message.from;
+      specialist = { id: u.id, username: u.username || u.first_name };
+    } else if (specMention) {
+      const uname = specMention.replace('@', '');
+      try {
+        const m = await bot.telegram.getChatMember(ctx.chat.id, uname);
+        specialist = { id: m.user.id, username: m.user.username || m.user.first_name };
+      } catch { return ctx.reply('❌ لم أجد المتخصص في المجموعة!'); }
+    } else {
+      return ctx.replyWithMarkdown('❌ حدد المتخصص:\n- رد على رسالته، أو\n- `/addspecword <كلمة> @username`');
+    }
+
+    if (g.specialistWords.find(sw => sw.word.toLowerCase() === word.toLowerCase()))
+      return ctx.reply('❌ الكلمة موجودة مسبقاً في قائمة المتخصصين!');
+
+    g.specialistWords.push({
+      word,
+      specialistId:       specialist.id,
+      specialistUsername: specialist.username,
+      addedBy:            ctx.from.id,
+      addedAt:            new Date(),
+    });
+    db.saveData();
+    await ctx.replyWithMarkdown(
+      `✅ *تمت الإضافة*\n\n🔤 الكلمة: \`${word}\`\n👨‍⚕️ المتخصص: @${specialist.username}\n\n` +
+      `عند ذكر هذه الكلمة، يُحذف الكلام ويُوجَّه صاحبه للمتخصص تلقائياً.`
+    );
+  });
+
+  // /removespecword <كلمة>
+  bot.command('removespecword', async (ctx) => {
+    if (ctx.chat.type === 'private') return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+    const word = ctx.message.text.split(' ').slice(1).join(' ').trim();
+    if (!word) return ctx.reply('📌 مثال: /removespecword كلمة');
+    const g = db.getGroup(ctx.chat.id); if (!g) return;
+    const before = g.specialistWords.length;
+    g.specialistWords = g.specialistWords.filter(sw => sw.word.toLowerCase() !== word.toLowerCase());
+    if (g.specialistWords.length === before) return ctx.reply('❌ الكلمة غير موجودة في قائمة المتخصصين!');
+    db.saveData();
+    await ctx.replyWithMarkdown(`✅ *تمت الإزالة:* \`${word}\``);
+  });
+
+  // /specwords — عرض القائمة
+  bot.command('specwords', async (ctx) => {
+    if (ctx.chat.type === 'private') return;
+    const g = db.getGroup(ctx.chat.id);
+    if (!g || !g.specialistWords.length)
+      return ctx.reply('🔤 لا توجد كلمات متخصصين.\n\n/addspecword لإضافة كلمة مع متخصص.');
+    let text = `👨‍⚕️ *كلمات المتخصصين* (${g.specialistWords.length})\n\n`;
+    g.specialistWords.forEach((sw, i) => {
+      text += `${i + 1}. \`${sw.word}\` ← @${sw.specialistUsername}\n`;
     });
     await ctx.replyWithMarkdown(text);
   });
@@ -956,6 +1037,159 @@ module.exports = function setupOwnerHandlers(bot) {
       `✅ *تمت إضافة الكلمة المحظورة*\n\n🔤 \`${state.word}\`\nالإجراء: ${arAct[state.action]}\nبعد: \`${threshold}\` مرة`,
       { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 قائمة الكلمات', `bwords_list_${state.chatId}`)]]) }
     );
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  كلمات المتخصصين — inline handlers
+  // ════════════════════════════════════════════════════════════
+
+  // عرض قائمة كلمات المتخصصين
+  bot.action(/^specwords_list_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    const g = db.getGroup(chatId); if (!g) return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+
+    if (!g.specialistWords.length) {
+      return ctx.editMessageText('👨‍⚕️ *لا توجد كلمات متخصصين.*\n\nأضف كلمة واختر لها متخصصاً من الأعضاء:', {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('➕ إضافة كلمة + متخصص', `add_spec_start_${chatId}`)],
+          [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
+        ]),
+      });
+      return;
+    }
+
+    let text = `👨‍⚕️ *كلمات المتخصصين* (${g.specialistWords.length})\n\n`;
+    const btns = g.specialistWords.map((sw, i) => {
+      text += `${i + 1}. \`${sw.word}\` ← @${sw.specialistUsername}\n`;
+      return [Markup.button.callback(`🗑️ حذف: ${sw.word.slice(0, 14)}`, `del_spec_${i}_${chatId}`)];
+    });
+    btns.push([Markup.button.callback('➕ إضافة كلمة + متخصص', `add_spec_start_${chatId}`)]);
+    btns.push([Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]);
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  // حذف كلمة متخصص
+  bot.action(/^del_spec_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const idx    = Number(ctx.match[1]);
+    const chatId = Number(ctx.match[2]);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const g = db.getGroup(chatId);
+    if (!g || !g.specialistWords[idx]) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
+    const removed = g.specialistWords.splice(idx, 1)[0];
+    db.saveData();
+    await ctx.answerCbQuery(`✅ حُذفت: ${removed.word}`, { show_alert: true });
+
+    if (!g.specialistWords.length) {
+      return ctx.editMessageText('👨‍⚕️ *لا توجد كلمات متخصصين.*', {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([
+          [Markup.button.callback('➕ إضافة كلمة + متخصص', `add_spec_start_${chatId}`)],
+          [Markup.button.callback('🔙 رجوع', `settings_${chatId}`)],
+        ]),
+      });
+      return;
+    }
+
+    let text = `👨‍⚕️ *كلمات المتخصصين* (${g.specialistWords.length})\n\n`;
+    const btns = g.specialistWords.map((sw, i) => {
+      text += `${i + 1}. \`${sw.word}\` ← @${sw.specialistUsername}\n`;
+      return [Markup.button.callback(`🗑️ حذف: ${sw.word.slice(0, 14)}`, `del_spec_${i}_${chatId}`)];
+    });
+    btns.push([Markup.button.callback('➕ إضافة كلمة + متخصص', `add_spec_start_${chatId}`)]);
+    btns.push([Markup.button.callback('🔙 رجوع', `settings_${chatId}`)]);
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  // بدء إضافة كلمة متخصص عبر الأزرار
+  bot.action(/^add_spec_start_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const chatId = Number(ctx.match[1]);
+    if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    pendingAddSpecialist.set(ctx.from.id, { chatId, step: 'word' });
+    await ctx.editMessageText(
+      '👨‍⚕️ *إضافة كلمة مع متخصص*\n\n*الخطوة 1/2:* أرسل الكلمة المراد إضافتها (في الخاص):',
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([[Markup.button.callback('❌ إلغاء', `specwords_list_${chatId}`)]]),
+      }
+    );
+  });
+
+  // معالجة رسائل الخاص لإضافة كلمة متخصص
+  bot.on('message', async (ctx, next) => {
+    if (!ctx.from) return next();
+    const state = pendingAddSpecialist.get(ctx.from.id);
+    if (!state) return next();
+    if (ctx.chat.type !== 'private') return next();
+    const text = ctx.message.text?.trim();
+    if (!text) return next();
+
+    if (state.step === 'word') {
+      // تحقق أن الكلمة غير موجودة مسبقاً
+      const g = db.getGroup(state.chatId);
+      if (g && g.specialistWords.find(sw => sw.word.toLowerCase() === text.toLowerCase())) {
+        await ctx.reply('❌ هذه الكلمة موجودة مسبقاً!');
+        pendingAddSpecialist.delete(ctx.from.id);
+        return next();
+      }
+      state.word = text;
+      state.step = 'specialist';
+      pendingAddSpecialist.set(ctx.from.id, state);
+
+      // جلب قائمة الأعضاء المشرفين من المجموعة
+      let adminsText = '';
+      try {
+        const admins = await bot.telegram.getChatAdministrators(state.chatId);
+        const filtered = admins.filter(a => !a.user.is_bot);
+        adminsText = filtered.map(a => `• ${a.user.username ? '@' + a.user.username : a.user.first_name}`).join('\n');
+      } catch {}
+
+      await ctx.reply(
+        `✅ الكلمة: \`${text}\`\n\n*الخطوة 2/2:* أرسل @username للمتخصص من المجموعة\n\nالمشرفون المتاحون:\n${adminsText || 'لا يوجد'}`,
+        { parse_mode: 'Markdown' }
+      );
+      return;
+    }
+
+    if (state.step === 'specialist') {
+      const uname = text.replace('@', '').trim();
+      let specialist = null;
+      try {
+        const m = await bot.telegram.getChatMember(state.chatId, uname);
+        specialist = { id: m.user.id, username: m.user.username || m.user.first_name };
+      } catch {
+        await ctx.reply('❌ لم أجد هذا المستخدم في المجموعة! تأكد من اسم المستخدم وأعد المحاولة.');
+        return;
+      }
+
+      const g = db.getGroup(state.chatId);
+      if (!g) { pendingAddSpecialist.delete(ctx.from.id); return ctx.reply('❌ حدث خطأ، حاول مرة أخرى.'); }
+
+      g.specialistWords.push({
+        word:               state.word,
+        specialistId:       specialist.id,
+        specialistUsername: specialist.username,
+        addedBy:            ctx.from.id,
+        addedAt:            new Date(),
+      });
+      db.saveData();
+      pendingAddSpecialist.delete(ctx.from.id);
+
+      await ctx.replyWithMarkdown(
+        `✅ *تمت الإضافة بنجاح!*\n\n🔤 الكلمة: \`${state.word}\`\n👨‍⚕️ المتخصص: @${specialist.username}\n\n` +
+        `عند ذكر هذه الكلمة في المجموعة:\n• يُحذف الكلام تلقائياً\n• يُوجَّه صاحبه للمتخصص في الخاص مباشرة`
+      );
+      return;
+    }
+
+    return next();
   });
 
   // طلبات الانضمام (callback)

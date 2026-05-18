@@ -115,6 +115,7 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
       mutedUsers:          new Set(),
       bannedUsers:         new Set(),
       bannedWords:         [],
+      specialistWords:     [],   // [{ word, specialistId, specialistUsername, addedBy, addedAt }]
       wordViolations:      new Map(),
       joinRequests:        new Map(),
       joinRequestsEnabled: false,
@@ -473,6 +474,9 @@ function parseData(raw) {
       // نضمن bannedWords مصفوفة صالحة
       const bannedWords = Array.isArray(v.bannedWords) ? v.bannedWords : [];
 
+      // نضمن specialistWords مصفوفة صالحة
+      const specialistWords = Array.isArray(v.specialistWords) ? v.specialistWords : [];
+
       // نضمن auditLog مصفوفة صالحة (حد 100 سجل)
       const auditLog = Array.isArray(v.auditLog) ? v.auditLog.slice(0, 100) : [];
 
@@ -482,6 +486,7 @@ function parseData(raw) {
         ownerVerified:       v.ownerVerified  || false,
         ownerVerifiedAt:     v.ownerVerifiedAt || null,
         bannedWords,
+        specialistWords,
         auditLog,
         // Maps — نتحقق أن المدخل object صالح
         members: new Map(

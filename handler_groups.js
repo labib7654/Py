@@ -384,6 +384,63 @@ module.exports = function setupGroupHandlers(bot) {
     return next();
   });
 
+  // ── فلتر كلمات المتخصصين ─────────────────────────────────────────────
+  bot.on('message', async (ctx, next) => {
+    if (!ctx.chat || ctx.chat.type === 'private') return next();
+    const text = ctx.message.text || ctx.message.caption || '';
+    if (!text) return next();
+    const g = db.getGroup(ctx.chat.id);
+    if (!g || !g.specialistWords || !g.specialistWords.length) return next();
+    if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
+
+    const lower = text.toLowerCase();
+    const found = g.specialistWords.find(sw => lower.includes(sw.word.toLowerCase()));
+    if (!found) return next();
+
+    const userId   = ctx.from.id;
+    const userName = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+    const specUser = found.specialistUsername;
+    const specId   = found.specialistId;
+
+    // ① حذف الرسالة
+    try { await ctx.deleteMessage(); } catch {}
+
+    // ② إرسال رسالة في المجموعة توجيهه للمتخصص
+    try {
+      await ctx.reply(
+        `👨‍⚕️ ${userName}، تم حذف رسالتك.\nللمساعدة في موضوع «${found.word}» تواصل مع المتخصص @${specUser} مباشرة.`,
+        { parse_mode: 'Markdown' }
+      );
+    } catch {}
+
+    // ③ فتح محادثة الخاص مع المتخصص تلقائياً — البوت يرسل للمتخصص بأن لديه شخص يحتاجه
+    try {
+      await bot.telegram.sendMessage(
+        specId,
+        `📬 *طلب تلقائي من البوت*\n\n` +
+        `👤 المستخدم: ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''}\n` +
+        `🔤 الكلمة: \`${found.word}\`\n` +
+        `💬 المجموعة: ${ctx.chat.title}\n\n` +
+        `الرسالة المحذوفة:\n_"${text.slice(0, 200)}"_\n\n` +
+        `يمكنك التواصل معه مباشرة: tg://user?id=${userId}`,
+        { parse_mode: 'Markdown' }
+      );
+    } catch {}
+
+    // ④ إرسال رسالة للمستخدم في الخاص (إن كان قد فتح محادثة مع البوت)
+    try {
+      await bot.telegram.sendMessage(
+        userId,
+        `👋 مرحباً ${ctx.from.first_name}!\n\n` +
+        `رسالتك في «${ctx.chat.title}» تخص موضوع *${found.word}*.\n\n` +
+        `تم توجيهك للمتخصص @${specUser} — سيتواصل معك قريباً إن شاء الله. 🤝`,
+        { parse_mode: 'Markdown' }
+      );
+    } catch {}
+
+    return next();
+  });
+
   // ── فلتر الكلمات المحظورة ────────────────────────────────────────────
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private') return next();
