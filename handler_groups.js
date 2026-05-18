@@ -402,39 +402,46 @@ module.exports = function setupGroupHandlers(bot) {
     const specUser = found.specialistUsername;
     const specId   = found.specialistId;
 
-    // ① حذف الرسالة
+    // ① حذف الرسالة الأصلية من المجموعة
     try { await ctx.deleteMessage(); } catch {}
 
-    // ② إرسال رسالة في المجموعة توجيهه للمتخصص
-    try {
-      await ctx.reply(
-        `👨‍⚕️ ${userName}، تم حذف رسالتك.\nللمساعدة في موضوع «${found.word}» تواصل مع المتخصص @${specUser} مباشرة.`,
-        { parse_mode: 'Markdown' }
-      );
-    } catch {}
-
-    // ③ فتح محادثة الخاص مع المتخصص تلقائياً — البوت يرسل للمتخصص بأن لديه شخص يحتاجه
+    // ② إشعار المتخصص في خاصه بتفاصيل الطلب
     try {
       await bot.telegram.sendMessage(
         specId,
-        `📬 *طلب تلقائي من البوت*\n\n` +
+        `📬 *طلب جديد يحتاج مساعدتك*\n\n` +
         `👤 المستخدم: ${ctx.from.first_name}${ctx.from.username ? ` (@${ctx.from.username})` : ''}\n` +
-        `🔤 الكلمة: \`${found.word}\`\n` +
+        `🔤 الكلمة المُفعِّلة: \`${found.word}\`\n` +
         `💬 المجموعة: ${ctx.chat.title}\n\n` +
-        `الرسالة المحذوفة:\n_"${text.slice(0, 200)}"_\n\n` +
-        `يمكنك التواصل معه مباشرة: tg://user?id=${userId}`,
-        { parse_mode: 'Markdown' }
+        `📝 رسالته:\n_"${text.slice(0, 300)}"_`,
+        {
+          parse_mode: 'Markdown',
+          ...Markup.inlineKeyboard([
+            [Markup.button.url(`💬 فتح محادثة مع ${ctx.from.first_name}`, `tg://user?id=${userId}`)],
+          ]),
+        }
       );
     } catch {}
 
-    // ④ إرسال رسالة للمستخدم في الخاص (إن كان قد فتح محادثة مع البوت)
+    // ③ إرسال رسالة للمستخدم في الخاص: نفس رسالته + زر فتح خاص المتخصص
     try {
+      // بناء URL المتخصص — نحاول username أولاً ثم deep link بالـ id
+      const specUrl = found.specialistUsername
+        ? `https://t.me/${found.specialistUsername}`
+        : `tg://user?id=${specId}`;
+
       await bot.telegram.sendMessage(
         userId,
         `👋 مرحباً ${ctx.from.first_name}!\n\n` +
-        `رسالتك في «${ctx.chat.title}» تخص موضوع *${found.word}*.\n\n` +
-        `تم توجيهك للمتخصص @${specUser} — سيتواصل معك قريباً إن شاء الله. 🤝`,
-        { parse_mode: 'Markdown' }
+        `تم حذف رسالتك من «${ctx.chat.title}» لأنها تخص موضوع *${found.word}*.\n\n` +
+        `📝 *رسالتك كانت:*\n_"${text.slice(0, 300)}"_\n\n` +
+        `اضغط الزر أدناه للتواصل مع المتخصص مباشرةً 👇`,
+        {
+          parse_mode: 'Markdown',
+          ...Markup.inlineKeyboard([
+            [Markup.button.url(`👨‍⚕️ تواصل مع المتخصص @${found.specialistUsername || 'المتخصص'}`, specUrl)],
+          ]),
+        }
       );
     } catch {}
 
