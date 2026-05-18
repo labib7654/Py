@@ -44,19 +44,21 @@ function getOrCreateTopic(g, topicId, name) {
 function getVerifySettings(g) {
   if (!g.verifySystem) {
     g.verifySystem = {
-      enabled:         false,
-      pendingRequests: new Map(), // userId → { firstName, username, data, submittedAt, status }
-      approvedMembers: new Map(), // userId → { topicId, topicName, studentData, approvedAt, approvedBy }
-      rejectedMembers: new Map(), // userId → { rejectedAt, reason }
-      cooldowns:       new Map(), // userId → timestamp (بعد الرفض)
+      enabled:          false,
+      verifyTopicId:    null,    // ← موضوع التحقق (يبقى مفتوحاً للجميع)
+      pendingRequests:  new Map(),
+      approvedMembers:  new Map(),
+      rejectedMembers:  new Map(),
+      cooldowns:        new Map(),
     };
     db.markDirty();
   }
   const vs = g.verifySystem;
-  if (!vs.pendingRequests)  vs.pendingRequests  = new Map();
-  if (!vs.approvedMembers)  vs.approvedMembers  = new Map();
-  if (!vs.rejectedMembers)  vs.rejectedMembers  = new Map();
-  if (!vs.cooldowns)        vs.cooldowns        = new Map();
+  if (!vs.pendingRequests)       vs.pendingRequests  = new Map();
+  if (!vs.approvedMembers)       vs.approvedMembers  = new Map();
+  if (!vs.rejectedMembers)       vs.rejectedMembers  = new Map();
+  if (!vs.cooldowns)             vs.cooldowns        = new Map();
+  if (vs.verifyTopicId === undefined) vs.verifyTopicId = null; // حقل جديد
   return vs;
 }
 
@@ -65,6 +67,47 @@ function getAvailableTopics(g) {
   return [...g.topics.entries()]
     .filter(([, t]) => !t.archived)
     .map(([id, t]) => ({ id, name: t.name || String(id) }));
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+//  🔒 إدارة المواضيع عبر Telegram API
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * يغلق جميع مواضيع المجموعة ماعدا موضوع التحقق.
+ * يُستدعى عند انضمام عضو جديد غير معتمد.
+ */
+async function closeAllTopicsExceptVerify(bot, chatId, verifyTopicId) {
+  const g = db.getGroup(chatId);
+  if (!g || !g.topics) return;
+  for (const [topicId] of g.topics.entries()) {
+    if (verifyTopicId && topicId === verifyTopicId) continue;
+    try { await bot.telegram.closeForumTopic(chatId, topicId); } catch {}
+  }
+}
+
+/**
+ * يفتح موضوع الكلية بعد قبول الطالب.
+ */
+async function openTopicForApprovedUser(bot, chatId, topicId) {
+  try { await bot.telegram.reopenForumTopic(chatId, topicId); } catch {}
+}
+
+/**
+ * يغلق موضوعاً محدداً.
+ */
+async function closeTopic(bot, chatId, topicId) {
+  try { await bot.telegram.closeForumTopic(chatId, topicId); return true; }
+  catch { return false; }
+}
+
+/**
+ * يفتح موضوعاً محدداً.
+ */
+async function openTopic(bot, chatId, topicId) {
+  try { await bot.telegram.reopenForumTopic(chatId, topicId); return true; }
+  catch { return false; }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -294,6 +337,10 @@ module.exports = {
   unrestrictUser,
   restrictUser,
   checkAndRestrictExistingMember,
+  closeAllTopicsExceptVerify,
+  openTopicForApprovedUser,
+  closeTopic,
+  openTopic,
   stepWelcome,
   stepCollege,
   stepMajor,

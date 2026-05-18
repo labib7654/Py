@@ -21,6 +21,9 @@ const {
   unrestrictUser,
   restrictUser,
   checkAndRestrictExistingMember,
+  openTopicForApprovedUser,
+  closeTopic,
+  openTopic,
 } = require('./verify_helpers');
 
 module.exports = function setupVerifyActions(bot) {
@@ -59,11 +62,13 @@ module.exports = function setupVerifyActions(bot) {
       approvedBy:  ctx.from.id,
     });
 
-    // فتح الموضوع لهذا الطالب فقط
+    // فتح موضوع الكلية عبر Telegram API الحقيقي
     const topic = getOrCreateTopic(g, topicId, req.data.topicName);
-    topic.locked = true; // الموضوع مقفول للعموم
     topic.approvedUsers.add(userId);
     db.markDirty();
+
+    // فتح الموضوع فعلياً في Telegram
+    await openTopicForApprovedUser(bot, chatId, topicId);
 
     // رفع التقييد عن العضو
     await unrestrictUser(bot, chatId, userId);

@@ -28,6 +28,9 @@ const {
   buildAdminButtons,
   restrictUser,
   checkAndRestrictExistingMember,
+  closeAllTopicsExceptVerify,
+  openTopic,
+  closeTopic,
   stepWelcome,
 } = require('./verify_helpers');
 
@@ -127,6 +130,80 @@ module.exports = function setupVerifyCommands(bot) {
         : `🔓 *تم تعطيل نظام التحقق*\n\nالأعضاء الجدد لن يخضعوا للتقييد.`,
       { parse_mode: 'Markdown' }
     );
+  });
+
+
+  // ════════════════════════════════════════════════════════════
+  //  📌 /setverifytopic — تحديد موضوع التحقق (يبقى مفتوحاً دائماً)
+  //  الاستخدام: أرسل الأمر داخل موضوع التحقق مباشرة
+  // ════════════════════════════════════════════════════════════
+  bot.command('setverifytopic', async (ctx) => {
+    if (ctx.chat.type === 'private') return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+
+    const topicId = ctx.message?.message_thread_id;
+    if (!topicId)
+      return ctx.reply('⚠️ أرسل هذا الأمر *داخل موضوع التحقق* مباشرة.', { parse_mode: 'Markdown' });
+
+    const g = db.getGroup(ctx.chat.id);
+    if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
+
+    const vs = getVerifySettings(g);
+    vs.verifyTopicId = topicId;
+    db.markDirty();
+
+    await ctx.reply(
+      `✅ *تم تحديد موضوع التحقق بنجاح!*
+
+` +
+      `🧵 موضوع التحقق: \`${topicId}\`
+
+` +
+      `عند انضمام أي عضو جديد، سيُغلق البوت جميع المواضيع الأخرى تلقائياً ويُبقي هذا الموضوع مفتوحاً.`,
+      { parse_mode: 'Markdown' }
+    );
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  🔒 /closetopics — إغلاق كل المواضيع ماعدا موضوع التحقق
+  // ════════════════════════════════════════════════════════════
+  bot.command('closetopics', async (ctx) => {
+    if (ctx.chat.type === 'private') return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+
+    const g = db.getGroup(ctx.chat.id);
+    if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
+
+    const vs = getVerifySettings(g);
+    const msg = await ctx.reply('⏳ جاري إغلاق المواضيع...');
+    await closeAllTopicsExceptVerify(bot, ctx.chat.id, vs.verifyTopicId);
+
+    try {
+      await bot.telegram.editMessageText(
+        ctx.chat.id, msg.message_id, null,
+        `🔒 *تم إغلاق جميع المواضيع* ماعدا موضوع التحقق.`,
+        { parse_mode: 'Markdown' }
+      );
+    } catch {}
+  });
+
+  // ════════════════════════════════════════════════════════════
+  //  🔓 /opentopic <topicId> — فتح موضوع محدد
+  // ════════════════════════════════════════════════════════════
+  bot.command('opentopic', async (ctx) => {
+    if (ctx.chat.type === 'private') return;
+    if (!isDeveloper(ctx) && !await isAdmin(bot, ctx.chat.id, ctx.from.id))
+      return ctx.reply('❌ للمشرفين فقط!');
+
+    const arg     = ctx.message.text.split(' ')[1];
+    const topicId = arg ? Number(arg) : ctx.message?.message_thread_id;
+    if (!topicId)
+      return ctx.reply('⚠️ استخدم: `/opentopic <topicId>` أو أرسل الأمر داخل الموضوع المطلوب.', { parse_mode: 'Markdown' });
+
+    const ok = await openTopic(bot, ctx.chat.id, topicId);
+    await ctx.reply(ok ? `✅ تم فتح الموضوع \`${topicId}\`` : `❌ فشل فتح الموضوع.`, { parse_mode: 'Markdown' });
   });
 
   // ════════════════════════════════════════════════════════════

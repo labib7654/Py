@@ -20,6 +20,7 @@ const {
   buildAdminButtons,
   notifyAll,
   restrictUser,
+  closeAllTopicsExceptVerify,
   stepWelcome,
   stepCollege,
   stepMajor,
@@ -77,13 +78,17 @@ module.exports = function setupVerifyRegistration(bot) {
     // 1. تقييد فوري
     await restrictUser(bot, chat.id, u.id);
 
-    // 2. جلب المواضيع
+    // 2. إغلاق جميع المواضيع ماعدا موضوع التحقق
+    const vs2 = getVerifySettings(g);
+    await closeAllTopicsExceptVerify(bot, chat.id, vs2.verifyTopicId);
+
+    // 3. جلب المواضيع
     const topics = getAvailableTopics(g);
 
-    // 3. حفظ session
+    // 4. حفظ session
     sessions.set(u.id, { step: 'student_id', chatId: chat.id, data: {}, topics });
 
-    // 4. بدء التسجيل في الخاص
+    // 5. بدء التسجيل في الخاص
     await stepWelcome(bot, u.id, g.title);
 
     return next();
