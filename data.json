@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T21:10:58.449Z",
+  "savedAt": "2026-05-18T21:11:21.832Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -153,8 +153,8 @@
     },
     "-1003969494192": {
       "chatId": -1003969494192,
-      "title": "مجتمع جامعة الامير سلطان",
-      "type": "forum",
+      "title": "مجتمع جامعةالأمير سلطان",
+      "type": "supergroup",
       "ownerId": 7411444902,
       "ownerUsername": "Labibrd",
       "ownerVerified": false,
@@ -3821,7 +3821,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T21:10:55.842Z",
+      "lastSeen": "2026-05-18T20:57:58.613Z",
       "groups": [
         -1003794953708,
         -1003969494192
