@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T20:31:40.352Z",
+  "savedAt": "2026-05-18T20:33:03.259Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1545,7 +1545,7 @@
           "addedAt": "2026-05-18T15:29:33.353Z"
         }
       ],
-      "autoApproveJoin": true,
+      "autoApproveJoin": false,
       "autoApproveDelay": 30
     },
     "-1003854112996": {
@@ -2243,7 +2243,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T20:31:39.350Z",
+      "lastSeen": "2026-05-18T20:33:02.256Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -2558,7 +2558,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T20:30:59.315Z",
+      "lastSeen": "2026-05-18T20:31:57.736Z",
       "groups": [
         -1003794953708,
         -1003969494192
