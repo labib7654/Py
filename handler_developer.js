@@ -235,7 +235,7 @@ module.exports = function setupDeveloper(bot) {
           [Markup.button.callback('👥 الأعضاء',        `dev_members_${chatId}`),  Markup.button.callback('⚠️ المحذَّرون',  `dev_warned_${chatId}`)],
           [Markup.button.callback('🔇 المكتومون',       `dev_muted_${chatId}`),   Markup.button.callback('🚫 المحظورون',  `dev_banned_grp_${chatId}`)],
           [Markup.button.callback('📨 طلبات الانضمام', `dev_joinreqs_${chatId}`),Markup.button.callback('📢 بث للمجموعة',`dev_grp_bcast_${chatId}`)],
-          [Markup.button.callback('⚙️ الإعدادات',       `settings_${chatId}`)],
+          [Markup.button.callback('🧵 إدارة المواضيع', `topics_panel_${chatId}`), Markup.button.callback('⚙️ الإعدادات', `settings_${chatId}`)],
           [Markup.button.callback('🔙 رجوع',           'dev_groups')],
         ]),
       }

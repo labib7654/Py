@@ -136,20 +136,26 @@ module.exports = function setupVerifyCommands(bot) {
       if (topics.length > 0) {
         const list = topics.map((t, i) => `${i + 1}. *${t.name}* \`[${t.id}]\``).join('\n');
         await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
-          `⚠️ *الـ API لا يدعم getForumTopics*\n\n` +
-          `📋 *المواضيع المسجلة تلقائياً (${topics.length}):*\n${list}\n\n` +
-          `_المواضيع الجديدة تُسجَّل تلقائياً عند إنشائها._`,
+          `⚠️ *تعذّر جلب المواضيع من Telegram API*\n` +
+          `_(هذا الخادم لا يدعم getForumTopics — طبيعي في بعض الإصدارات)_\n\n` +
+          `📋 *المواضيع المسجّلة حالياً (${topics.length}):*\n${list}\n\n` +
+          `✅ _المواضيع تُسجَّل تلقائياً عند إنشائها._\n` +
+          `📌 _لإضافة موضوع يدوياً: ادخل الموضوع واكتب /regtopic_`,
           { parse_mode: 'Markdown' }
         );
       } else {
         await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
-          `❌ *فشل جلب المواضيع*\n\`${e.message}\`\n\n` +
-          `💡 المواضيع الجديدة ستُسجَّل تلقائياً عند إنشائها.\n` +
-          `أو استخدم /regtopic داخل كل موضوع يدوياً.`,
+          `❌ *لا توجد مواضيع مسجّلة بعد*\n\n` +
+          `⚠️ _Telegram API لا يدعم جلب المواضيع تلقائياً في هذه المجموعة._\n\n` +
+          `📌 *طريقة التسجيل اليدوي:*\n` +
+          `1️⃣ ادخل داخل كل موضوع (كلية)\n` +
+          `2️⃣ اكتب الأمر: \`/regtopic اسم الكلية\`\n` +
+          `3️⃣ سيُسجَّل الموضوع تلقائياً\n\n` +
+          `💡 _بعد التسجيل اليدوي، ستظهر المواضيع للطلاب عند التحقق._`,
           { parse_mode: 'Markdown' }
         );
       }
-      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 15000);
+      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 20000);
     }
   });
 
