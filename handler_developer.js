@@ -594,17 +594,118 @@ module.exports = function setupDeveloper(bot) {
     catch (e) { await ctx.reply(`❌ ${e.message}`); }
   });
 
-  // ── dev_ban_menu / dev_unban_menu ────────────────────────────
-  bot.action('dev_ban_menu', async (ctx) => {
+  // ── dev_ban_menu ─────────────────────────────────────────────
+  // يعرض قائمة بمستخدمي البوت مع زر "حظر عالمي" لكل شخص غير محظور
+  bot.action(/^dev_ban_menu(_(\\d+))?$/, async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
-    await ctx.editMessageText('🚫 *حظر عالمي*\n\n`/gban <id> <السبب>`', { parse_mode: 'Markdown', ...back('dev_back') });
+    const page     = Number(ctx.match?.[2] || 0);
+    const PAGE     = 8;
+    const allUsers = db.allUsers().filter(u => !u.globalBanned && u.userId > 0);
+    if (!allUsers.length)
+      return ctx.editMessageText('👤 *لا يوجد مستخدمون متاحون للحظر.*', { parse_mode: 'Markdown', ...back('dev_back') });
+    const slice = allUsers.slice(page * PAGE, (page + 1) * PAGE);
+    let text = `🚫 *اختر المستخدم للحظر العالمي* (${allUsers.length})\n\n`;
+    const btns = slice.map(u => {
+      const name = u.username ? `@${u.username}` : (u.firstName || String(u.userId));
+      text += `👤 ${name} \`[${u.userId}]\`\n`;
+      return [Markup.button.callback(`🚫 ${name.slice(0, 22)}`, `dev_ugban_quick_${u.userId}_${page}`)];
+    });
+    const nav = [];
+    if (page > 0) nav.push(Markup.button.callback('◀️ السابق', `dev_ban_menu_${page - 1}`));
+    if ((page + 1) * PAGE < allUsers.length) nav.push(Markup.button.callback('التالي ▶️', `dev_ban_menu_${page + 1}`));
+    if (nav.length) btns.push(nav);
+    btns.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
   });
 
-  bot.action('dev_unban_menu', async (ctx) => {
+  // حظر عالمي سريع من قائمة المستخدمين
+  bot.action(/^dev_ugban_quick_(\d+)_(\d+)$/, async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    const userId = Number(ctx.match[1]);
+    const page   = Number(ctx.match[2]);
+    const u      = db.getOrCreateUser(userId, '', '');
+    if (u.globalBanned) return ctx.answerCbQuery('⚠️ محظور بالفعل!', { show_alert: true });
+    u.globalBanned = true; u.bannedReason = 'حظر من لوحة المطور'; u.bannedAt = new Date();
+    db.saveData();
+    for (const g of db.allGroups()) { try { await bot.telegram.banChatMember(g.chatId, userId); } catch {} }
+    await ctx.answerCbQuery('🚫 تم الحظر العالمي!', { show_alert: true });
+    // إعادة تحميل القائمة
+    const allUsers = db.allUsers().filter(u2 => !u2.globalBanned && u2.userId > 0);
+    if (!allUsers.length)
+      return ctx.editMessageText('✅ *تم حظر المستخدم. لا يوجد مزيد.*', { parse_mode: 'Markdown', ...back('dev_back') });
+    const PAGE  = 8;
+    const pg    = Math.min(page, Math.floor((allUsers.length - 1) / PAGE));
+    const slice = allUsers.slice(pg * PAGE, (pg + 1) * PAGE);
+    let text2   = `🚫 *اختر المستخدم للحظر العالمي* (${allUsers.length})\n\n`;
+    const btns2 = slice.map(u2 => {
+      const name = u2.username ? `@${u2.username}` : (u2.firstName || String(u2.userId));
+      text2 += `👤 ${name} \`[${u2.userId}]\`\n`;
+      return [Markup.button.callback(`🚫 ${name.slice(0, 22)}`, `dev_ugban_quick_${u2.userId}_${pg}`)];
+    });
+    const nav2 = [];
+    if (pg > 0) nav2.push(Markup.button.callback('◀️ السابق', `dev_ban_menu_${pg - 1}`));
+    if ((pg + 1) * PAGE < allUsers.length) nav2.push(Markup.button.callback('التالي ▶️', `dev_ban_menu_${pg + 1}`));
+    if (nav2.length) btns2.push(nav2);
+    btns2.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
+    await ctx.editMessageText(text2, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns2) });
+  });
+
+  // ── dev_unban_menu ────────────────────────────────────────────
+  // يعرض قائمة بالمحظورين عالمياً مع زر "رفع حظر" لكل شخص
+  bot.action(/^dev_unban_menu(_(\\d+))?$/, async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
-    await ctx.editMessageText('✅ *رفع الحظر العالمي*\n\n`/ungban <id>`', { parse_mode: 'Markdown', ...back('dev_back') });
+    const page   = Number(ctx.match?.[2] || 0);
+    const PAGE   = 8;
+    const banned = db.allUsers().filter(u => u.globalBanned);
+    if (!banned.length)
+      return ctx.editMessageText('✅ *لا يوجد محظورون عالمياً حالياً.*', { parse_mode: 'Markdown', ...back('dev_back') });
+    const slice = banned.slice(page * PAGE, (page + 1) * PAGE);
+    let text = `✅ *اختر المستخدم لرفع الحظر العالمي* (${banned.length})\n\n`;
+    const btns = slice.map(u => {
+      const name = u.username ? `@${u.username}` : (u.firstName || String(u.userId));
+      text += `🚫 ${name} \`[${u.userId}]\` — ${u.bannedReason || '—'}\n`;
+      return [Markup.button.callback(`✅ رفع حظر: ${name.slice(0, 18)}`, `dev_uungban_quick_${u.userId}_${page}`)];
+    });
+    const nav = [];
+    if (page > 0) nav.push(Markup.button.callback('◀️ السابق', `dev_unban_menu_${page - 1}`));
+    if ((page + 1) * PAGE < banned.length) nav.push(Markup.button.callback('التالي ▶️', `dev_unban_menu_${page + 1}`));
+    if (nav.length) btns.push(nav);
+    btns.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+  });
+
+  // رفع حظر سريع من قائمة المحظورين
+  bot.action(/^dev_uungban_quick_(\d+)_(\d+)$/, async (ctx) => {
+    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    const userId = Number(ctx.match[1]);
+    const page   = Number(ctx.match[2]);
+    const u      = db.getUser(userId);
+    if (!u || !u.globalBanned) return ctx.answerCbQuery('⚠️ ليس محظوراً!', { show_alert: true });
+    u.globalBanned = false; u.bannedReason = ''; u.bannedAt = null;
+    db.saveData();
+    for (const g of db.allGroups()) { try { await bot.telegram.unbanChatMember(g.chatId, userId); } catch {} }
+    await ctx.answerCbQuery('✅ رُفع الحظر العالمي!', { show_alert: true });
+    // إعادة تحميل القائمة
+    const banned = db.allUsers().filter(u2 => u2.globalBanned);
+    if (!banned.length)
+      return ctx.editMessageText('✅ *تم رفع الحظر. لا يوجد محظورون الآن.*', { parse_mode: 'Markdown', ...back('dev_back') });
+    const PAGE  = 8;
+    const pg    = Math.min(page, Math.floor((banned.length - 1) / PAGE));
+    const slice = banned.slice(pg * PAGE, (pg + 1) * PAGE);
+    let text2   = `✅ *اختر المستخدم لرفع الحظر العالمي* (${banned.length})\n\n`;
+    const btns2 = slice.map(u2 => {
+      const name = u2.username ? `@${u2.username}` : (u2.firstName || String(u2.userId));
+      text2 += `🚫 ${name} \`[${u2.userId}]\` — ${u2.bannedReason || '—'}\n`;
+      return [Markup.button.callback(`✅ رفع حظر: ${name.slice(0, 18)}`, `dev_uungban_quick_${u2.userId}_${pg}`)];
+    });
+    const nav2 = [];
+    if (pg > 0) nav2.push(Markup.button.callback('◀️ السابق', `dev_unban_menu_${pg - 1}`));
+    if ((pg + 1) * PAGE < banned.length) nav2.push(Markup.button.callback('التالي ▶️', `dev_unban_menu_${pg + 1}`));
+    if (nav2.length) btns2.push(nav2);
+    btns2.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
+    await ctx.editMessageText(text2, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns2) });
   });
 
   bot.command('gban', async (ctx) => {
@@ -635,15 +736,31 @@ module.exports = function setupDeveloper(bot) {
   });
 
   // ── dev_banned_list ──────────────────────────────────────────
-  bot.action('dev_banned_list', async (ctx) => {
+  // قائمة المحظورين مع أزرار رفع حظر تفاعلية
+  bot.action(/^dev_banned_list(_(\\d+))?$/, async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
+    const page   = Number(ctx.match?.[2] || 0);
+    const PAGE   = 6;
     const banned = db.allUsers().filter(u => u.globalBanned);
     if (!banned.length)
       return ctx.editMessageText('📋 *لا يوجد محظورون عالمياً.*', { parse_mode: 'Markdown', ...back('dev_back') });
-    let text = `📋 *المحظورون عالمياً* (${banned.length})\n\n`;
-    banned.slice(0, 10).forEach(u => { text += `• \`${u.userId}\` ${u.username ? `@${u.username}` : ''} — ${u.bannedReason}\n`; });
-    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...back('dev_back') });
+    const slice = banned.slice(page * PAGE, (page + 1) * PAGE);
+    let text = `📋 *المحظورون عالمياً* (${banned.length}) — صفحة ${page + 1}\n\n`;
+    slice.forEach(u => {
+      const name = u.username ? `@${u.username}` : (u.firstName || String(u.userId));
+      text += `🚫 ${name} \`[${u.userId}]\` — ${u.bannedReason || '—'}\n`;
+    });
+    const btns = slice.map(u => {
+      const name = u.username ? `@${u.username}` : (u.firstName || String(u.userId));
+      return [Markup.button.callback(`✅ رفع حظر: ${name.slice(0, 18)}`, `dev_uungban_quick_${u.userId}_${page}`)];
+    });
+    const nav = [];
+    if (page > 0) nav.push(Markup.button.callback('◀️ السابق', `dev_banned_list_${page - 1}`));
+    if ((page + 1) * PAGE < banned.length) nav.push(Markup.button.callback('التالي ▶️', `dev_banned_list_${page + 1}`));
+    if (nav.length) btns.push(nav);
+    btns.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
+    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
   });
 
   // ── dev_user_search / /userinfo ──────────────────────────────
