@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T20:28:00.724Z",
+  "savedAt": "2026-05-18T20:28:57.039Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1748,9 +1748,19 @@
           "firstName": "ووة",
           "role": "member",
           "joinedAt": "2026-05-18T00:11:59.786Z",
-          "messageCount": 2,
-          "score": 2,
-          "lastMessageAt": "2026-05-18T00:12:02.939Z"
+          "messageCount": 3,
+          "score": 3,
+          "lastMessageAt": "2026-05-18T20:28:31.280Z"
+        },
+        "8240566312": {
+          "userId": 8240566312,
+          "username": "g_1_11111",
+          "firstName": "عآئش",
+          "role": "member",
+          "joinedAt": "2026-05-18T20:28:52.987Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T20:28:53.460Z"
         }
       },
       "admins": {},
@@ -1767,7 +1777,7 @@
       "bannedWords": [],
       "wordViolations": {},
       "joinRequests": {},
-      "joinRequestsEnabled": true,
+      "joinRequestsEnabled": false,
       "rules": "",
       "communityId": null,
       "protectContent": false,
@@ -2539,7 +2549,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-18T20:23:56.522Z",
+      "lastSeen": "2026-05-18T20:28:31.281Z",
       "groups": [
         -1003794953708,
         -1003969494192
@@ -2552,10 +2562,17 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:16:31.531Z",
           "lastSeen": "2026-05-18T15:52:52.432Z"
+        },
+        "-1003794953708": {
+          "chatId": -1003794953708,
+          "chatTitle": "حلوين",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:28:31.281Z",
+          "lastSeen": "2026-05-18T20:28:31.281Z"
         }
       },
       "contactedBot": true,
-      "lastContactAt": "2026-05-18T08:42:11.688Z",
+      "lastContactAt": "2026-05-18T20:28:04.654Z",
       "bioBanInfo": null
     },
     "6061773220": {
@@ -5550,6 +5567,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:17:59.406Z",
           "lastSeen": "2026-05-18T20:17:59.406Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8240566312": {
+      "userId": 8240566312,
+      "username": "g_1_11111",
+      "firstName": "عآئش",
+      "lastName": "عنآد",
+      "profileLink": "https://t.me/g_1_11111",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T20:28:52.986Z",
+      "lastSeen": "2026-05-18T20:28:53.460Z",
+      "groups": [
+        -1003794953708
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003794953708": {
+          "chatId": -1003794953708,
+          "chatTitle": "حلوين",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T20:28:52.987Z",
+          "lastSeen": "2026-05-18T20:28:53.460Z"
         }
       },
       "contactedBot": false,
