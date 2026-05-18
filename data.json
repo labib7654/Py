@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-18T14:29:34.889Z",
+  "savedAt": "2026-05-18T14:31:34.890Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -169,9 +169,9 @@
           "firstName": "شهاب",
           "role": "member",
           "joinedAt": "2026-05-18T14:23:32.710Z",
-          "messageCount": 4,
-          "score": 4,
-          "lastMessageAt": "2026-05-18T14:26:43.637Z"
+          "messageCount": 5,
+          "score": 5,
+          "lastMessageAt": "2026-05-18T14:30:54.464Z"
         },
         "1087968824": {
           "userId": 1087968824,
@@ -379,9 +379,9 @@
           "firstName": "ㅤㅤㅤㅤ",
           "role": "member",
           "joinedAt": "2026-05-18T00:18:09.869Z",
-          "messageCount": 28,
-          "score": 28,
-          "lastMessageAt": "2026-05-18T14:04:10.536Z"
+          "messageCount": 31,
+          "score": 31,
+          "lastMessageAt": "2026-05-18T14:31:11.917Z"
         },
         "8603034665": {
           "userId": 8603034665,
@@ -1382,6 +1382,16 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
+        },
+        "7408749399": {
+          "userId": 7408749399,
+          "username": "",
+          "firstName": "Георгий",
+          "role": "member",
+          "joinedAt": "2026-05-18T14:30:52.884Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
       "admins": {
@@ -1892,7 +1902,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T11:02:00.806Z",
-      "lastSeen": "2026-05-18T14:26:43.637Z",
+      "lastSeen": "2026-05-18T14:30:54.464Z",
       "groups": [
         -1003969494192
       ],
@@ -1903,7 +1913,7 @@
           "chatTitle": "مجتمع جامعات المملكة",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:23:32.710Z",
-          "lastSeen": "2026-05-18T14:26:43.637Z"
+          "lastSeen": "2026-05-18T14:30:54.464Z"
         }
       },
       "contactedBot": false,
@@ -2210,7 +2220,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-18T14:26:55.229Z",
+      "lastSeen": "2026-05-18T14:31:11.917Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -2224,7 +2234,7 @@
           "chatTitle": "مجتمع جامعات المملكة",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:18:09.870Z",
-          "lastSeen": "2026-05-18T14:04:10.536Z"
+          "lastSeen": "2026-05-18T14:31:11.917Z"
         }
       },
       "profileLink": "https://t.me/Labibrd",
@@ -5358,6 +5368,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:26:12.582Z",
           "lastSeen": "2026-05-18T14:26:12.582Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7408749399": {
+      "userId": 7408749399,
+      "username": "",
+      "firstName": "Георгий",
+      "lastName": "Токарев",
+      "profileLink": "tg://user?id=7408749399",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-18T14:30:52.883Z",
+      "lastSeen": "2026-05-18T14:30:52.883Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعات المملكة",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-18T14:30:52.883Z",
+          "lastSeen": "2026-05-18T14:30:52.883Z"
         }
       },
       "contactedBot": false,
