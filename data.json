@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:47:46.029Z",
+  "savedAt": "2026-05-19T15:48:03.507Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2420,7 +2420,7 @@
       "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
       "welcomeEnabled": true,
       "antiSpam": true,
-      "muteNewMembers": false,
+      "muteNewMembers": true,
       "mutedUsers": [],
       "bannedUsers": [
         8607336247
@@ -4022,7 +4022,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-19T15:47:44.794Z",
+      "lastSeen": "2026-05-19T15:48:00.609Z",
       "groups": [
         -1003940779079,
         -1003969494192,
