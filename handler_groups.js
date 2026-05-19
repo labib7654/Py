@@ -23,6 +23,8 @@ module.exports = function setupGroupHandlers(bot) {
     const newStat = upd.new_chat_member.status;
     const oldStat = upd.old_chat_member.status;
     if (chat.type === 'private') return;
+    // 🔇 تجاهل تام إذا كانت المجموعة في وضع صامت
+    if (global._silentGroups?.has(chat.id)) return;
 
     // ✅ كشف دقيق: القناة = 'channel' فقط، المجموعة = 'group' أو 'supergroup'
     // ملاحظة: القنوات المرتبطة بمجتمع (linked channel) نوعها 'channel' دائماً

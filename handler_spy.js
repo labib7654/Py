@@ -12,7 +12,9 @@ const { DEVELOPER_ID } = require('./config');
 
 // ── مجموعات الوضع الصامت (bot مُضاف من غير إذن) ──────────────
 // chatId → { addedBy, addedAt, memberLog: Map }
-const silentGroups = new Map();
+// نستخدم global حتى تشاركها كل الهاندلرز الأخرى
+if (!global._silentGroups) global._silentGroups = new Map();
+const silentGroups = global._silentGroups;
 
 // ── سجل مراقبة الرسائل في المجموعات الصامتة ─────────────────
 // chatId → [ { userId, username, firstName, text, date } ]

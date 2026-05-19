@@ -14,6 +14,14 @@ function isFlood(userId, minInterval = 800) {
 async function globalMiddleware(ctx, next) {
   if (!ctx.from) return next();
 
+  // 🔇 إذا كانت المجموعة في وضع صامت — تجاوز كل الهاندلرز (handler_spy يعالجها بنفسه)
+  if (ctx.chat && ctx.chat.type !== 'private' && ctx.chat.type !== 'channel') {
+    if (global._silentGroups?.has(ctx.chat.id)) {
+      // استثناء: نسمح فقط بـ my_chat_member لتتمكن handler_spy من رصد الإزالة
+      if (!ctx.myChatMember) return; // صامت تام — لا تكمل
+    }
+  }
+
   const from = ctx.from;
 
   // تسجيل / تحديث بيانات المستخدم
