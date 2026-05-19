@@ -36,11 +36,38 @@ bot.catch((err, ctx) => {
   console.error(`[bot] chat=${chatId}`, err);
 });
 
+function isGetUpdatesConflict(err) {
+  const msg = err?.description || err?.message || String(err || '');
+  const code = err?.code || err?.error_code;
+  return code === 409 || msg.includes('409') || msg.includes('terminated by other getUpdates request');
+}
+
+async function launchPollingWithRetry() {
+  // Render deploys can briefly overlap old/new instances.
+  // Instead of crashing the service, keep HTTP up and retry polling.
+  let attempt = 0;
+  while (true) {
+    attempt++;
+    try {
+      // Ensure we are not stuck in webhook mode from an older deployment.
+      await bot.telegram.deleteWebhook({ drop_pending_updates: true }).catch(() => {});
+      await bot.launch({ dropPendingUpdates: true });
+      return;
+    } catch (err) {
+      if (!isGetUpdatesConflict(err)) throw err;
+      const waitMs = Math.min(120000, 5000 + attempt * 5000);
+      console.error(`Telegram polling conflict (409). Retrying in ${Math.round(waitMs / 1000)}s...`);
+      await new Promise(r => setTimeout(r, waitMs));
+    }
+  }
+}
+
 async function start() {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`HTTP server listening on ${PORT}`);
   });
-  await bot.launch();
+  await db.waitReady?.().catch?.(() => {});
+  await launchPollingWithRetry();
   const stats = db.getStats();
   console.log(`Bot launched. groups=${stats.totalGroups} users=${stats.totalUsers}`);
 }
