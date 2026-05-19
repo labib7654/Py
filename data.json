@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T16:29:18.016Z",
+  "savedAt": "2026-05-19T16:31:18.017Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -292,6 +292,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:06.221Z"
+        },
+        "1846500022": {
+          "userId": 1846500022,
+          "username": "vo3dk",
+          "firstName": "آلُــقــر🏴‍☠️",
+          "role": "member",
+          "joinedAt": "2026-05-19T16:30:32.539Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         },
         "1877073418": {
           "userId": 1877073418,
@@ -3453,6 +3463,88 @@
         "rejectedMembers": {},
         "cooldowns": {}
       }
+    },
+    "-1003750270631": {
+      "chatId": -1003750270631,
+      "title": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+      "type": "supergroup",
+      "ownerId": 6942771795,
+      "ownerUsername": "ali721399",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 1087968824,
+      "addedByUsername": "GroupAnonymousBot",
+      "addedAt": "2026-05-19T16:31:04.782Z",
+      "members": {
+        "1087968824": {
+          "userId": 1087968824,
+          "username": "GroupAnonymousBot",
+          "firstName": "Group",
+          "role": "member",
+          "joinedAt": "2026-05-19T16:31:04.782Z",
+          "messageCount": 3,
+          "score": 3,
+          "lastMessageAt": "2026-05-19T16:31:15.985Z"
+        },
+        "6942771795": {
+          "userId": 6942771795,
+          "username": "ali721399",
+          "firstName": "𝘢𝘭𝘪.⊀⇣꫟𓅗§♘.",
+          "role": "owner",
+          "joinedAt": "2026-05-19T16:31:05.177Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "specialistWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "autoApproveJoin": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": false,
+        "verifyTopicId": null,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     }
   },
   "channels": {},
@@ -3543,9 +3635,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T13:49:52.695Z",
-      "lastSeen": "2026-05-18T14:48:18.901Z",
+      "lastSeen": "2026-05-19T16:31:15.985Z",
       "groups": [
-        -1003969494192
+        -1003969494192,
+        -1003750270631
       ],
       "channels": [],
       "seenInChats": {},
@@ -3643,7 +3736,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:44:54.456Z",
-      "lastSeen": "2026-05-19T16:29:15.778Z",
+      "lastSeen": "2026-05-19T16:29:21.077Z",
       "groups": [
         -1003928741558,
         -1003969494192
@@ -3887,6 +3980,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:20:55.882Z",
           "lastSeen": "2026-05-18T14:21:06.221Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "1846500022": {
+      "userId": 1846500022,
+      "username": "vo3dk",
+      "firstName": "آلُــقــر🏴‍☠️",
+      "lastName": "صٍـــآنْ",
+      "profileLink": "https://t.me/vo3dk",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-19T16:30:32.538Z",
+      "lastSeen": "2026-05-19T16:30:59.787Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T16:30:32.539Z",
+          "lastSeen": "2026-05-19T16:30:32.539Z"
         }
       },
       "contactedBot": false,
