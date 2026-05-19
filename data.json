@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:29:55.484Z",
+  "savedAt": "2026-05-19T15:30:41.565Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3029,13 +3029,22 @@
           "firstName": "عآئش",
           "role": "owner",
           "joinedAt": "2026-05-18T22:28:27.671Z",
-          "messageCount": 7,
-          "score": 7,
-          "lastMessageAt": "2026-05-18T23:58:18.220Z"
+          "messageCount": 8,
+          "score": 8,
+          "lastMessageAt": "2026-05-19T15:30:40.897Z"
         }
       },
       "admins": {},
-      "warns": {},
+      "warns": {
+        "8240566312": [
+          {
+            "reason": "أضاف بوت (@Labib865_bot) للمجموعة",
+            "warnedBy": 7243808108,
+            "warnedAt": "2026-05-19T15:30:40.565Z",
+            "isAutomatic": true
+          }
+        ]
+      },
       "maxWarns": 3,
       "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
       "welcomeEnabled": true,
@@ -3073,7 +3082,15 @@
         "canPinMessages": false,
         "canManageTopics": false
       },
-      "auditLog": [],
+      "auditLog": [
+        {
+          "action": "🤖 إزالة بوت",
+          "by": 8240566312,
+          "target": 7630845149,
+          "details": "البوت المضاف: @Labib865_bot",
+          "at": "2026-05-19T15:30:40.564Z"
+        }
+      ],
       "verifySystem": {
         "enabled": false,
         "verifyTopicId": null,
@@ -3896,7 +3913,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-19T15:29:54.167Z",
+      "lastSeen": "2026-05-19T15:30:01.839Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -7250,7 +7267,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-19T01:41:20.975Z",
+      "lastSeen": "2026-05-19T15:30:40.897Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -7293,7 +7310,7 @@
           "chatTitle": "مماحين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T22:28:27.813Z",
-          "lastSeen": "2026-05-18T23:58:18.220Z"
+          "lastSeen": "2026-05-19T15:30:40.897Z"
         }
       },
       "contactedBot": true,
