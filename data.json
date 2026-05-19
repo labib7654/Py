@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:47:41.815Z",
+  "savedAt": "2026-05-19T15:47:44.241Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1422,16 +1422,6 @@
           "messageCount": 3,
           "score": 3,
           "lastMessageAt": "2026-05-18T15:22:46.282Z"
-        },
-        "7574941687": {
-          "userId": 7574941687,
-          "username": "slyJxgPfEf",
-          "firstName": "m",
-          "role": "member",
-          "joinedAt": "2026-05-18T15:10:38.433Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-05-18T15:20:03.844Z"
         },
         "8704156938": {
           "userId": 8704156938,
@@ -4020,7 +4010,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-19T15:47:40.583Z",
+      "lastSeen": "2026-05-19T15:47:42.975Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -4092,7 +4082,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-19T15:47:40.812Z",
+      "lastSeen": "2026-05-19T15:47:43.239Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -4280,8 +4270,7 @@
       "firstSeen": "2026-05-17T22:25:36.199Z",
       "lastSeen": "2026-05-18T15:20:03.844Z",
       "groups": [
-        -1003854112996,
-        -1003969494192
+        -1003854112996
       ],
       "channels": [],
       "bioBanInfo": {
