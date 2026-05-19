@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T20:25:14.984Z",
+  "savedAt": "2026-05-19T20:27:24.831Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3315,6 +3315,16 @@
       "addedByUsername": "J_8hs",
       "addedAt": "2026-05-19T01:54:48.845Z",
       "members": {
+        "2017532996": {
+          "userId": 2017532996,
+          "username": "Folsgc",
+          "firstName": "الامل المتجدد",
+          "role": "member",
+          "joinedAt": "2026-05-19T20:27:24.345Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-19T20:27:24.345Z"
+        },
         "8386797031": {
           "userId": 8386797031,
           "username": "J_8hs",
@@ -4078,6 +4088,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:20:54.927Z",
           "lastSeen": "2026-05-18T14:21:05.671Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "2017532996": {
+      "userId": 2017532996,
+      "username": "Folsgc",
+      "firstName": "الامل المتجدد",
+      "lastName": "",
+      "profileLink": "https://t.me/Folsgc",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-19T20:27:23.829Z",
+      "lastSeen": "2026-05-19T20:27:24.346Z",
+      "groups": [
+        -1003916370715
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003916370715": {
+          "chatId": -1003916370715,
+          "chatTitle": "رجال",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T20:27:24.346Z",
+          "lastSeen": "2026-05-19T20:27:24.346Z"
         }
       },
       "contactedBot": false,
