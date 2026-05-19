@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T16:31:18.017Z",
+  "savedAt": "2026-05-19T16:33:18.013Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3495,6 +3495,16 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
+        },
+        "8533906666": {
+          "userId": 8533906666,
+          "username": "",
+          "firstName": "ali abdlulah",
+          "role": "member",
+          "joinedAt": "2026-05-19T16:33:17.138Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-19T16:33:17.138Z"
         }
       },
       "admins": {},
@@ -3996,9 +4006,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-19T16:30:32.538Z",
-      "lastSeen": "2026-05-19T16:30:59.787Z",
+      "lastSeen": "2026-05-19T16:31:55.172Z",
       "groups": [
-        -1003969494192
+        -1003969494192,
+        -1003750270631
       ],
       "channels": [],
       "seenInChats": {
@@ -4162,7 +4173,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-19T16:28:59.379Z",
+      "lastSeen": "2026-05-19T16:32:15.908Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -10261,6 +10272,26 @@
           "lastSeen": "2026-05-19T15:17:25.249Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8533906666": {
+      "userId": 8533906666,
+      "username": "",
+      "firstName": "ali abdlulah",
+      "lastName": "",
+      "profileLink": "tg://user?id=8533906666",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-19T16:33:17.138Z",
+      "lastSeen": "2026-05-19T16:33:17.138Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
