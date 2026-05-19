@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:30:41.565Z",
+  "savedAt": "2026-05-19T15:31:02.484Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3029,18 +3029,41 @@
           "firstName": "عآئش",
           "role": "owner",
           "joinedAt": "2026-05-18T22:28:27.671Z",
-          "messageCount": 8,
-          "score": 8,
-          "lastMessageAt": "2026-05-19T15:30:40.897Z"
+          "messageCount": 9,
+          "score": 9,
+          "lastMessageAt": "2026-05-19T15:31:01.844Z"
+        },
+        "7630845149": {
+          "userId": 7630845149,
+          "username": "Labib865_bot",
+          "firstName": "تواصل",
+          "role": "admin",
+          "joinedAt": "2026-05-19T15:31:01.277Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
-      "admins": {},
+      "admins": {
+        "7630845149": {
+          "username": "Labib865_bot",
+          "promotedBy": 8240566312,
+          "promotedByUsername": "g_1_11111",
+          "promotedAt": "2026-05-19T15:31:01.277Z"
+        }
+      },
       "warns": {
         "8240566312": [
           {
             "reason": "أضاف بوت (@Labib865_bot) للمجموعة",
             "warnedBy": 7243808108,
             "warnedAt": "2026-05-19T15:30:40.565Z",
+            "isAutomatic": true
+          },
+          {
+            "reason": "أضاف بوت (@Labib865_bot) للمجموعة",
+            "warnedBy": 7243808108,
+            "warnedAt": "2026-05-19T15:31:01.484Z",
             "isAutomatic": true
           }
         ]
@@ -3083,6 +3106,13 @@
         "canManageTopics": false
       },
       "auditLog": [
+        {
+          "action": "🤖 إزالة بوت",
+          "by": 8240566312,
+          "target": 7630845149,
+          "details": "البوت المضاف: @Labib865_bot",
+          "at": "2026-05-19T15:31:01.484Z"
+        },
         {
           "action": "🤖 إزالة بوت",
           "by": 8240566312,
@@ -7267,7 +7297,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-19T15:30:40.897Z",
+      "lastSeen": "2026-05-19T15:31:01.845Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -7310,7 +7340,7 @@
           "chatTitle": "مماحين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T22:28:27.813Z",
-          "lastSeen": "2026-05-19T15:30:40.897Z"
+          "lastSeen": "2026-05-19T15:31:01.845Z"
         }
       },
       "contactedBot": true,
