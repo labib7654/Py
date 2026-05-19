@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T21:40:31.472Z",
+  "savedAt": "2026-05-19T21:41:29.652Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2843,9 +2843,9 @@
           "firstName": "عآئش",
           "role": "member",
           "joinedAt": "2026-05-18T20:28:52.987Z",
-          "messageCount": 4,
-          "score": 4,
-          "lastMessageAt": "2026-05-19T21:32:34.133Z"
+          "messageCount": 5,
+          "score": 5,
+          "lastMessageAt": "2026-05-19T21:41:14.536Z"
         },
         "7878248225": {
           "userId": 7878248225,
@@ -7581,7 +7581,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-19T21:32:34.133Z",
+      "lastSeen": "2026-05-19T21:41:14.536Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -7596,7 +7596,7 @@
           "chatTitle": "حلوين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:28:52.987Z",
-          "lastSeen": "2026-05-19T21:32:34.133Z"
+          "lastSeen": "2026-05-19T21:41:14.536Z"
         },
         "-1002985211839": {
           "chatId": -1002985211839,
@@ -10337,7 +10337,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-19T17:30:22.202Z",
-      "lastSeen": "2026-05-19T21:32:34.905Z",
+      "lastSeen": "2026-05-19T21:41:15.026Z",
       "groups": [
         -1003794953708
       ],
