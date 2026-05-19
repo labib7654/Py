@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:47:44.241Z",
+  "savedAt": "2026-05-19T15:47:46.029Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2423,7 +2423,6 @@
       "muteNewMembers": false,
       "mutedUsers": [],
       "bannedUsers": [
-        7574941687,
         8607336247
       ],
       "bannedWords": [
@@ -2589,6 +2588,19 @@
         "canManageTopics": false
       },
       "auditLog": [
+        {
+          "action": "✅ رفع حظر",
+          "by": {
+            "id": 7411444902,
+            "username": "Labibrd"
+          },
+          "target": {
+            "id": 7574941687,
+            "username": "7574941687"
+          },
+          "details": "",
+          "at": "2026-05-19T15:47:44.252Z"
+        },
         {
           "action": "✅ رفع حظر",
           "by": {
@@ -4010,7 +4022,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-19T15:47:42.975Z",
+      "lastSeen": "2026-05-19T15:47:44.794Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -4082,7 +4094,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-19T15:47:43.239Z",
+      "lastSeen": "2026-05-19T15:47:44.291Z",
       "groups": [
         -1003969494192,
         -1003940779079,
