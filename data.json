@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T18:45:14.974Z",
+  "savedAt": "2026-05-19T18:55:14.975Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3331,9 +3331,9 @@
           "firstName": "ㅤㅤㅤㅤ",
           "role": "member",
           "joinedAt": "2026-05-19T15:39:22.765Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-19T15:39:49.152Z"
+          "messageCount": 4,
+          "score": 4,
+          "lastMessageAt": "2026-05-19T18:54:10.776Z"
         }
       },
       "admins": {},
@@ -4166,7 +4166,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-19T17:14:29.154Z",
+      "lastSeen": "2026-05-19T18:54:16.073Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -4189,7 +4189,7 @@
           "chatTitle": "رجال",
           "chatType": "supergroup",
           "firstSeen": "2026-05-19T15:39:22.764Z",
-          "lastSeen": "2026-05-19T15:39:49.152Z"
+          "lastSeen": "2026-05-19T18:54:10.777Z"
         }
       },
       "profileLink": "https://t.me/Labibrd",
