@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T20:37:29.095Z",
+  "savedAt": "2026-05-19T20:39:29.092Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3331,9 +3331,9 @@
           "firstName": "اوب",
           "role": "owner",
           "joinedAt": "2026-05-19T01:54:48.845Z",
-          "messageCount": 4,
-          "score": 4,
-          "lastMessageAt": "2026-05-19T15:54:19.554Z"
+          "messageCount": 5,
+          "score": 5,
+          "lastMessageAt": "2026-05-19T20:37:48.167Z"
         },
         "7411444902": {
           "userId": 7411444902,
@@ -10237,7 +10237,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-19T01:47:30.593Z",
-      "lastSeen": "2026-05-19T15:54:19.555Z",
+      "lastSeen": "2026-05-19T20:37:48.168Z",
       "groups": [
         -1003969494192,
         -1002608245805,
@@ -10265,7 +10265,7 @@
           "chatTitle": "رجال",
           "chatType": "supergroup",
           "firstSeen": "2026-05-19T01:54:48.884Z",
-          "lastSeen": "2026-05-19T15:54:19.555Z"
+          "lastSeen": "2026-05-19T20:37:48.168Z"
         },
         "-1003595180224": {
           "chatId": -1003595180224,
