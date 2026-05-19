@@ -16,14 +16,24 @@ async function isAdmin(bot, chatId, userId) {
   try {
     const m = await bot.telegram.getChatMember(chatId, userId);
     return ['administrator', 'creator'].includes(m.status);
-  } catch { return false; }
+  } catch {
+    // fallback: تحقق من قاعدة البيانات إذا فشل طلب تيليغرام
+    const db = require('./db');
+    const g = db.getGroup(chatId);
+    return !!(g && (g.admins.has(userId) || g.ownerId === userId));
+  }
 }
 
 async function isOwner(bot, chatId, userId) {
   try {
     const m = await bot.telegram.getChatMember(chatId, userId);
     return m.status === 'creator';
-  } catch { return false; }
+  } catch {
+    // fallback: تحقق من قاعدة البيانات إذا فشل طلب تيليغرام
+    const db = require('./db');
+    const g = db.getGroup(chatId);
+    return !!(g && g.ownerId === userId);
+  }
 }
 
 async function checkBotPermissions(bot, chatId, permission) {

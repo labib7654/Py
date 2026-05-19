@@ -304,8 +304,16 @@ module.exports = function setupDeveloper(bot) {
     if (!g) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
     const warns   = [...g.warns.values()].reduce((a, w) => a + w.length, 0);
     const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending').length;
+
+    // جلب رابط الدعوة إذا لم يكن محفوظاً
+    if (!g.inviteLink) {
+      try {
+        g.inviteLink = await bot.telegram.exportChatInviteLink(chatId);
+        db.markDirty();
+      } catch {}
+    }
     await ctx.editMessageText(
-      `📋 *${g.title}*\n\n🆔 \`${g.chatId}\`\n👑 المالك: \`${g.ownerUsername || 'غير محدد'}\` ${g.ownerVerified ? '✅' : ''}\n➕ أضافه: \`${g.addedByUsername}\`\n👮 المشرفون: \`${g.admins.size}\`\n👥 الأعضاء: \`${g.members.size}\`\n⚠️ التحذيرات: \`${warns}\`\n🔤 الكلمات: \`${g.bannedWords.length}\`\n📨 طلبات معلقة: \`${pending}\`\n🛡️ حماية المحتوى: ${g.protectContent ? '✅' : '❌'}\n🔗 منع روابط: ${g.antiLinks ? '✅' : '❌'}\n🤖 منع بوتات: ${g.antiBot ? '✅' : '❌'}\n🛡️ مكافحة سبام: ${g.antiSpam ? '✅' : '❌'} | 👋 ترحيب: ${g.welcomeEnabled ? '✅' : '❌'}`,
+      `📋 *${g.title}*\n\n🆔 \`${g.chatId}\`\n👑 المالك: \`${g.ownerUsername || 'غير محدد'}\` ${g.ownerVerified ? '✅' : ''}\n🆔 ID المالك: \`${g.ownerId || '—'}\`\n➕ أضافه: \`${g.addedByUsername}\`\n👮 المشرفون: \`${g.admins.size}\`\n👥 الأعضاء: \`${g.members.size}\`\n⚠️ التحذيرات: \`${warns}\`\n🔤 الكلمات: \`${g.bannedWords.length}\`\n📨 طلبات معلقة: \`${pending}\`\n🔗 رابط الدعوة: ${g.inviteLink ? g.inviteLink : '—'}\n🛡️ حماية المحتوى: ${g.protectContent ? '✅' : '❌'}\n🔗 منع روابط: ${g.antiLinks ? '✅' : '❌'}\n🤖 منع بوتات: ${g.antiBot ? '✅' : '❌'}\n🛡️ مكافحة سبام: ${g.antiSpam ? '✅' : '❌'} | 👋 ترحيب: ${g.welcomeEnabled ? '✅' : '❌'}`,
       {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
@@ -864,7 +872,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_ban_menu ─────────────────────────────────────────────
   // يعرض قائمة بمستخدمي البوت مع زر "حظر عالمي" لكل شخص غير محظور
-  bot.action(/^dev_ban_menu(_(\\d+))?$/, async (ctx) => {
+  bot.action(/^dev_ban_menu(_(\d+))?$/, async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const page     = Number(ctx.match?.[2] || 0);
@@ -921,7 +929,7 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_unban_menu ────────────────────────────────────────────
   // يعرض قائمة بالمحظورين عالمياً مع زر "رفع حظر" لكل شخص
-  bot.action(/^dev_unban_menu(_(\\d+))?$/, async (ctx) => {
+  bot.action(/^dev_unban_menu(_(\d+))?$/, async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
     const page   = Number(ctx.match?.[2] || 0);
