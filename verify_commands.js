@@ -454,10 +454,19 @@ module.exports = function setupVerifyCommands(bot) {
   // ════════════════════════════════════════════════════════════
   bot.command('verify', async (ctx) => {
     if (ctx.chat.type !== 'private') {
-      return ctx.reply(
-        `📩 *لبدء التسجيل، أرسل هذا الأمر في الخاص مع البوت:*\n\n/verify`,
-        { parse_mode: 'Markdown' }
-      );
+      // حذف الرسالة من القروب حتى لا تزعج الأعضاء
+      try { await ctx.deleteMessage(); } catch {}
+      // محاولة إرسال رسالة للمستخدم في الخاص
+      try {
+        const botInfo = await bot.telegram.getMe();
+        await bot.telegram.sendMessage(ctx.from.id,
+          `📩 *لبدء التسجيل، أرسل /verify هنا في الخاص*\n\nأو اضغط على رابط طلب الانضمام في المجموعة.`,
+          { parse_mode: 'Markdown' }
+        );
+      } catch {
+        // المستخدم لم يبدأ محادثة مع البوت بعد
+      }
+      return;
     }
 
     const userId  = ctx.from.id;
@@ -510,9 +519,9 @@ module.exports = function setupVerifyCommands(bot) {
       );
     }
 
-    // بدء جلسة جديدة
+    // بدء جلسة جديدة — من خطوة type_select (وليس student_id)
     const topics = getAvailableTopics(myGroup);
-    sessions.set(userId, { step: 'student_id', chatId: myGroup.chatId, data: {}, topics });
+    sessions.set(userId, { step: 'type_select', chatId: myGroup.chatId, data: {}, topics });
     await stepWelcome(bot, userId, myGroup.title);
   });
 

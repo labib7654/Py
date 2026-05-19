@@ -129,8 +129,13 @@ module.exports = function setupVerifyRegistration(bot) {
         }
       );
     } catch (e) {
-      // إذا حظر المستخدم البوت، نقبله مباشرة أو نرفضه حسب الإعداد
+      // إذا حظر المستخدم البوت → رفض طلبه تلقائياً لأنه لن يستطيع إكمال التحقق
       console.warn(`[JoinRequest] لا يمكن إرسال رسالة لـ ${userId}:`, e.message);
+      try {
+        await bot.telegram.declineChatJoinRequest(chatId, userId);
+        const jr2 = g.joinRequests?.get(userId);
+        if (jr2) { jr2.status = 'rejected_bot_blocked'; db.markDirty(); }
+      } catch {}
     }
   });
 
@@ -376,9 +381,21 @@ module.exports = function setupVerifyRegistration(bot) {
           }
         }
 
-        // حفظ الاعتماد
+        // ── ربط الكلية بموضوع المجموعة ──────────────────────
+        const { getAvailableTopics } = require('./verify_helpers');
+        const availableTopics = getAvailableTopics(g2);
+        const matchedTopic = availableTopics.find(t =>
+          t.name.includes(sess.data?.university || '') ||
+          (sess.data?.university || '').includes(t.name) ||
+          t.name.includes(sess.data?.major || '') ||
+          (sess.data?.major || '').includes(t.name)
+        ) || availableTopics[0] || null;
+
+        // حفظ الاعتماد مع بيانات الموضوع
         vs2.approvedMembers.set(userId, {
           studentData: { ...sess.data },
+          topicId:    matchedTopic?.id   || null,
+          topicName:  matchedTopic?.name || sess.data?.university || null,
           approvedAt:  new Date(),
           approvedBy:  'auto',
         });
@@ -390,6 +407,7 @@ module.exports = function setupVerifyRegistration(bot) {
           await bot.telegram.sendMessage(userId,
             `🎉 *تم قبول انضمامك تلقائياً!*\n\n` +
             `أهلاً بك في *${g2.title}* 🎓\n` +
+            (matchedTopic ? `📌 كليتك: *${matchedTopic.name}*\n` : '') +
             `يمكنك الآن الدخول للمجموعة والمشاركة!`,
             { parse_mode: 'Markdown' }
           );
@@ -401,7 +419,7 @@ module.exports = function setupVerifyRegistration(bot) {
             `🤖 *قبول تلقائي*\n\n` +
             `👤 ${req.firstName}${req.username ? ` (@${req.username})` : ''}\n` +
             `🆔 \`${userId}\`\n` +
-            `✅ تم قبوله تلقائياً بعد دقيقتين`,
+            `✅ تم قبوله تلقائياً بعد 24 ساعة`,
             null
           );
         } catch {}

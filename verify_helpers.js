@@ -12,7 +12,7 @@ const { DEVELOPER_ID } = require('./config');
 
 // ─── ثوابت ────────────────────────────────────────────────────
 const VERIFY_COOLDOWN_MS  = 24 * 60 * 60 * 1000; // 24 ساعة بعد الرفض
-const AUTO_APPROVE_DELAY  = 2 * 60 * 1000;        // دقيقتان للقبول التلقائي
+const AUTO_APPROVE_DELAY  = 24 * 60 * 60 * 1000; // 24 ساعة للقبول التلقائي (تم رفعه من دقيقتين)
 
 // ─── حالة المحادثات الخاصة (session مؤقتة في الذاكرة) ────────
 // Map: userId → { step, chatId, data }
@@ -90,6 +90,18 @@ function getAvailableTopics(g) {
   return [...g.topics.entries()]
     .filter(([, t]) => !t.archived)
     .map(([id, t]) => ({ id, name: t.name || String(id) }));
+}
+
+/**
+ * جلب أو إنشاء موضوع في سجل المجموعة
+ */
+function getOrCreateTopic(g, topicId, name) {
+  if (!g.topics) g.topics = new Map();
+  if (!g.topics.has(topicId)) {
+    g.topics.set(topicId, { name, archived: false, createdAt: new Date() });
+    db.markDirty();
+  }
+  return g.topics.get(topicId);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -436,6 +448,7 @@ module.exports = {
   sessions,
   getVerifySettings,
   getAvailableTopics,
+  getOrCreateTopic,
   buildAdminNotification,
   buildAdminButtons,
   notifyAll,

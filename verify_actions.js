@@ -50,9 +50,21 @@ module.exports = function setupVerifyActions(bot) {
     req.reviewedAt = new Date();
     req.reviewedBy = ctx.from.id;
 
-    // حفظ الاعتماد
+    // ── ربط الكلية بموضوع المجموعة ──────────────────────────
+    const { getAvailableTopics } = require('./verify_helpers');
+    const availableTopics = getAvailableTopics(g);
+    const matchedTopic = availableTopics.find(t =>
+      t.name.includes(req.data?.university || '') ||
+      (req.data?.university || '').includes(t.name) ||
+      t.name.includes(req.data?.major || '') ||
+      (req.data?.major || '').includes(t.name)
+    ) || availableTopics[0] || null;
+
+    // حفظ الاعتماد مع بيانات الموضوع
     vs.approvedMembers.set(userId, {
       studentData: { ...req.data },
+      topicId:    matchedTopic?.id   || null,
+      topicName:  matchedTopic?.name || req.data?.university || null,
       approvedAt:  new Date(),
       approvedBy:  ctx.from.id,
     });
