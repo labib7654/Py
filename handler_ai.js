@@ -22,9 +22,26 @@ const AI_API_KEY       = process.env.AI_API_KEY || '';
 // questions_only = يرد على الأسئلة فقط | all = يرد على كل رسالة
 const AI_RESPONSE_MODE = (process.env.AI_RESPONSE_MODE || 'questions_only').toLowerCase();
 
+// ─── مزودو الـ AI المدعومون ────────────────────────────────────
+// gemini  → مجاني، API Key من: https://aistudio.google.com/apikey
+// deepseek→ رخيص، API Key من: https://platform.deepseek.com
+// openai  → API Key من: https://platform.openai.com
 const PROVIDERS = {
-  deepseek: { url: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat' },
-  openai:   { url: 'https://api.openai.com/v1/chat/completions',   model: 'gpt-4o-mini'   },
+  gemini: {
+    type: 'gemini',
+    url:  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`,
+    model: 'gemini-2.0-flash',
+  },
+  deepseek: {
+    type: 'openai',
+    url:  'https://api.deepseek.com/v1/chat/completions',
+    model: 'deepseek-chat',
+  },
+  openai: {
+    type: 'openai',
+    url:  'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4o-mini',
+  },
 };
 
 // ═════════════════════════════════════════════════════════════
@@ -123,6 +140,48 @@ function buildContext() {
   return ctx;
 }
 
+// ─── استدعاء Gemini API ──────────────────────────────────────
+async function callGemini(question, systemPrompt) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AI_API_KEY}`;
+  const body = {
+    system_instruction: { parts: [{ text: systemPrompt }] },
+    contents: [{ role: 'user', parts: [{ text: question }] }],
+    generationConfig: { maxOutputTokens: 700, temperature: 0.3 },
+  };
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`Gemini ${res.status}: ${err.slice(0, 120)}`);
+  }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+}
+
+// ─── استدعاء OpenAI-compatible APIs (DeepSeek / OpenAI) ──────
+async function callOpenAI(p, question, systemPrompt) {
+  const res = await fetch(p.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AI_API_KEY}` },
+    body: JSON.stringify({
+      model: p.model, max_tokens: 700, temperature: 0.3,
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: question }],
+    }),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!res.ok) {
+    const err = await res.text().catch(() => '');
+    throw new Error(`${p.model} ${res.status}: ${err.slice(0, 120)}`);
+  }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content?.trim() || null;
+}
+
+// ─── الاستدعاء الرئيسي مع retry تلقائي ──────────────────────
 async function smartAsk(question) {
   const p   = PROVIDERS[AI_PROVIDER] || PROVIDERS.deepseek;
   const ctx = buildContext();
@@ -137,21 +196,29 @@ async function smartAsk(question) {
 ${ctx}`
     : 'أنت مساعد ذكي لمجتمع عربي. أجب بإيجاز ووضوح بالعربية.';
 
-  const res = await fetch(p.url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AI_API_KEY}` },
-    body: JSON.stringify({
-      model: p.model, max_tokens: 700, temperature: 0.3,
-      messages: [{ role: 'system', content: sys }, { role: 'user', content: question }],
-    }),
-  });
+  // محاولة أولى
+  try {
+    const ans = p.type === 'gemini'
+      ? await callGemini(question, sys)
+      : await callOpenAI(p, question, sys);
+    if (ans) return ans;
+    throw new Error('empty response');
+  } catch (e1) {
+    console.warn(`⚠️ AI attempt 1 failed (${AI_PROVIDER}):`, e1.message);
 
-  if (!res.ok) {
-    const err = await res.text().catch(() => '');
-    throw new Error(`${res.status}: ${err.slice(0, 100)}`);
+    // محاولة ثانية بعد ثانيتين
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const ans = p.type === 'gemini'
+        ? await callGemini(question, sys)
+        : await callOpenAI(p, question, sys);
+      if (ans) return ans;
+      throw new Error('empty response');
+    } catch (e2) {
+      console.error(`❌ AI attempt 2 failed (${AI_PROVIDER}):`, e2.message);
+      throw e2;
+    }
   }
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content?.trim() || 'لم أتمكن من الإجابة الآن.';
 }
 
 // ═════════════════════════════════════════════════════════════
@@ -379,7 +446,7 @@ module.exports = function setupAI(bot) {
           await ctx.reply(ans, { reply_to_message_id: msg.message_id });
           const h = makeHash(text);
           recordA(h, ans, { id: 0, first_name: 'AI' });
-        } catch (e) { console.error('AI group reply:', e.message); }
+        } catch (e) { console.error('AI group reply:', e.message); /* لا نرسل رسالة خطأ في القروب لتجنب الفوضى */ }
       }
     } catch (e) { console.error('AI radar:', e.message); }
     return next();
@@ -408,7 +475,8 @@ module.exports = function setupAI(bot) {
       recordA(h, ans, { id: 0, first_name: 'AI' });
     } catch (e) {
       console.error('AI private error:', e.message);
-      await ctx.reply('⚠️ حدث خطأ في الاتصال بالذكاء الاصطناعي، تأكد من صحة AI_API_KEY وحاول مجدداً.').catch(() => {});
+      const providerName = AI_PROVIDER === 'gemini' ? 'Gemini' : AI_PROVIDER === 'openai' ? 'OpenAI' : 'DeepSeek';
+      await ctx.reply(`⚠️ فشل الاتصال بـ ${providerName} مرتين.\n\nتأكد من:\n• صحة AI_API_KEY في Render\n• رصيد الحساب لدى المزوّد`).catch(() => {});
     }
   });
 };
