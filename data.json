@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T21:28:10.290Z",
+  "savedAt": "2026-05-19T21:33:04.910Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2843,9 +2843,9 @@
           "firstName": "عآئش",
           "role": "member",
           "joinedAt": "2026-05-18T20:28:52.987Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-05-18T23:57:49.598Z"
+          "messageCount": 4,
+          "score": 4,
+          "lastMessageAt": "2026-05-19T21:32:34.133Z"
         },
         "7878248225": {
           "userId": 7878248225,
@@ -3213,7 +3213,7 @@
       ],
       "verifySystem": {
         "enabled": false,
-        "verifyTopicId": null,
+        "verifyTopicId": 57,
         "pendingRequests": {},
         "approvedMembers": {},
         "rejectedMembers": {},
@@ -7581,7 +7581,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-19T15:35:33.266Z",
+      "lastSeen": "2026-05-19T21:32:34.133Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -7596,7 +7596,7 @@
           "chatTitle": "حلوين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:28:52.987Z",
-          "lastSeen": "2026-05-18T23:57:49.599Z"
+          "lastSeen": "2026-05-19T21:32:34.133Z"
         },
         "-1002985211839": {
           "chatId": -1002985211839,
@@ -10337,7 +10337,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-19T17:30:22.202Z",
-      "lastSeen": "2026-05-19T21:04:30.070Z",
+      "lastSeen": "2026-05-19T21:32:34.905Z",
       "groups": [
         -1003794953708
       ],
