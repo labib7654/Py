@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T17:27:14.964Z",
+  "savedAt": "2026-05-19T17:35:14.964Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -4528,7 +4528,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-19T17:26:13.252Z",
+      "lastSeen": "2026-05-19T17:30:21.934Z",
       "groups": [
         -1003794953708,
         -1003928741558,
@@ -10320,6 +10320,26 @@
       "lastSeen": "2026-05-19T16:33:27.597Z",
       "groups": [
         -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {},
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7878248225": {
+      "userId": 7878248225,
+      "username": "G_XFbot",
+      "firstName": "𝐸𝐿𝐿𝐼𝐸",
+      "lastName": "",
+      "profileLink": "https://t.me/G_XFbot",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-19T17:30:22.202Z",
+      "lastSeen": "2026-05-19T17:30:22.202Z",
+      "groups": [
+        -1003794953708
       ],
       "channels": [],
       "seenInChats": {},
