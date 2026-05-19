@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:33:31.572Z",
+  "savedAt": "2026-05-19T15:35:29.992Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2399,9 +2399,9 @@
           "firstName": "عآئش",
           "role": "member",
           "joinedAt": "2026-05-19T01:41:20.975Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-19T15:35:22.115Z"
         },
         "8386797031": {
           "userId": 8386797031,
@@ -3049,9 +3049,19 @@
           "firstName": "ووة",
           "role": "member",
           "joinedAt": "2026-05-19T15:32:06.245Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-05-19T15:32:32.879Z"
+          "messageCount": 5,
+          "score": 5,
+          "lastMessageAt": "2026-05-19T15:33:37.992Z"
+        },
+        "8386797031": {
+          "userId": 8386797031,
+          "username": "J_8hs",
+          "firstName": "اوب",
+          "role": "member",
+          "joinedAt": "2026-05-19T15:34:36.621Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-19T15:34:36.621Z"
         }
       },
       "admins": {
@@ -3114,7 +3124,20 @@
       "timedMutes": {},
       "timedBans": {},
       "joinRequestCooldown": {},
-      "topics": {},
+      "topics": {
+        "57": {
+          "topicId": 57,
+          "name": "موضوع #57",
+          "locked": false,
+          "archived": false,
+          "approvedUsers": [],
+          "joinRequests": {},
+          "cooldowns": {},
+          "perms": {},
+          "createdAt": "2026-05-19T15:34:36.622Z",
+          "lastSeenAt": "2026-05-19T15:34:36.622Z"
+        }
+      },
       "topicSettings": {
         "requireApprovalToJoin": false,
         "autoLockOnCreate": false,
@@ -4290,7 +4313,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-19T15:32:32.880Z",
+      "lastSeen": "2026-05-19T15:33:37.993Z",
       "groups": [
         -1003794953708,
         -1003928741558,
@@ -4324,7 +4347,7 @@
           "chatTitle": "مماحين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-19T15:32:06.245Z",
-          "lastSeen": "2026-05-19T15:32:32.880Z"
+          "lastSeen": "2026-05-19T15:33:37.993Z"
         }
       },
       "contactedBot": true,
@@ -7336,7 +7359,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-19T15:33:24.557Z",
+      "lastSeen": "2026-05-19T15:35:22.115Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -7372,7 +7395,7 @@
           "chatTitle": "مجتمع جامعة الامير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T22:15:48.093Z",
-          "lastSeen": "2026-05-19T01:41:20.975Z"
+          "lastSeen": "2026-05-19T15:35:22.115Z"
         },
         "-1003595180224": {
           "chatId": -1003595180224,
@@ -10000,11 +10023,12 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-19T01:47:30.593Z",
-      "lastSeen": "2026-05-19T01:55:12.519Z",
+      "lastSeen": "2026-05-19T15:34:36.621Z",
       "groups": [
         -1003969494192,
         -1002608245805,
-        -1003916370715
+        -1003916370715,
+        -1003595180224
       ],
       "channels": [],
       "seenInChats": {
@@ -10028,6 +10052,13 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-19T01:54:48.884Z",
           "lastSeen": "2026-05-19T01:54:55.470Z"
+        },
+        "-1003595180224": {
+          "chatId": -1003595180224,
+          "chatTitle": "مماحين",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T15:34:36.621Z",
+          "lastSeen": "2026-05-19T15:34:36.621Z"
         }
       },
       "contactedBot": false,
