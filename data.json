@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T19:55:14.982Z",
+  "savedAt": "2026-05-19T19:57:15.159Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3498,6 +3498,16 @@
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-05-19T16:33:27.597Z"
+        },
+        "6456064127": {
+          "userId": 6456064127,
+          "username": "tnkel711",
+          "firstName": "٭⁷͜¹͜¹͜˼ًٌٌٍٓ⍣͜𔒒͜͡؏ِـِۥـاެشِــَ‌ﻗـَ اެݪحُـࢪۆب𖠲⊀⇣꫟ٓ𓅗",
+          "role": "member",
+          "joinedAt": "2026-05-19T19:57:13.976Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-19T19:57:13.976Z"
         }
       },
       "admins": {},
@@ -10295,6 +10305,34 @@
       ],
       "channels": [],
       "seenInChats": {},
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6456064127": {
+      "userId": 6456064127,
+      "username": "tnkel711",
+      "firstName": "٭⁷͜¹͜¹͜˼ًٌٌٍٓ⍣͜𔒒͜͡؏ِـِۥـاެشِــَ‌ﻗـَ اެݪحُـࢪۆب𖠲⊀⇣꫟ٓ𓅗",
+      "lastName": "",
+      "profileLink": "https://t.me/tnkel711",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-19T19:57:13.976Z",
+      "lastSeen": "2026-05-19T19:57:13.976Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003750270631": {
+          "chatId": -1003750270631,
+          "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T19:57:13.976Z",
+          "lastSeen": "2026-05-19T19:57:13.976Z"
+        }
+      },
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
