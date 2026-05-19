@@ -361,38 +361,44 @@ module.exports = function setupDeveloper(bot) {
 
   // ── لوحة التحكم الخاصة بالمجتمعات/الفورم ────────────────────────────
   bot.action(/^community_panel_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
     if (!g) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
     const canAccess = isDeveloperOrBotAdmin(ctx) || g.ownerId === ctx.from.id || g.admins.has(ctx.from.id);
     if (!canAccess) return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
+    try { await ctx.answerCbQuery(); } catch {}
 
-    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending').length;
+    const pending     = [...g.joinRequests.values()].filter(r => r.status === 'pending').length;
     const topicsCount = g.topics?.size || 0;
+    const membersCount = g.members?.size || 0;
 
-    await ctx.editMessageText(
+    const msgText =
       `🎓 *لوحة تحكم المجتمع/الفورم*\n\n` +
-      `📌 *${g.title}*\n` +
+      `📌 *${(g.title || '').slice(0, 60)}*\n` +
       `🆔 \`${chatId}\`\n` +
       `👑 المالك: \`${g.ownerUsername || 'غير محدد'}\`\n` +
-      `👥 الأعضاء: \`${g.members.size}\`\n` +
+      `👥 الأعضاء: \`${membersCount}\`\n` +
       `📂 المواضيع: \`${topicsCount}\`\n` +
-      `📨 طلبات معلقة: \`${pending}\``,
-      {
+      `📨 طلبات معلقة: \`${pending}\``;
+
+    try {
+      await ctx.editMessageText(msgText, {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
-          [Markup.button.callback('📂 إدارة المواضيع',    `topics_panel_${chatId}`),
-           Markup.button.callback('📨 طلبات الانضمام',   `joinreqs_${chatId}`)],
-          [Markup.button.callback(`🔒 موافقة الانضمام`, `toggle_joinreq_${chatId}`),
-           Markup.button.callback(`🤖 قبول تلقائي`,     `toggle_autoapprove_${chatId}`)],
-          [Markup.button.callback('👥 الأعضاء',          `dev_members_${chatId}`),
-           Markup.button.callback('⚙️ إعدادات متقدمة',   `settings_${chatId}`)],
-          [Markup.button.callback('🎓 نظام التحقق',      `verify_settings_${chatId}`)],
+          [Markup.button.callback('📂 إدارة المواضيع',   `topics_panel_${chatId}`),
+           Markup.button.callback('📨 طلبات الانضمام',  `joinreqs_${chatId}`)],
+          [Markup.button.callback('🔒 موافقة الانضمام', `toggle_joinreq_${chatId}`),
+           Markup.button.callback('🤖 قبول تلقائي',     `toggle_autoapprove_${chatId}`)],
+          [Markup.button.callback('👥 الأعضاء',         `dev_members_${chatId}`),
+           Markup.button.callback('⚙️ إعدادات متقدمة',  `settings_${chatId}`)],
+          [Markup.button.callback('🎓 نظام التحقق',     `verify_settings_${chatId}`)],
           [Markup.button.callback('🔙 رجوع', 'back_to_my_list')],
         ]),
-      }
-    );
+      });
+    } catch (e) {
+      if (!e.message?.includes('message is not modified'))
+        console.error('community_panel edit error:', e.message);
+    }
   });
 
   // ── فحص وتصنيف تلقائي لكل المسجلات ──────────────────────────────────
@@ -1074,11 +1080,95 @@ module.exports = function setupDeveloper(bot) {
     await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
   });
 
-  // ── dev_user_search / /userinfo ──────────────────────────────
+  // ── dev_user_search — بحث داخلي مدمج ──────────────────────────
   bot.action('dev_user_search', async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
-    await ctx.editMessageText('🔍 *بحث مستخدم*\n\n`/userinfo <id أو @username>`', { parse_mode: 'Markdown', ...back('dev_back') });
+    // حفظ حالة البحث للمستخدم
+    if (!ctx._botSearchState) ctx._botSearchState = {};
+    try {
+      await ctx.editMessageText(
+        '🔍 *بحث عن مستخدم*\n\n' +
+        'أرسل *اسم المستخدم* أو *الآيدي* للبحث:\n\n' +
+        '• مثال: `123456789`\n' +
+        '• مثال: `@username`\n\n' +
+        '_سيتم عرض نتائج البحث مباشرة._',
+        { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', 'dev_bot_users')]]) }
+      );
+    } catch (e) { console.error('dev_user_search edit error:', e.message); }
+    // تفعيل وضع الانتظار
+    const chatId = ctx.chat.id;
+    const userId = ctx.from.id;
+    if (!global._devSearchWaiting) global._devSearchWaiting = new Map();
+    global._devSearchWaiting.set(userId, { chatId, msgId: ctx.callbackQuery.message.message_id });
+  });
+
+  // معالج نصوص البحث
+  bot.on('text', async (ctx, next) => {
+    if (!global._devSearchWaiting) return next();
+    const userId = ctx.from.id;
+    if (!global._devSearchWaiting.has(userId)) return next();
+    if (!isDeveloperOrBotAdmin(ctx)) { global._devSearchWaiting.delete(userId); return next(); }
+
+    const { chatId, msgId } = global._devSearchWaiting.get(userId);
+    global._devSearchWaiting.delete(userId);
+
+    const arg = ctx.message.text.trim();
+    const allU = db.allUsers();
+    let found = [];
+
+    if (/^\d+$/.test(arg)) {
+      // بحث بالآيدي
+      const u = db.getUser(Number(arg));
+      if (u) found = [u];
+    } else {
+      // بحث بالاسم أو اليوزر
+      const q = arg.replace('@', '').toLowerCase();
+      found = allU.filter(u =>
+        (u.username && u.username.toLowerCase().includes(q)) ||
+        (u.firstName && u.firstName.toLowerCase().includes(q))
+      ).slice(0, 8);
+    }
+
+    // حذف رسالة المستخدم
+    try { await ctx.deleteMessage(); } catch {}
+
+    if (!found.length) {
+      try {
+        await bot.telegram.editMessageText(chatId, msgId, undefined,
+          '🔍 *نتائج البحث*\n\n❌ لم يُعثر على أي مستخدم.',
+          { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', 'dev_bot_users')]]) }
+        );
+      } catch (e) { console.error('search no-result edit error:', e.message); }
+      return;
+    }
+
+    const addedByStats = new Map();
+    for (const g of db.allGroups()) {
+      if (!addedByStats.has(g.addedBy))
+        addedByStats.set(g.addedBy, { groups: 0 });
+      addedByStats.get(g.addedBy).groups++;
+    }
+
+    let text = `🔍 *نتائج البحث* (${found.length})\n\n`;
+    const btns = found.map(u => {
+      const name   = u.username ? `@${u.username}` : (u.firstName || String(u.userId));
+      const groups = addedByStats.get(u.userId)?.groups || 0;
+      const banned = u.globalBanned ? '🚫' : '';
+      text += `${banned}👤 ${name} \`[${u.userId}]\` — ${groups} مجموعة\n`;
+      return [Markup.button.callback(
+        `${banned}👤 ${name.slice(0, 20)} (${groups} مج)`,
+        `dev_uinfo_${u.userId}_0`
+      )];
+    });
+    btns.push([Markup.button.callback('🔍 بحث مجدداً', 'dev_user_search')]);
+    btns.push([Markup.button.callback('🔙 رجوع', 'dev_bot_users')]);
+
+    try {
+      await bot.telegram.editMessageText(chatId, msgId, undefined, text,
+        { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }
+      );
+    } catch (e) { console.error('search result edit error:', e.message); }
   });
 
   bot.command('userinfo', async (ctx) => {
@@ -1087,22 +1177,25 @@ module.exports = function setupDeveloper(bot) {
     if (!arg) return ctx.reply('❌ مثال: /userinfo 123456');
     const user = /^\d+$/.test(arg)
       ? db.getUser(Number(arg))
-      : db.allUsers().find(u => u.username.toLowerCase() === arg.replace('@', '').toLowerCase());
+      : db.allUsers().find(u => u.username && u.username.toLowerCase() === arg.replace('@', '').toLowerCase());
     if (!user) return ctx.reply('❌ المستخدم غير موجود!');
     await ctx.replyWithMarkdown(
-      `👤 *معلومات المستخدم*\n\n🆔 \`${user.userId}\`\n📛 ${user.firstName}\n🔗 ${user.username ? `@${user.username}` : '—'}\n🌍 محظور: ${user.globalBanned ? `✅ — ${user.bannedReason}` : '❌'}\n📅 أول ظهور: ${new Date(user.firstSeen).toLocaleDateString('ar')}\n👁️ آخر ظهور: ${new Date(user.lastSeen).toLocaleDateString('ar')}\n👥 المجموعات: \`${user.groups.size}\``
+      `👤 *معلومات المستخدم*\n\n🆔 \`${user.userId}\`\n📛 ${user.firstName || '—'}\n🔗 ${user.username ? `@${user.username}` : '—'}\n🌍 محظور: ${user.globalBanned ? `✅ — ${user.bannedReason}` : '❌'}\n📅 أول ظهور: ${new Date(user.firstSeen).toLocaleDateString('ar')}\n👁️ آخر ظهور: ${new Date(user.lastSeen).toLocaleDateString('ar')}`
     );
   });
 
-  // ── 👤 مستخدمو البوت (مع Pagination وأزرار تفاعلية) ────────────
+  // ── 👤 مستخدمو البوت (مع Pagination + بحث وأزرار تفاعلية) ─────
   bot.action(/^dev_bot_users(_(\d+))?$/, async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
-    await ctx.answerCbQuery();
-    const page      = Number(ctx.match?.[2] || 0);
+    try { await ctx.answerCbQuery(); } catch {}
+    const page      = Number(ctx.match?.[2] ?? 0);
     const PAGE_SIZE = 8;
     const allUsers  = db.allUsers();
-    if (!allUsers.length)
-      return ctx.editMessageText('👤 *لا يوجد مستخدمون مسجّلون بعد.*', { parse_mode: 'Markdown', ...back('dev_back') });
+    if (!allUsers.length) {
+      try {
+        return await ctx.editMessageText('👤 *لا يوجد مستخدمون مسجّلون بعد.*', { parse_mode: 'Markdown', ...back('dev_back') });
+      } catch (e) { console.error('bot_users empty:', e.message); return; }
+    }
 
     // إحصاء مجموعات كل مستخدم
     const addedByStats = new Map();
@@ -1112,26 +1205,36 @@ module.exports = function setupDeveloper(bot) {
       addedByStats.get(g.addedBy).groups++;
     }
 
-    const slice = allUsers.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-    let text = `👤 *مستخدمو البوت* (${allUsers.length}) — صفحة ${page + 1}\n\n`;
+    const totalPages = Math.ceil(allUsers.length / PAGE_SIZE);
+    const safePage   = Math.min(Math.max(page, 0), totalPages - 1);
+    const slice      = allUsers.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+    let text = `👤 *مستخدمو البوت* (${allUsers.length}) — صفحة ${safePage + 1} / ${totalPages}\n\n`;
     const btns = slice.map(u => {
-      const name    = u.username ? `@${u.username}` : (u.firstName || String(u.userId));
-      const groups  = addedByStats.get(u.userId)?.groups || 0;
-      const banned  = u.globalBanned ? '🚫' : '';
+      const name   = u.username ? `@${u.username}` : (u.firstName || String(u.userId));
+      const groups = addedByStats.get(u.userId)?.groups || 0;
+      const banned = u.globalBanned ? '🚫' : '';
       text += `${banned}👤 ${name} \`[${u.userId}]\` — ${groups} مجموعة\n`;
       return [Markup.button.callback(
         `${banned}👤 ${name.slice(0, 20)} (${groups} مج)`,
-        `dev_uinfo_${u.userId}_${page}`
+        `dev_uinfo_${u.userId}_${safePage}`
       )];
     });
 
     const navBtns = [];
-    if (page > 0) navBtns.push(Markup.button.callback('◀️ السابق', `dev_bot_users_${page - 1}`));
-    if ((page + 1) * PAGE_SIZE < allUsers.length) navBtns.push(Markup.button.callback('التالي ▶️', `dev_bot_users_${page + 1}`));
+    if (safePage > 0)
+      navBtns.push(Markup.button.callback('◀️ السابق', `dev_bot_users_${safePage - 1}`));
+    if ((safePage + 1) * PAGE_SIZE < allUsers.length)
+      navBtns.push(Markup.button.callback('التالي ▶️', `dev_bot_users_${safePage + 1}`));
     if (navBtns.length) btns.push(navBtns);
+    btns.push([Markup.button.callback('🔍 بحث بالاسم / الآيدي', 'dev_user_search')]);
     btns.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
 
-    await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+    try {
+      await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
+    } catch (e) {
+      if (!e.message?.includes('message is not modified'))
+        console.error('bot_users edit error:', e.message);
+    }
   });
 
   // ── معلومات مستخدم + أزرار الإجراءات ────────────────────────
