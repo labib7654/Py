@@ -85,14 +85,14 @@ async function buildTopicsMarkupRaw(bot, g, chatId) {
   const vs     = getVerifySettings(g);
   const topics = g.topics ? [...g.topics.entries()].filter(([, t]) => !t.archived) : [];
 
-  const rows = topics.map(([tid, t]) => {
-    const icon     = t.locked ? '🔒' : '🔓';
-    const isVerify = tid === vs.verifyTopicId ? ' ✅' : '';
-    return [
-      Markup.button.callback(`${icon} ${t.name.slice(0, 22)}${isVerify}`, `tp_toggle_${tid}_${chatId}`),
-      Markup.button.callback('📌', `tp_setvfy_${tid}_${chatId}`),
-    ];
-  });
+    const rows = topics.map(([tid, t]) => {
+      const icon     = t.locked ? '🔒' : '🔓';
+      const isVerify = tid === vs.verifyTopicId ? ' ✅' : '';
+      return [
+      Markup.button.callback(`${icon} ${(t.name || String(tid)).slice(0, 22)}${isVerify}`, `tp_toggle_${tid}_${chatId}`),
+        Markup.button.callback('📌', `tp_setvfy_${tid}_${chatId}`),
+      ];
+    });
 
   rows.push([
     Markup.button.callback(vs.enabled ? '🔴 تعطيل التحقق' : '🟢 تفعيل التحقق', `vfy_toggle_${chatId}`),
@@ -485,8 +485,8 @@ module.exports = function setupOwnerHandlers(bot) {
     if (!topicId) return ctx.reply('❌ استخدم في موضوع أو: /locktopic <topic_id>');
     try {
       await lockTopic(bot, chatId, topicId);
-      if (!g.topics.has(topicId)) g.topics.set(topicId, { name: String(topicId), locked: false, archived: false, approvedUsers: new Set() });
-      g.topics.get(topicId).locked = true;
+      const topic = db.getOrCreateTopic(g, topicId, String(topicId));
+      topic.locked = true;
       await ctx.reply(`🔒 تم قفل الموضوع \`${topicId}\``, { parse_mode: 'Markdown' });
     } catch (e) { await ctx.reply(`❌ فشل: ${e.message}`); }
   });
@@ -516,8 +516,7 @@ module.exports = function setupOwnerHandlers(bot) {
     if (!topicId) return ctx.reply('❌ استخدم في موضوع أو: /archivetopic <topic_id>');
     try {
       await archiveTopic(bot, chatId, topicId);
-      if (!g.topics.has(topicId)) g.topics.set(topicId, { name: String(topicId), locked: false, archived: false, approvedUsers: new Set() });
-      const t = g.topics.get(topicId);
+      const t = db.getOrCreateTopic(g, topicId, String(topicId));
       t.locked = true; t.archived = true;
       await ctx.reply(`📁 تم أرشفة الموضوع \`${topicId}\``, { parse_mode: 'Markdown' });
     } catch (e) { await ctx.reply(`❌ فشل: ${e.message}`); }
@@ -1499,7 +1498,7 @@ ${statusLine}
       const members  = t.approvedUsers?.size || 0;
       return [
         Markup.button.callback(
-          `${icon} ${t.name.slice(0, 20)}${isVerify} (${members})`,
+          `${icon} ${(t.name || String(tid)).slice(0, 20)}${isVerify} (${members})`,
           `tp_manage_${tid}_${chatId}`
         ),
       ];
@@ -1919,16 +1918,7 @@ ${statusLine}
           name:    newName,
         });
         const newTopicId = result.message_thread_id;
-        g.topics.set(newTopicId, {
-          name:         newName,
-          locked:       false,
-          archived:     false,
-          approvedUsers: new Set(),
-          joinRequests:  new Map(),
-          cooldowns:     new Map(),
-          perms:         {},
-          createdAt:     new Date(),
-        });
+        db.getOrCreateTopic(g, newTopicId, newName);
         db.markDirty();
         await ctx.reply(
           `✅ تم إنشاء الموضوع *${newName}*\n🆔 ID: \`${newTopicId}\``,

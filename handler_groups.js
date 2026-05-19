@@ -504,6 +504,24 @@ module.exports = function setupGroupHandlers(bot) {
     return next();
   });
 
+  // ── فلتر اعتماد المواضيع ────────────────────────────────────────────
+  bot.on('message', async (ctx, next) => {
+    if (!ctx.chat || ctx.chat.type === 'private' || ctx.chat.type === 'channel') return next();
+    const g = db.getGroup(ctx.chat.id);
+    if (!g?.topicSettings?.requireApprovalToJoin) return next();
+
+    const topicId = ctx.message?.message_thread_id;
+    if (!topicId) return next();
+
+    const topic = g.topics?.get(topicId);
+    if (!topic || topic.archived) return next();
+    if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
+    if (topic.approvedUsers?.has(ctx.from.id)) return next();
+
+    try { await ctx.deleteMessage(); } catch {}
+    return next();
+  });
+
   // ── فلتر الكلمات المحظورة ────────────────────────────────────────────
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private') return next();

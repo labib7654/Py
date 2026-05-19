@@ -115,6 +115,35 @@ function clearAiQA() { aiQA.clear(); saveData(); }
 
 function getGroup(chatId) { return groups.get(chatId) || null; }
 
+function getOrCreateTopic(g, topicId, name, extras = {}) {
+  if (!g.topics) g.topics = new Map();
+  if (!g.topics.has(topicId)) {
+    g.topics.set(topicId, {
+      topicId,
+      name: name || String(topicId),
+      locked: false,
+      archived: false,
+      approvedUsers: new Set(),
+      joinRequests: new Map(),
+      cooldowns: new Map(),
+      perms: {},
+      createdAt: new Date(),
+      ...extras,
+    });
+  } else {
+    const topic = g.topics.get(topicId);
+    if (name && (!topic.name || topic.name === String(topicId))) topic.name = name;
+    if (!topic.approvedUsers) topic.approvedUsers = new Set();
+    if (!topic.joinRequests) topic.joinRequests = new Map();
+    if (!topic.cooldowns) topic.cooldowns = new Map();
+    if (!topic.perms) topic.perms = {};
+    if (topic.topicId === undefined) topic.topicId = topicId;
+    Object.assign(topic, extras);
+  }
+  markDirty();
+  return g.topics.get(topicId);
+}
+
 function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
   if (!groups.has(chatId)) {
     groups.set(chatId, {
@@ -338,7 +367,13 @@ function getStats() {
     bannedUsers:   [...users.values()].filter(u => u.globalBanned).length,
     totalAdmins:   [...groups.values()].reduce((a, g) => a + g.admins.size, 0),
     totalWarns:    [...groups.values()].reduce((a, g) => a + [...g.warns.values()].reduce((b, w) => b + w.length, 0), 0),
-    pendingReqs:   [...groups.values()].reduce((a, g) => a + [...g.joinRequests.values()].filter(r => r.status === 'pending').length, 0),
+    pendingReqs:   [...groups.values()].reduce((a, g) => {
+      const joinReqs = [...g.joinRequests.values()].filter(r => ['pending', 'pending_verify'].includes(r.status)).length;
+      const verifyReqs = g.verifySystem?.pendingRequests
+        ? [...g.verifySystem.pendingRequests.values()].filter(r => r.status === 'pending').length
+        : 0;
+      return a + joinReqs + verifyReqs;
+    }, 0),
   };
 }
 
@@ -363,6 +398,14 @@ function buildJSON() {
         joinRequests:        Object.fromEntries(v.joinRequests),
         joinRequestCooldown: Object.fromEntries(v.joinRequestCooldown),
         wordViolations:      Object.fromEntries(v.wordViolations),
+        verifySystem: v.verifySystem ? {
+          enabled:        !!v.verifySystem.enabled,
+          verifyTopicId:   v.verifySystem.verifyTopicId ?? null,
+          pendingRequests: Object.fromEntries(v.verifySystem.pendingRequests || new Map()),
+          approvedMembers: Object.fromEntries(v.verifySystem.approvedMembers || new Map()),
+          rejectedMembers: Object.fromEntries(v.verifySystem.rejectedMembers || new Map()),
+          cooldowns:       Object.fromEntries(v.verifySystem.cooldowns || new Map()),
+        } : null,
         topics: Object.fromEntries(
           [...v.topics.entries()].map(([tid, tv]) => [tid, {
             ...tv,
@@ -491,6 +534,7 @@ function parseData(raw) {
       for (const [tid, tv] of Object.entries(v.topics || {})) {
         topicsMap.set(Number(tid), {
           ...tv,
+          topicId: Number(tid),
           approvedUsers: new Set((tv.approvedUsers || []).map(Number)),
           joinRequests: new Map(
             Object.entries(tv.joinRequests || {}).map(([uk, uv]) => [Number(uk), uv])
@@ -498,8 +542,19 @@ function parseData(raw) {
           cooldowns: new Map(
             Object.entries(tv.cooldowns || {}).map(([uk, uv]) => [Number(uk), Number(uv)])
           ),
+          perms: tv.perms || {},
         });
       }
+
+      const verifySystemRaw = v.verifySystem || null;
+      const verifySystem = verifySystemRaw ? {
+        enabled: !!verifySystemRaw.enabled,
+        verifyTopicId: verifySystemRaw.verifyTopicId ?? null,
+        pendingRequests: new Map(Object.entries(verifySystemRaw.pendingRequests || {}).map(([uk, uv]) => [Number(uk), uv])),
+        approvedMembers: new Map(Object.entries(verifySystemRaw.approvedMembers || {}).map(([uk, uv]) => [Number(uk), uv])),
+        rejectedMembers: new Map(Object.entries(verifySystemRaw.rejectedMembers || {}).map(([uk, uv]) => [Number(uk), uv])),
+        cooldowns: new Map(Object.entries(verifySystemRaw.cooldowns || {}).map(([uk, uv]) => [Number(uk), Number(uv)])),
+      } : undefined;
 
       // نضمن bannedWords مصفوفة صالحة
       const bannedWords = Array.isArray(v.bannedWords) ? v.bannedWords : [];
@@ -537,6 +592,7 @@ function parseData(raw) {
         joinRequestCooldown: new Map(Object.entries(v.joinRequestCooldown || {}).map(([uk, uv]) => [Number(uk), Number(uv)])),
         wordViolations:      new Map(Object.entries(v.wordViolations || {}).map(([uk, uv]) => [Number(uk), uv || {}])),
         topics:              topicsMap,
+        verifySystem,
         topicSettings: v.topicSettings || {
           requireApprovalToJoin: false,
           autoLockOnCreate:      false,
@@ -721,6 +777,7 @@ if (!USE_GITHUB) {
 
 module.exports = {
   getGroup, getOrCreateGroup, deleteGroup, allGroups,
+  getOrCreateTopic,
   getChannel, getOrCreateChannel, deleteChannel, allChannels,
   trackMember,
   getOrCreateUser, getUser, allUsers, getUserGroups,

@@ -92,6 +92,68 @@ function getAvailableTopics(g) {
     .map(([id, t]) => ({ id, name: t.name || String(id) }));
 }
 
+function normalizeTopicText(text) {
+  return String(text || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+}
+
+function resolveRegistrationTopic(g, data = {}) {
+  if (!g?.topics?.size) return null;
+
+  const activeTopics = [...g.topics.entries()].filter(([, t]) => !t.archived);
+  if (!activeTopics.length) return null;
+
+  const candidates = [
+    data.topicName,
+    data.university,
+    data.college,
+    data.major,
+  ].map(normalizeTopicText).filter(Boolean);
+
+  for (const candidate of candidates) {
+    const exact = activeTopics.find(([, t]) => normalizeTopicText(t.name) === candidate);
+    if (exact) return { topicId: exact[0], topicName: exact[1].name || String(exact[0]) };
+  }
+
+  for (const candidate of candidates) {
+    const partial = activeTopics.find(([, t]) => {
+      const topicName = normalizeTopicText(t.name);
+      return topicName.includes(candidate) || candidate.includes(topicName);
+    });
+    if (partial) return { topicId: partial[0], topicName: partial[1].name || String(partial[0]) };
+  }
+
+  const directVerifyTopicId = g.verifySystem?.verifyTopicId;
+  if (directVerifyTopicId && g.topics.has(directVerifyTopicId)) {
+    const topic = g.topics.get(directVerifyTopicId);
+    return { topicId: directVerifyTopicId, topicName: topic?.name || String(directVerifyTopicId) };
+  }
+
+  const [topicId, topic] = activeTopics[0];
+  return { topicId, topicName: topic?.name || String(topicId) };
+}
+
+function attachApprovedUserToTopic(g, userId, data = {}) {
+  const resolved = resolveRegistrationTopic(g, data);
+  if (!resolved) return null;
+
+  const topic = g.topics?.get(resolved.topicId);
+  if (!topic) return null;
+  if (!topic.approvedUsers) topic.approvedUsers = new Set();
+  topic.approvedUsers.add(userId);
+  db.markDirty();
+  return resolved;
+}
+
+function detachApprovedUserFromTopics(g, userId) {
+  if (!g?.topics) return;
+  for (const [, topic] of g.topics.entries()) {
+    if (topic.approvedUsers?.delete(userId)) db.markDirty();
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 //  دوال الإشعارات للمشرفين
 // ═══════════════════════════════════════════════════════════════
@@ -436,6 +498,9 @@ module.exports = {
   sessions,
   getVerifySettings,
   getAvailableTopics,
+  resolveRegistrationTopic,
+  attachApprovedUserToTopic,
+  detachApprovedUserFromTopics,
   buildAdminNotification,
   buildAdminButtons,
   notifyAll,

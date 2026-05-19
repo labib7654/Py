@@ -18,6 +18,8 @@ const {
   AUTO_APPROVE_DELAY,
   sessions,
   getVerifySettings,
+  resolveRegistrationTopic,
+  attachApprovedUserToTopic,
   buildAdminNotification,
   buildAdminButtons,
   notifyAll,
@@ -291,6 +293,7 @@ module.exports = function setupVerifyRegistration(bot) {
     if (!g) return ctx.reply('❌ المجموعة غير موجودة. تواصل مع المشرف.');
 
     const vs = getVerifySettings(g);
+    const resolvedTopic = resolveRegistrationTopic(g, sess.data);
 
     // منع الطلبات المتعددة
     const existing = vs.pendingRequests.get(userId);
@@ -306,6 +309,9 @@ module.exports = function setupVerifyRegistration(bot) {
       username:    ctx.from.username  || '',
       firstName:   ctx.from.first_name || String(userId),
       data:        { ...sess.data },
+      studentData: { ...sess.data },
+      topicId:     resolvedTopic?.topicId || null,
+      topicName:   resolvedTopic?.topicName || sess.data.university || null,
       submittedAt: new Date(),
       status:      'pending',
     });
@@ -377,11 +383,15 @@ module.exports = function setupVerifyRegistration(bot) {
         }
 
         // حفظ الاعتماد
+        const approvedTopic = resolveRegistrationTopic(g2, sess.data);
         vs2.approvedMembers.set(userId, {
           studentData: { ...sess.data },
+          topicId:     approvedTopic?.topicId || null,
+          topicName:   approvedTopic?.topicName || sess.data.university || null,
           approvedAt:  new Date(),
           approvedBy:  'auto',
         });
+        attachApprovedUserToTopic(g2, userId, sess.data);
 
         db.markDirty();
 

@@ -22,7 +22,6 @@ const db         = require('./db');
 const { isDeveloper, isAdmin } = require('./helpers');
 const {
   sessions,
-  getOrCreateTopic,
   getVerifySettings,
   getAvailableTopics,
   buildAdminButtons,
@@ -54,8 +53,7 @@ module.exports = function setupVerifyCommands(bot) {
 
     // تسجيل الموضوع تلقائياً إن لم يكن مسجلاً
     if (!g.topics?.has(topicId)) {
-      getOrCreateTopic(g, topicId, name);
-      db.markDirty();
+      db.getOrCreateTopic(g, topicId, name);
 
       const vs = getVerifySettings(g);
       if (vs.enabled) {
@@ -107,7 +105,7 @@ module.exports = function setupVerifyCommands(bot) {
         const tid = t.message_thread_id;
         if (!tid || !t.name) continue;
         if (!g.topics.has(tid)) {
-          getOrCreateTopic(g, tid, t.name);
+          db.getOrCreateTopic(g, tid, t.name);
           added++;
         } else {
           const ex = g.topics.get(tid);
@@ -356,14 +354,14 @@ module.exports = function setupVerifyCommands(bot) {
     for (const req of pending.slice(0, 10)) {
       text +=
         `👤 ${req.firstName}${req.username ? ` (@${req.username})` : ''} \`${req.userId}\`\n` +
-        `🏛️ ${req.data?.college} | 📚 ${req.data?.major} | 📅 ${req.data?.year}\n` +
+        `🏛️ ${req.data?.university || req.data?.college || 'غير محدد'} | 📚 ${req.data?.major || 'غير محدد'} | 🔢 ${req.data?.studentId || req.data?.year || 'غير محدد'}\n` +
         `🕐 ${new Date(req.submittedAt).toLocaleString('ar-SA')}\n\n`;
     }
     if (pending.length > 10) text += `_...و ${pending.length - 10} طلب آخر_`;
 
     const rows = pending.slice(0, 5).map(req => [
       Markup.button.callback(
-        `👤 ${req.firstName.substring(0, 20)} — ${req.data?.college?.substring(0, 12) || ''}`,
+        `👤 ${req.firstName.substring(0, 20)} — ${(req.data?.university || req.data?.college || '').substring(0, 12)}`,
         `vfy_info_${req.userId}_${ctx.chat.id}`
       ),
     ]);
@@ -388,13 +386,13 @@ module.exports = function setupVerifyCommands(bot) {
     for (const req of pending.slice(0, 10)) {
       text +=
         `👤 ${req.firstName}${req.username ? ` (@${req.username})` : ''} \`${req.userId}\`\n` +
-        `🏛️ ${req.data?.college} | 📚 ${req.data?.major}\n` +
+        `🏛️ ${req.data?.university || req.data?.college || 'غير محدد'} | 📚 ${req.data?.major || 'غير محدد'}\n` +
         `🕐 ${new Date(req.submittedAt).toLocaleString('ar-SA')}\n\n`;
     }
 
     const rows = pending.slice(0, 5).map(req => [
       Markup.button.callback(
-        `👤 ${req.firstName.substring(0, 20)} — ${req.data?.college?.substring(0, 12) || ''}`,
+        `👤 ${req.firstName.substring(0, 20)} — ${(req.data?.university || req.data?.college || '').substring(0, 12)}`,
         `vfy_info_${req.userId}_${chatId}`
       ),
     ]);
@@ -427,7 +425,7 @@ module.exports = function setupVerifyCommands(bot) {
     // توزيع على الكليات
     const dist = new Map();
     for (const [, m] of vs.approvedMembers) {
-      const name = m.topicName || String(m.topicId);
+      const name = m.topicName || m.studentData?.topicName || m.studentData?.university || String(m.topicId || 'غير محدد');
       dist.set(name, (dist.get(name) || 0) + 1);
     }
     const distText = [...dist.entries()]
@@ -468,6 +466,7 @@ module.exports = function setupVerifyCommands(bot) {
       return vs?.enabled && (
         vs.pendingRequests?.has(userId) ||
         vs.approvedMembers?.has(userId) ||
+        g.joinRequests?.has(userId) ||
         g.members?.has(userId)
       );
     });
@@ -475,7 +474,7 @@ module.exports = function setupVerifyCommands(bot) {
     if (!myGroup) {
       return ctx.reply(
         `❌ *لم أجد مجموعة مرتبطة بحسابك.*\n\n` +
-        `يجب أن تنضم للمجموعة أولاً، ثم أرسل /verify في الخاص.`,
+        `يجب أن تنضم للمجموعة أولاً، أو يكون لديك طلب انضمام/تحقق مسجل، ثم أرسل /verify في الخاص.`,
         { parse_mode: 'Markdown' }
       );
     }
@@ -486,8 +485,8 @@ module.exports = function setupVerifyCommands(bot) {
       const info = vs.approvedMembers.get(userId);
       return ctx.reply(
         `✅ *حسابك معتمد بالفعل!*\n\n` +
-        `🏛️ الكلية: *${info.topicName}*\n` +
-        `🔢 رقم القيد: \`${info.studentData?.studentId || 'غير متاح'}\`\n\n` +
+        `🏛️ الكلية: *${info.topicName || info.studentData?.topicName || info.studentData?.university || 'غير متاح'}*\n` +
+        `🔢 رقم القيد: \`${info.studentData?.studentId || info.studentId || 'غير متاح'}\`\n\n` +
         `يمكنك المشاركة في موضوعك مباشرة.`,
         { parse_mode: 'Markdown' }
       );
@@ -512,7 +511,7 @@ module.exports = function setupVerifyCommands(bot) {
 
     // بدء جلسة جديدة
     const topics = getAvailableTopics(myGroup);
-    sessions.set(userId, { step: 'student_id', chatId: myGroup.chatId, data: {}, topics });
+    sessions.set(userId, { step: 'type_select', chatId: myGroup.chatId, data: {}, topics });
     await stepWelcome(bot, userId, myGroup.title);
   });
 
@@ -584,7 +583,7 @@ module.exports = function setupVerifyCommands(bot) {
     if (!g) return;
 
     const name  = ctx.message.text.split(' ').slice(1).join(' ').trim();
-    const topic = getOrCreateTopic(g, topicId, name || String(topicId));
+    const topic = db.getOrCreateTopic(g, topicId, name || String(topicId));
     if (name) topic.name = name;
     db.markDirty();
 
@@ -616,12 +615,15 @@ module.exports = function setupVerifyCommands(bot) {
       if (app) {
         found = true;
         text +=
-          `*${g.title}*\n` +
-          `  ✅ معتمد — ${app.topicName}\n` +
-          `  🏛️ ${app.studentData?.college || ''} | 📚 ${app.studentData?.major || ''}\n\n`;
+        `*${g.title}*\n` +
+          `  ✅ معتمد — ${app.topicName || app.studentData?.topicName || app.studentData?.university || 'غير محدد'}\n` +
+          `  🏛️ ${app.studentData?.university || app.studentData?.college || ''} | 📚 ${app.studentData?.major || ''}\n\n`;
       } else if (req?.status === 'pending') {
         found = true;
         text += `*${g.title}*\n  ⏳ طلبك قيد المراجعة...\n\n`;
+      } else if (g.joinRequests?.get(userId)?.status === 'pending_verify') {
+        found = true;
+        text += `*${g.title}*\n  🟡 طلبك مسجل، لكن التحقق لم يكتمل بعد.\n\n`;
       }
     }
 
