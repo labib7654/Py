@@ -258,6 +258,12 @@ function getUserGroups(userId) {
     .map(g => g.chatId);
 }
 
+function getUserChannels(userId) {
+  return [...channels.values()]
+    .filter(c => c.ownerId === userId || c.addedBy === userId)
+    .map(c => c.chatId);
+}
+
 // ═══════════════════════════════════════════════════════════════
 //  Communities
 // ═══════════════════════════════════════════════════════════════
@@ -723,7 +729,7 @@ module.exports = {
   getGroup, getOrCreateGroup, deleteGroup, allGroups,
   getChannel, getOrCreateChannel, deleteChannel, allChannels,
   trackMember,
-  getOrCreateUser, getUser, allUsers, getUserGroups,
+  getOrCreateUser, getUser, allUsers, getUserGroups, getUserChannels,
   getOrCreateCommunity, getCommunity, allCommunities, recordCommunityJoin,
   recordWordViolation, resetWordViolation,
   addAuditLog,

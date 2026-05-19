@@ -9,6 +9,101 @@ const {
 } = require('./helpers');
 
 // ═══════════════════════════════════════════════════════════════
+//  دالة مركزية: تصنيف كل مجموعات/قنوات المستخدم
+//  ترجع: { forums, supergroups, groups, channels, btns, summary }
+// ═══════════════════════════════════════════════════════════════
+async function classifyUserChats(bot, userId, autoFetch = false) {
+  const groupIds   = db.getUserGroups(userId);
+  const channelIds = db.getUserChannels(userId);
+
+  const classified = [];
+
+  // معالجة المجموعات
+  for (const chatId of groupIds) {
+    const g = db.getGroup(chatId);
+    if (!g) continue;
+
+    // فحص تلقائي من تيليجرام لو مطلوب
+    if (autoFetch) {
+      try {
+        const chat = await bot.telegram.getChat(chatId);
+        const newType = chat.is_forum ? 'forum'
+          : chat.type === 'supergroup' ? 'supergroup'
+          : chat.type;
+        if (g.type !== newType) g.type = newType;
+        if (chat.title && chat.title !== g.title) g.title = chat.title;
+        // إذا كانت قناة فعلياً انقلها للقنوات
+        if (chat.type === 'channel') {
+          db.getOrCreateChannel(chatId, chat.title || g.title, chat.username || '', userId, '');
+          db.deleteGroup(chatId);
+          continue;
+        }
+      } catch {}
+    }
+
+    let icon, typeLabel, panelAction;
+    if (g.type === 'forum' || g.communityId || (g.topics && g.topics.size > 0)) {
+      icon = '🎓'; typeLabel = 'مجتمع'; panelAction = `community_panel_${chatId}`;
+    } else if (g.type === 'supergroup') {
+      icon = '👥'; typeLabel = 'سوبر قروب'; panelAction = `owner_panel_${chatId}`;
+    } else {
+      icon = '💬'; typeLabel = 'مجموعة'; panelAction = `owner_panel_${chatId}`;
+    }
+    classified.push({ chatId, g, icon, typeLabel, panelAction, members: g.members?.size || 0 });
+  }
+
+  // معالجة القنوات
+  for (const chatId of channelIds) {
+    const c = db.getChannel(chatId);
+    if (!c) continue;
+    if (autoFetch) {
+      try {
+        const chat = await bot.telegram.getChat(chatId);
+        if (chat.title && chat.title !== c.title) c.title = chat.title;
+      } catch {}
+    }
+    classified.push({
+      chatId, g: c, icon: '📢', typeLabel: 'قناة',
+      panelAction: `channel_panel_${chatId}`,
+      members: c.subscribers?.size || 0,
+    });
+  }
+
+  // تصنيف
+  const forums      = classified.filter(x => x.typeLabel === 'مجتمع');
+  const supergroups = classified.filter(x => x.typeLabel === 'سوبر قروب');
+  const groups      = classified.filter(x => x.typeLabel === 'مجموعة');
+  const channels    = classified.filter(x => x.typeLabel === 'قناة');
+
+  // بناء الأزرار
+  const btns = [];
+  const addSection = (label, icon, items) => {
+    if (!items.length) return;
+    btns.push([Markup.button.callback(`── ${icon} ${label} (${items.length}) ──`, 'noop')]);
+    items.forEach(({ g, icon: ic, panelAction, members }) => {
+      btns.push([Markup.button.callback(
+        `${ic} ${(g.title || '').slice(0, 22)} (${members})`,
+        panelAction
+      )]);
+    });
+  };
+
+  addSection('المجتمعات',    '🎓', forums);
+  addSection('السوبر قروبات','👥', supergroups);
+  addSection('المجموعات',    '💬', groups);
+  addSection('القنوات',      '📢', channels);
+
+  const summary = [
+    forums.length      ? `🎓 ${forums.length} مجتمع` : null,
+    supergroups.length ? `👥 ${supergroups.length} سوبر قروب` : null,
+    groups.length      ? `💬 ${groups.length} مجموعة` : null,
+    channels.length    ? `📢 ${channels.length} قناة` : null,
+  ].filter(Boolean).join(' • ');
+
+  return { forums, supergroups, groups, channels, classified, btns, summary };
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  لوحة المطور الرئيسية (مع زر مشرفي البوت)
 // ═══════════════════════════════════════════════════════════════
 function devMainKeyboard() {
@@ -148,71 +243,16 @@ module.exports = function setupDeveloper(bot) {
       );
     }
 
-    // ── قائمة المجموعات مصنّفة حسب النوع ──────────────────────
-    const userGroups = db.getUserGroups(u.id);
-    if (userGroups.length > 0) {
-      // تصنيف كل مسجل حسب نوعه
-      const classified = userGroups.map(chatId => {
-        const g = db.getGroup(chatId);
-        if (!g) return null;
-        let icon, typeLabel, panelAction;
-        if (g.type === 'channel') {
-          icon = '📢'; typeLabel = 'قناة'; panelAction = `channel_panel_${chatId}`;
-        } else if (g.communityId || g.type === 'forum' || g.topics?.size > 0) {
-          icon = '🎓'; typeLabel = 'مجتمع/فورم'; panelAction = `community_panel_${chatId}`;
-        } else if (g.type === 'supergroup') {
-          icon = '👥'; typeLabel = 'سوبر قروب'; panelAction = `owner_panel_${chatId}`;
-        } else {
-          icon = '💬'; typeLabel = 'مجموعة'; panelAction = `owner_panel_${chatId}`;
-        }
-        return { chatId, g, icon, typeLabel, panelAction };
-      }).filter(Boolean);
-
-      // تجميع حسب النوع
-      const channels   = classified.filter(x => x.typeLabel === 'قناة');
-      const forums     = classified.filter(x => x.typeLabel === 'مجتمع/فورم');
-      const supergroups = classified.filter(x => x.typeLabel === 'سوبر قروب');
-      const groups_    = classified.filter(x => x.typeLabel === 'مجموعة');
-
-      const btns = [];
-
-      // عنوان لكل قسم
-      const addSection = (label, items) => {
-        if (!items.length) return;
-        items.slice(0, 6).forEach(({ g, icon, panelAction }) => {
-          const members = g.members?.size || 0;
-          btns.push([Markup.button.callback(
-            `${icon} ${(g.title || '').slice(0, 22)} (${members})`,
-            panelAction
-          )]);
-        });
-      };
-
-      // ترتيب: مجتمعات → سوبر قروبات → مجموعات → قنوات
-      if (forums.length)      btns.push([Markup.button.callback(`── 🎓 المجتمعات (${forums.length}) ──`, 'noop')]);
-      addSection('مجتمع', forums);
-      if (supergroups.length) btns.push([Markup.button.callback(`── 👥 السوبر قروبات (${supergroups.length}) ──`, 'noop')]);
-      addSection('سوبر قروب', supergroups);
-      if (groups_.length)     btns.push([Markup.button.callback(`── 💬 المجموعات (${groups_.length}) ──`, 'noop')]);
-      addSection('مجموعة', groups_);
-      if (channels.length)    btns.push([Markup.button.callback(`── 📢 القنوات (${channels.length}) ──`, 'noop')]);
-      addSection('قناة', channels);
-
-      btns.push([Markup.button.callback('🔄 فحص وتصنيف تلقائي', 'auto_classify_chats')]);
-      btns.push([Markup.button.callback('ℹ️ مساعدة وأوامر', 'help_menu')]);
-
-      const summary = [
-        forums.length      ? `🎓 ${forums.length} مجتمع` : null,
-        supergroups.length ? `👥 ${supergroups.length} سوبر قروب` : null,
-        groups_.length     ? `💬 ${groups_.length} مجموعة` : null,
-        channels.length    ? `📢 ${channels.length} قناة` : null,
-      ].filter(Boolean).join(' • ');
-
+    // ── قائمة المجموعات والقنوات مصنّفة ──────────────────────
+    const { btns: classBtns, summary, classified } = await classifyUserChats(bot, u.id);
+    if (classified.length > 0) {
+      classBtns.push([Markup.button.callback('🔄 فحص وتصنيف تلقائي', 'auto_classify_chats')]);
+      classBtns.push([Markup.button.callback('ℹ️ مساعدة وأوامر', 'help_menu')]);
       return ctx.replyWithMarkdown(
         `👑 *مرحباً ${u.first_name}!*\n\n` +
-        `📊 ${summary}\n\n` +
+        `📊 ${summary || 'لا يوجد'}\n\n` +
         `اختر لفتح لوحة التحكم المناسبة:`,
-        Markup.inlineKeyboard(btns)
+        Markup.inlineKeyboard(classBtns)
       );
     }
 
@@ -403,104 +443,41 @@ module.exports = function setupDeveloper(bot) {
 
   // ── فحص وتصنيف تلقائي لكل المسجلات ──────────────────────────────────
   bot.action('auto_classify_chats', async (ctx) => {
-    await ctx.answerCbQuery('🔄 جاري الفحص...');
-    const groups = db.allGroups();
-    const channels = db.allChannels();
-    let updated = 0;
-
-    for (const g of groups) {
-      try {
-        const chat = await bot.telegram.getChat(g.chatId);
-        // تحديث النوع الدقيق
-        const newType = chat.is_forum
-          ? 'forum'
-          : chat.type === 'supergroup'
-            ? 'supergroup'
-            : chat.type;
-        if (g.type !== newType) { g.type = newType; updated++; }
-        // تحديث الاسم لو تغيّر
-        if (chat.title && chat.title !== g.title) { g.title = chat.title; }
-      } catch {}
-    }
-
-    for (const ch of channels) {
-      try {
-        const chat = await bot.telegram.getChat(ch.chatId);
-        if (chat.title && chat.title !== ch.title) { ch.title = chat.title; updated++; }
-      } catch {}
-    }
-
+    try { await ctx.answerCbQuery('🔄 جاري الفحص...'); } catch {}
+    const { btns, summary, classified } = await classifyUserChats(bot, ctx.from.id, true);
     db.saveData();
-    await ctx.answerCbQuery(`✅ تم الفحص — حُدّث ${updated} مسجل`, { show_alert: true });
-    // أعد عرض القائمة المصنّفة
-    const u = ctx.from;
-    const userGroups = db.getUserGroups(u.id);
-    if (!userGroups.length) return ctx.editMessageText('لا توجد مجموعات.');
-
-    const classified = userGroups.map(chatId => {
-      const g = db.getGroup(chatId);
-      if (!g) return null;
-      let icon, typeLabel, panelAction;
-      if (g.type === 'channel') { icon = '📢'; typeLabel = 'قناة'; panelAction = `channel_panel_${chatId}`; }
-      else if (g.communityId || g.type === 'forum' || g.topics?.size > 0) { icon = '🎓'; typeLabel = 'مجتمع/فورم'; panelAction = `community_panel_${chatId}`; }
-      else if (g.type === 'supergroup') { icon = '👥'; typeLabel = 'سوبر قروب'; panelAction = `owner_panel_${chatId}`; }
-      else { icon = '💬'; typeLabel = 'مجموعة'; panelAction = `owner_panel_${chatId}`; }
-      return { chatId, g, icon, typeLabel, panelAction };
-    }).filter(Boolean);
-
-    const btns = [];
-    const sections = [
-      ['🎓 مجتمع/فورم', '🎓'], ['👥 سوبر قروب', '👥'],
-      ['💬 مجموعة', '💬'],     ['📢 قناة', '📢'],
-    ];
-    for (const [label, icon] of sections) {
-      const items = classified.filter(x => x.icon === icon);
-      if (!items.length) continue;
-      btns.push([Markup.button.callback(`── ${label} (${items.length}) ──`, 'noop')]);
-      items.forEach(({ g, panelAction }) => {
-        btns.push([Markup.button.callback(`${icon} ${(g.title||'').slice(0,22)} (${g.members?.size||0})`, panelAction)]);
-      });
+    if (!classified.length) {
+      try { return await ctx.editMessageText('لا توجد مجموعات أو قنوات تحت إدارتك.'); } catch {}
+      return;
     }
     btns.push([Markup.button.callback('🔄 فحص مجدد', 'auto_classify_chats')]);
-    await ctx.editMessageText(
-      `👑 *قائمتك المصنّفة — ${classified.length} مسجل*\n✅ تم تحديث ${updated} نوع`,
-      { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }
-    );
+    try {
+      await ctx.editMessageText(
+        `👑 *قائمتك المصنّفة — ${classified.length} مسجل*\n📊 ${summary}`,
+        { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }
+      );
+    } catch (e) {
+      if (!e.message?.includes('message is not modified')) console.error('auto_classify edit error:', e.message);
+    }
   });
 
-  // ── رجوع لقائمة المجموعات الشخصية ───────────────────────────────────
+  // ── رجوع لقائمة المجموعات والقنوات الشخصية ──────────────────────────
   bot.action('back_to_my_list', async (ctx) => {
-    await ctx.answerCbQuery();
-    const u = ctx.from;
-    const userGroups = db.getUserGroups(u.id);
-    if (!userGroups.length) return ctx.editMessageText('لا توجد مجموعات تحت إدارتك.');
-
-    const classified = userGroups.map(chatId => {
-      const g = db.getGroup(chatId);
-      if (!g) return null;
-      let icon, panelAction;
-      if (g.type === 'channel')   { icon = '📢'; panelAction = `channel_panel_${chatId}`; }
-      else if (g.communityId || g.type === 'forum' || g.topics?.size > 0) { icon = '🎓'; panelAction = `community_panel_${chatId}`; }
-      else if (g.type === 'supergroup') { icon = '👥'; panelAction = `owner_panel_${chatId}`; }
-      else { icon = '💬'; panelAction = `owner_panel_${chatId}`; }
-      return { g, icon, panelAction };
-    }).filter(Boolean);
-
-    const btns = [];
-    for (const [icon, label] of [['🎓','مجتمع'],['👥','سوبر قروب'],['💬','مجموعة'],['📢','قناة']]) {
-      const items = classified.filter(x => x.icon === icon);
-      if (!items.length) continue;
-      btns.push([Markup.button.callback(`── ${icon} ${label} (${items.length}) ──`, 'noop')]);
-      items.forEach(({ g, panelAction }) => {
-        btns.push([Markup.button.callback(`${icon} ${(g.title||'').slice(0,22)} (${g.members?.size||0})`, panelAction)]);
-      });
+    try { await ctx.answerCbQuery(); } catch {}
+    const { btns, summary, classified } = await classifyUserChats(bot, ctx.from.id);
+    if (!classified.length) {
+      try { return await ctx.editMessageText('لا توجد مجموعات أو قنوات تحت إدارتك.'); } catch {}
+      return;
     }
     btns.push([Markup.button.callback('🔄 فحص وتصنيف تلقائي', 'auto_classify_chats')]);
-
-    await ctx.editMessageText(
-      `👑 *مجموعاتك — ${classified.length} مسجل*`,
-      { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }
-    );
+    try {
+      await ctx.editMessageText(
+        `👑 *قائمتك — ${classified.length} مسجل*\n📊 ${summary}`,
+        { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }
+      );
+    } catch (e) {
+      if (!e.message?.includes('message is not modified')) console.error('back_to_my_list error:', e.message);
+    }
   });
 
   // ── إحصائيات القناة ──────────────────────────────────────────────────
