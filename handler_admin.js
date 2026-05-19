@@ -406,46 +406,16 @@ module.exports = function setupAdminHandlers(bot) {
     const warns = g.warns.get(tid);
     warns.push({ reason: 'تحذير يدوي', warnedBy: ctx.from.id, warnedAt: new Date() });
     const m = g.members.get(tid);
-    await logAction(bot, g, `⚠️ تحذير ${warns.length}/${g.maxWarns}`, ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, 'تحذير يدوي');
-    if (warns.length >= g.maxWarns) {
-      try { await bot.telegram.banChatMember(cid, tid); g.bannedUsers.add(tid); g.warns.delete(tid); } catch {}
-      await ctx.answerCbQuery(`🚫 حظر بعد ${g.maxWarns} تحذيرات!`, { show_alert: true });
-    } else {
-      await ctx.answerCbQuery(`⚠️ تحذير ${warns.length}/${g.maxWarns}!`, { show_alert: true });
-    }
+    await logAction(bot, g, `⚠️ تحذير ${warns.length}/${g.maxWarns}`, ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, '''); }
+      await ctx.answerCbQuery('✅ تم الطرد!', { show_alert: true });
+    } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
-  // مسح تحذيرات
-  bot.action(/^clearwarns_(\d+)_(-?\d+)$/, async (ctx) => {
+  // تحذير (زر)
+  bot.action(/^warn_(\d+)_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
-    const g = db.getGroup(cid);
-    if (g) { g.warns.delete(tid); const m = g.members.get(tid); await logAction(bot, g, '🗑️ مسح تحذيرات', ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, ''); }
-    await ctx.answerCbQuery('✅ تم حذف التحذيرات!', { show_alert: true });
-    try { await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n✅ *تم حذف التحذيرات*', { parse_mode: 'Markdown' }); } catch {}
-  });
-
-  // معلومات عضو
-  bot.action(/^info_(\d+)_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
-    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
-    const g = db.getGroup(cid);
-    const m = g?.members.get(tid);
-    const gu = db.getUser(tid);
-    const name = m ? (m.username ? `@${m.username}` : m.firstName) : String(tid);
-    await ctx.reply(
-      `📋 *معلومات*\n\n👤 ${name}\n🆔 \`${tid}\`\n⚠️ تحذيرات: \`${g?.warns.get(tid)?.length || 0}/${g?.maxWarns || 3}\`\n🔇 مكتوم: ${g?.mutedUsers.has(tid) ? '✅' : '❌'}\n🚫 محظور: ${g?.bannedUsers.has(tid) ? '✅' : '❌'}\n🌍 محظور عالمياً: ${gu?.globalBanned ? '✅' : '❌'}\n📨 رسائل: \`${m?.messageCount || 0}\`\n⭐ نقاط: \`${m?.score || 0}\``,
-      { parse_mode: 'Markdown' }
-    );
-  });
-};
-
-// ── دالة مساعدة لتسمية المدة ─────────────────────────────────────────────
-function durationLabel(secs) {
-  if (secs < 3600)   return `${secs / 60} دقيقة`;
-  if (secs < 86400)  return `${secs / 3600} ساعة`;
-  if (secs < 604800) return `${secs / 86400} يوم`;
-  return `${Math.round(secs / 604800)} أسبوع`;
-}
+    const g = db.getGroup(cid); if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+    if (!g.warns.has(tid)) g.warn
