@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:15:14.833Z",
+  "savedAt": "2026-05-19T15:15:29.979Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3230,6 +3230,16 @@
           "messageCount": 3,
           "score": 3,
           "lastMessageAt": "2026-05-19T15:14:34.851Z"
+        },
+        "8265840070": {
+          "userId": 8265840070,
+          "username": "BMW0_0",
+          "firstName": "ووة",
+          "role": "member",
+          "joinedAt": "2026-05-19T15:15:22.207Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-19T15:15:22.238Z"
         }
       },
       "admins": {},
@@ -3272,7 +3282,14 @@
         "canManageTopics": false
       },
       "auditLog": [],
-      "verifySystem": null
+      "verifySystem": {
+        "enabled": false,
+        "verifyTopicId": null,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     }
   },
   "channels": {},
@@ -3909,14 +3926,15 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-19T01:47:41.260Z",
+      "lastSeen": "2026-05-19T15:15:22.206Z",
       "groups": [
         -1003969494192,
         -1003940779079,
         -1003854112996,
         -1002648125233,
         -1003794953708,
-        -1002985211839
+        -1002985211839,
+        -1003928741558
       ],
       "channels": [],
       "bioBanInfo": null,
@@ -4160,9 +4178,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-19T15:15:11.138Z",
+      "lastSeen": "2026-05-19T15:15:22.239Z",
       "groups": [
-        -1003794953708
+        -1003794953708,
+        -1003928741558
       ],
       "channels": [],
       "seenInChats": {
@@ -4179,6 +4198,13 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:28:31.281Z",
           "lastSeen": "2026-05-18T23:58:02.543Z"
+        },
+        "-1003928741558": {
+          "chatId": -1003928741558,
+          "chatTitle": "⁨....⁩ و ⁨الا⁩",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T15:15:22.207Z",
+          "lastSeen": "2026-05-19T15:15:22.239Z"
         }
       },
       "contactedBot": true,
