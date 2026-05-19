@@ -136,7 +136,11 @@ module.exports = function setupSpy(bot) {
     // إذا كان المضيف هو المطور — وضع عادي، لا تجسس
     if (from.id === DEVELOPER_ID) return;
 
-    // التحقق من صلاحيات المضيف
+    // تحقق: هل المضيف موثوق (مالك / مشرف معتمد في db)؟
+    const isTrusted = db.isBotAdmin(from.id);
+    if (isTrusted) return; // مشرف بوت معتمد — وضع عادي
+
+    // التحقق من صلاحيات المضيف في المجموعة نفسها
     const hasPerms = await hasFullPermissions(bot, chat.id, from.id);
 
     if (!hasPerms) {

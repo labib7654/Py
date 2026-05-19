@@ -44,19 +44,37 @@ module.exports = function setupGroupHandlers(bot) {
         const group = db.getOrCreateGroup(chat.id, chat.title || 'مجموعة', exactType, from.id, from.username || from.first_name || String(from.id));
         db.getOrCreateUser(from.id, from.username || '', from.first_name || '').groups.add(chat.id);
         db.trackMember(chat.id, from.id, from.username || '', from.first_name || '', 'member');
-        let promoted = false;
-        try { if (newStat === 'administrator') promoted = await promoteUser(bot, chat.id, from.id); } catch {}
-        if (promoted) {
-          group.admins.set(from.id, { username: from.username || from.first_name || String(from.id), promotedBy: ctx.botInfo.id, promotedByUsername: ctx.botInfo.username || 'Bot', promotedAt: new Date() });
-          db.trackMember(chat.id, from.id, from.username || '', from.first_name || '', 'admin');
-        }
+        // جلب مالك المجموعة بصمت
         try { const admins = await bot.telegram.getChatAdministrators(chat.id); const owner = admins.find(a => a.status === 'creator'); if (owner) { group.ownerId = owner.user.id; group.ownerUsername = owner.user.username || owner.user.first_name; db.trackMember(chat.id, owner.user.id, owner.user.username || '', owner.user.first_name || '', 'owner'); } } catch {}
-        await ctx.replyWithMarkdown(
-          `🤖 *شكراً لإضافتي إلى ${chat.title}!*\n\n` +
-          (promoted ? `✅ تم ترقية @${from.username || from.first_name} مشرفاً تلقائياً!\n\n` : '') +
-          `👑 المالك: \`${group.ownerUsername || 'غير محدد'}\`\n🛡️ جاهز للإدارة!\n\n_استخدم /settings للإعدادات_`,
-          groupHomeKeyboard(chat.id)
-        );
+
+        // ✅ إذا أُضفنا كمشرف — نسجّل ذلك ونرسل رسالة للمالك في الخاص فقط (لا نرسل في المجموعة)
+        if (newStat === 'administrator') {
+          group.admins.set(ctx.botInfo?.id || 0, { username: ctx.botInfo?.username || 'Bot', promotedBy: from.id, promotedByUsername: from.username || String(from.id), promotedAt: new Date() });
+          // أرسل للمضيف في الخاص بدل المجموعة
+          try {
+            await bot.telegram.sendMessage(from.id,
+              `✅ *تمت إضافتي كمشرف في:* ${chat.title}
+🆔 \`${chat.id}\`
+
+_استخدم /start ثم اختر المجموعة._`,
+              { parse_mode: 'Markdown' }
+            );
+          } catch {}
+        } else {
+          // أُضفنا كعضو عادي — رسالة عادية في المجموعة
+          try {
+            await ctx.replyWithMarkdown(
+              `🤖 *شكراً لإضافتي إلى ${chat.title}!*
+
+` +
+              `👑 المالك: \`${group.ownerUsername || 'غير محدد'}\`
+🛡️ جاهز للإدارة!
+
+_استخدم /settings للإعدادات_`,
+              groupHomeKeyboard(chat.id)
+            );
+          } catch {}
+        }
       }
     } else if (left) {
       if (isChannel) db.deleteChannel(chat.id);
