@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T01:42:33.385Z",
+  "savedAt": "2026-05-19T01:48:33.385Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2412,6 +2412,16 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
+        },
+        "8386797031": {
+          "userId": 8386797031,
+          "username": "J_8hs",
+          "firstName": "اوب",
+          "role": "member",
+          "joinedAt": "2026-05-19T01:47:30.594Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-19T01:47:40.787Z"
         }
       },
       "admins": {
@@ -2469,6 +2479,14 @@
           "status": "approved_auto",
           "bio": "",
           "inviteLink": "https://t.me/+TbtsoGYBwWEzYjdk"
+        },
+        "8386797031": {
+          "userId": 8386797031,
+          "username": "J_8hs",
+          "firstName": "اوب",
+          "status": "pending_verify",
+          "requestedAt": "2026-05-19T01:47:41.240Z",
+          "isExistingMember": true
         }
       },
       "joinRequestsEnabled": true,
@@ -3047,6 +3065,88 @@
       "auditLog": [],
       "verifySystem": {
         "enabled": true,
+        "verifyTopicId": null,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
+    },
+    "-1002608245805": {
+      "chatId": -1002608245805,
+      "title": "مملكة الملك 👑",
+      "type": "supergroup",
+      "ownerId": 7411444902,
+      "ownerUsername": "Labibrd",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 8386797031,
+      "addedByUsername": "J_8hs",
+      "addedAt": "2026-05-19T01:48:25.175Z",
+      "members": {
+        "8386797031": {
+          "userId": 8386797031,
+          "username": "J_8hs",
+          "firstName": "اوب",
+          "role": "member",
+          "joinedAt": "2026-05-19T01:48:25.175Z",
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-19T01:48:25.919Z"
+        },
+        "7411444902": {
+          "userId": 7411444902,
+          "username": "Labibrd",
+          "firstName": "ㅤㅤㅤㅤ",
+          "role": "owner",
+          "joinedAt": "2026-05-19T01:48:25.368Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "specialistWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "autoApproveJoin": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": false,
         "verifyTopicId": null,
         "pendingRequests": {},
         "approvedMembers": {},
@@ -3689,7 +3789,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-18T21:00:58.590Z",
+      "lastSeen": "2026-05-19T01:47:41.260Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -9620,6 +9720,42 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T21:00:58.591Z",
           "lastSeen": "2026-05-18T21:00:58.591Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8386797031": {
+      "userId": 8386797031,
+      "username": "J_8hs",
+      "firstName": "اوب",
+      "lastName": "لار",
+      "profileLink": "https://t.me/J_8hs",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-19T01:47:30.593Z",
+      "lastSeen": "2026-05-19T01:48:25.919Z",
+      "groups": [
+        -1003969494192,
+        -1002608245805
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T01:47:30.594Z",
+          "lastSeen": "2026-05-19T01:47:40.788Z"
+        },
+        "-1002608245805": {
+          "chatId": -1002608245805,
+          "chatTitle": "مملكة الملك 👑",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T01:48:25.761Z",
+          "lastSeen": "2026-05-19T01:48:25.761Z"
         }
       },
       "contactedBot": false,
