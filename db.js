@@ -368,7 +368,7 @@ function getStats() {
     totalAdmins:   [...groups.values()].reduce((a, g) => a + g.admins.size, 0),
     totalWarns:    [...groups.values()].reduce((a, g) => a + [...g.warns.values()].reduce((b, w) => b + w.length, 0), 0),
     pendingReqs:   [...groups.values()].reduce((a, g) => {
-      const joinReqs = [...g.joinRequests.values()].filter(r => ['pending', 'pending_verify'].includes(r.status)).length;
+      const joinReqs = [...g.joinRequests.values()].filter(r => ['pending', 'pending_verify', 'pending_direct'].includes(r.status)).length;
       const verifyReqs = g.verifySystem?.pendingRequests
         ? [...g.verifySystem.pendingRequests.values()].filter(r => r.status === 'pending').length
         : 0;

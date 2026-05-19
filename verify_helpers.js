@@ -447,7 +447,7 @@ async function checkAndRestrictExistingMember(bot, chatId, userId, g) {
   if (vs.approvedMembers.has(userId)) return false;
 
   // له طلب معلق → لا شيء
-  if (vs.pendingRequests.get(userId)?.status === 'pending') return false;
+  if (['pending', 'pending_verify', 'pending_direct'].includes(vs.pendingRequests.get(userId)?.status)) return false;
 
   // تقييد العضو داخل المجموعة
   const restricted = await restrictUser(bot, chatId, userId);

@@ -65,7 +65,7 @@ module.exports = function setupVerifyActions(bot) {
 
     // قبول/رفع تقييد طلب الانضمام
     const jr = g.joinRequests?.get(userId);
-    if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
+    if (jr && ['pending_verify', 'pending_direct', 'pending'].includes(jr.status)) {
       if (jr.isExistingMember) {
         // عضو قديم → ارفع التقييد
         try {
@@ -146,7 +146,7 @@ module.exports = function setupVerifyActions(bot) {
 
     // رفض طلب الانضمام
     const jr = g.joinRequests?.get(userId);
-    if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
+    if (jr && ['pending_verify', 'pending_direct', 'pending'].includes(jr.status)) {
       try {
         await bot.telegram.declineChatJoinRequest(chatId, userId);
         jr.status = 'rejected';

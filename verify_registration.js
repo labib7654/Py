@@ -91,7 +91,7 @@ module.exports = function setupVerifyRegistration(bot) {
 
     // ── طلب معلق بالفعل ──────────────────────────────────────
     const existing = vs.pendingRequests.get(userId);
-    if (existing?.status === 'pending') {
+    if (['pending', 'pending_verify', 'pending_direct'].includes(existing?.status)) {
       try {
         await bot.telegram.sendMessage(userId,
           `📨 *لديك طلب قيد المراجعة.*\n\nانتظر حتى يراجعه المشرف وستصلك رسالة بالنتيجة.`,
@@ -297,7 +297,7 @@ module.exports = function setupVerifyRegistration(bot) {
 
     // منع الطلبات المتعددة
     const existing = vs.pendingRequests.get(userId);
-    if (existing?.status === 'pending') {
+    if (['pending', 'pending_verify', 'pending_direct'].includes(existing?.status)) {
       sessions.delete(userId);
       try { await ctx.deleteMessage(); } catch {}
       return ctx.reply('📨 *لديك طلب قيد المراجعة بالفعل.*\n\nانتظر حتى يراجعه المشرف.', { parse_mode: 'Markdown' });
@@ -354,7 +354,7 @@ module.exports = function setupVerifyRegistration(bot) {
 
         // قبول/رفع تقييد طلب الانضمام
         const jr = g2.joinRequests?.get(userId);
-        if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
+        if (jr && ['pending_verify', 'pending_direct', 'pending'].includes(jr.status)) {
           if (jr.isExistingMember) {
             // عضو قديم → ارفع التقييد فقط
             try {
