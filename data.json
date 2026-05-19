@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:56:03.516Z",
+  "savedAt": "2026-05-19T15:56:05.493Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2502,7 +2502,7 @@
           "username": "B_7a3j",
           "firstName": "صياد الارواح",
           "requestedAt": "2026-05-19T15:50:08.802Z",
-          "status": "pending",
+          "status": "approved_auto",
           "bio": "",
           "inviteLink": "https://t.me/+mMMSMLgl..."
         }
