@@ -160,8 +160,7 @@ async function main() {
   });
 
   // ── Express ───────────────────────────────────────────────
-  // express.json للـ routes العادية فقط (بعد webhook)
-  // الـ webhook يحتاج raw body لذا يُسجَّل قبل json parser
+  app.use(express.json());
 
   app.get('/', (req, res) => {
     res.json({ status: 'ok', bot: 'جامعة v4.0', uptime: process.uptime() });
@@ -211,8 +210,15 @@ async function main() {
     const WEBHOOK_PATH = `/webhook/${BOT_TOKEN}`;
     const WEBHOOK_URL  = `${RENDER_URL}${WEBHOOK_PATH}`;
 
-    app.use(bot.webhookCallback(WEBHOOK_PATH));
-    app.use(express.json()); // json parser بعد webhook
+    // نستقبل الـ update من Telegram ونمرره للبوت مباشرة
+    app.post(WEBHOOK_PATH, express.json(), async (req, res) => {
+      try {
+        await bot.handleUpdate(req.body, res);
+      } catch (e) {
+        console.error('❌ خطأ في معالجة الـ update:', e.message);
+        res.sendStatus(500);
+      }
+    });
 
     server = app.listen(PORT, async () => {
       console.log(`🌐 السيرفر يعمل على المنفذ ${PORT}`);
