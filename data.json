@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T17:26:13.551Z",
+  "savedAt": "2026-05-19T17:26:17.191Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2873,9 +2873,9 @@
           "firstName": "ووة",
           "role": "member",
           "joinedAt": "2026-05-18T00:11:59.786Z",
-          "messageCount": 6,
-          "score": 6,
-          "lastMessageAt": "2026-05-19T17:26:13.252Z"
+          "messageCount": 5,
+          "score": 5,
+          "lastMessageAt": "2026-05-18T23:58:02.542Z"
         },
         "8240566312": {
           "userId": 8240566312,
@@ -2886,36 +2886,10 @@
           "messageCount": 3,
           "score": 3,
           "lastMessageAt": "2026-05-18T23:57:49.598Z"
-        },
-        "7878248225": {
-          "userId": 7878248225,
-          "username": "G_XFbot",
-          "firstName": "𝐸𝐿𝐿𝐼𝐸",
-          "role": "admin",
-          "joinedAt": "2026-05-19T17:26:12.356Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
         }
       },
-      "admins": {
-        "7878248225": {
-          "username": "G_XFbot",
-          "promotedBy": 8265840070,
-          "promotedByUsername": "BMW0_0",
-          "promotedAt": "2026-05-19T17:26:12.356Z"
-        }
-      },
-      "warns": {
-        "8265840070": [
-          {
-            "reason": "أضاف بوت (@G_XFbot) للمجموعة",
-            "warnedBy": 7243808108,
-            "warnedAt": "2026-05-19T17:26:12.551Z",
-            "isAutomatic": true
-          }
-        ]
-      },
+      "admins": {},
+      "warns": {},
       "maxWarns": 3,
       "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
       "welcomeEnabled": true,
@@ -2953,21 +2927,7 @@
         "canPinMessages": false,
         "canManageTopics": false
       },
-      "auditLog": [
-        {
-          "action": "🤖 إزالة بوت",
-          "by": {
-            "id": 8265840070,
-            "username": "BMW0_0"
-          },
-          "target": {
-            "id": 7878248225,
-            "username": "G_XFbot"
-          },
-          "details": "البوت المضاف: @G_XFbot",
-          "at": "2026-05-19T17:26:12.551Z"
-        }
-      ],
+      "auditLog": [],
       "verifySystem": {
         "enabled": false,
         "verifyTopicId": null,
@@ -3125,9 +3085,9 @@
           "firstName": "ووة",
           "role": "member",
           "joinedAt": "2026-05-19T15:32:06.245Z",
-          "messageCount": 6,
-          "score": 6,
-          "lastMessageAt": "2026-05-19T17:25:34.613Z"
+          "messageCount": 5,
+          "score": 5,
+          "lastMessageAt": "2026-05-19T15:33:37.992Z"
         },
         "8386797031": {
           "userId": 8386797031,
@@ -4528,7 +4488,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-19T17:26:13.252Z",
+      "lastSeen": "2026-05-19T15:33:37.993Z",
       "groups": [
         -1003794953708,
         -1003928741558,
@@ -4548,7 +4508,7 @@
           "chatTitle": "حلوين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:28:31.281Z",
-          "lastSeen": "2026-05-19T17:26:13.252Z"
+          "lastSeen": "2026-05-18T23:58:02.543Z"
         },
         "-1003928741558": {
           "chatId": -1003928741558,
@@ -4562,7 +4522,7 @@
           "chatTitle": "مماحين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-19T15:32:06.245Z",
-          "lastSeen": "2026-05-19T17:25:34.614Z"
+          "lastSeen": "2026-05-19T15:33:37.993Z"
         }
       },
       "contactedBot": true,
