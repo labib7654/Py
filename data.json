@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T18:15:59.180Z",
+  "savedAt": "2026-05-19T18:22:15.037Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1699,16 +1699,6 @@
           "firstName": "Таисия",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:47.558Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8128689332": {
-          "userId": 8128689332,
-          "username": "",
-          "firstName": "Yylhrtcb",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:47.561Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -3495,9 +3485,9 @@
           "firstName": "Group",
           "role": "member",
           "joinedAt": "2026-05-19T16:31:04.782Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-05-19T16:31:15.985Z"
+          "messageCount": 4,
+          "score": 4,
+          "lastMessageAt": "2026-05-19T18:21:50.569Z"
         },
         "6942771795": {
           "userId": 6942771795,
@@ -3658,7 +3648,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T13:49:52.695Z",
-      "lastSeen": "2026-05-19T16:31:15.985Z",
+      "lastSeen": "2026-05-19T18:21:50.569Z",
       "groups": [
         -1003969494192,
         -1003750270631
@@ -8341,10 +8331,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:47.560Z",
-      "lastSeen": "2026-05-18T20:51:47.561Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-19T18:22:14.037Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
