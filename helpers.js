@@ -11,6 +11,10 @@ function isBotAdmin(ctx) {
   return !!userId && (userId === Number(DEVELOPER_ID) || BOT_ADMINS.includes(userId));
 }
 
+function isDeveloperOrBotAdmin(ctx) {
+  return isBotAdmin(ctx);
+}
+
 async function isAdmin(bot, chatId, userId) {
   if (!bot?.telegram || !chatId || !userId) return false;
   try {
@@ -244,6 +248,7 @@ function applyTelegramContentProtection(bot) {
 module.exports = {
   isDeveloper,
   isBotAdmin,
+  isDeveloperOrBotAdmin,
   isAdmin,
   isOwner,
   muteMember,
