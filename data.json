@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T14:35:49.482Z",
+  "savedAt": "2026-05-19T14:48:08.863Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -452,16 +452,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T08:38:01.982Z"
-        },
-        "6275988426": {
-          "userId": 6275988426,
-          "username": "B_7a3j",
-          "firstName": "صياد الارواح",
-          "role": "admin",
-          "joinedAt": "2026-05-18T08:53:21.584Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T08:53:21.600Z"
         },
         "6494816943": {
           "userId": 6494816943,
@@ -2424,14 +2414,7 @@
           "lastMessageAt": "2026-05-19T01:47:40.787Z"
         }
       },
-      "admins": {
-        "6275988426": {
-          "username": "B_7a3j",
-          "promotedBy": 7411444902,
-          "promotedByUsername": "Labibrd",
-          "promotedAt": "2026-05-18T13:49:29.584Z"
-        }
-      },
+      "admins": {},
       "warns": {},
       "maxWarns": 3,
       "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
@@ -3425,7 +3408,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:44:54.456Z",
-      "lastSeen": "2026-05-18T13:45:14.070Z",
+      "lastSeen": "2026-05-19T14:47:54.020Z",
       "groups": [
         -1003928741558
       ],
@@ -4242,9 +4225,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T08:53:11.496Z",
-      "lastSeen": "2026-05-18T21:32:17.564Z",
+      "lastSeen": "2026-05-19T14:48:07.860Z",
       "groups": [
-        -1003969494192,
         -1002648125233
       ],
       "channels": [],
