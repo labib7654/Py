@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T16:43:18.015Z",
+  "savedAt": "2026-05-19T16:51:18.030Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1449,9 +1449,9 @@
           "firstName": "Reham",
           "role": "member",
           "joinedAt": "2026-05-18T20:17:59.406Z",
-          "messageCount": 2,
-          "score": 2,
-          "lastMessageAt": "2026-05-19T16:12:51.698Z"
+          "messageCount": 3,
+          "score": 3,
+          "lastMessageAt": "2026-05-19T16:50:28.539Z"
         },
         "8751278667": {
           "userId": 8751278667,
@@ -7514,7 +7514,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:16:41.971Z",
-      "lastSeen": "2026-05-19T16:12:51.698Z",
+      "lastSeen": "2026-05-19T16:51:10.102Z",
       "groups": [
         -1003969494192
       ],
@@ -7525,11 +7525,11 @@
           "chatTitle": "مجتمع جامعة الامير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:17:59.406Z",
-          "lastSeen": "2026-05-19T16:12:51.698Z"
+          "lastSeen": "2026-05-19T16:50:28.539Z"
         }
       },
-      "contactedBot": false,
-      "lastContactAt": null,
+      "contactedBot": true,
+      "lastContactAt": "2026-05-19T16:51:10.102Z",
       "bioBanInfo": null
     },
     "8240566312": {
