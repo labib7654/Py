@@ -6,12 +6,6 @@ const {
 } = require('./helpers');
 const { DEVELOPER_ID } = require('./config');
 
-function getPendingJoinRequests(g) {
-  return [...(g.joinRequests?.values() || [])].filter(r =>
-    ['pending', 'pending_verify', 'pending_direct'].includes(r.status)
-  );
-}
-
 function groupHomeKeyboard(chatId) {
   return Markup.inlineKeyboard([
     [Markup.button.callback('⚙️ إعدادات المجموعة', `settings_${chatId}`), Markup.button.callback('👥 المشرفون', `admins_${chatId}`)],
@@ -356,26 +350,8 @@ module.exports = function setupGroupHandlers(bot) {
     if (!isDeveloper(ctx) && !(g && ctx.from.id === g.ownerId) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
     try {
-      const jr = g?.joinRequests?.get(uid);
-      if (jr?.status === 'pending_direct' || jr?.isExistingMember) {
-        await bot.telegram.restrictChatMember(cid, uid, {
-          permissions: {
-            can_send_messages: true,
-            can_send_audios: true,
-            can_send_documents: true,
-            can_send_photos: true,
-            can_send_videos: true,
-            can_send_video_notes: true,
-            can_send_voice_notes: true,
-            can_send_polls: true,
-            can_send_other_messages: true,
-            can_add_web_page_previews: true,
-          },
-        });
-      } else {
-        await bot.telegram.approveChatJoinRequest(cid, uid);
-      }
-      if (jr) jr.status = 'approved';
+      await bot.telegram.approveChatJoinRequest(cid, uid);
+      if (g?.joinRequests.has(uid)) g.joinRequests.get(uid).status = 'approved';
       await ctx.answerCbQuery('✅ تم القبول!', { show_alert: true });
       await ctx.editMessageText(ctx.callbackQuery.message.text + '\n\n✅ *تم القبول*', { parse_mode: 'Markdown' });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
@@ -389,14 +365,9 @@ module.exports = function setupGroupHandlers(bot) {
     if (!isDeveloper(ctx) && !(g && ctx.from.id === g.ownerId) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
     try {
-      const jr = g?.joinRequests?.get(uid);
-      if (jr?.status === 'pending_direct' || jr?.isExistingMember) {
-        await bot.telegram.banChatMember(cid, uid);
-      } else {
-        await bot.telegram.declineChatJoinRequest(cid, uid);
-      }
-      if (jr) {
-        jr.status = 'rejected';
+      await bot.telegram.declineChatJoinRequest(cid, uid);
+      if (g?.joinRequests.has(uid)) {
+        g.joinRequests.get(uid).status = 'rejected';
         g.joinRequestCooldown.set(uid, Date.now() + 24 * 3600 * 1000);
       }
       await ctx.answerCbQuery('❌ تم الرفض!', { show_alert: true });
@@ -430,32 +401,9 @@ module.exports = function setupGroupHandlers(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
     const g = db.getGroup(cid); if (!g) return;
-    const pending = getPendingJoinRequests(g);
+    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
     let done = 0;
-    for (const r of pending) {
-      try {
-        if (r.status === 'pending_direct' || r.isExistingMember) {
-          await bot.telegram.restrictChatMember(cid, r.userId, {
-            permissions: {
-              can_send_messages: true,
-              can_send_audios: true,
-              can_send_documents: true,
-              can_send_photos: true,
-              can_send_videos: true,
-              can_send_video_notes: true,
-              can_send_voice_notes: true,
-              can_send_polls: true,
-              can_send_other_messages: true,
-              can_add_web_page_previews: true,
-            },
-          });
-        } else {
-          await bot.telegram.approveChatJoinRequest(cid, r.userId);
-        }
-        r.status = 'approved';
-        done++;
-      } catch {}
-    }
+    for (const r of pending) { try { await bot.telegram.approveChatJoinRequest(cid, r.userId); r.status = 'approved'; done++; } catch {} }
     await ctx.answerCbQuery(`✅ تم قبول ${done} طلب!`, { show_alert: true });
     await ctx.deleteMessage().catch(() => {});
   });
@@ -467,19 +415,10 @@ module.exports = function setupGroupHandlers(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
       return ctx.answerCbQuery('❌ ليس لديك صلاحية!', { show_alert: true });
     const g = db.getGroup(cid); if (!g) return;
-    const pending = getPendingJoinRequests(g);
+    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
     let done = 0;
     for (const r of pending) {
-      try {
-        if (r.status === 'pending_direct' || r.isExistingMember) {
-          await bot.telegram.banChatMember(cid, r.userId);
-        } else {
-          await bot.telegram.declineChatJoinRequest(cid, r.userId);
-        }
-        r.status = 'rejected';
-        g.joinRequestCooldown.set(r.userId, Date.now() + 24 * 3600 * 1000);
-        done++;
-      } catch {}
+      try { await bot.telegram.declineChatJoinRequest(cid, r.userId); r.status = 'rejected'; g.joinRequestCooldown.set(r.userId, Date.now() + 24 * 3600 * 1000); done++; } catch {}
     }
     await ctx.answerCbQuery(`❌ تم رفض ${done} طلب!`, { show_alert: true });
     await ctx.deleteMessage().catch(() => {});
@@ -565,24 +504,6 @@ module.exports = function setupGroupHandlers(bot) {
     return next();
   });
 
-  // ── فلتر اعتماد المواضيع ────────────────────────────────────────────
-  bot.on('message', async (ctx, next) => {
-    if (!ctx.chat || ctx.chat.type === 'private' || ctx.chat.type === 'channel') return next();
-    const g = db.getGroup(ctx.chat.id);
-    if (!g?.topicSettings?.requireApprovalToJoin) return next();
-
-    const topicId = ctx.message?.message_thread_id;
-    if (!topicId) return next();
-
-    const topic = g.topics?.get(topicId);
-    if (!topic || topic.archived) return next();
-    if (await isAdmin(bot, ctx.chat.id, ctx.from.id)) return next();
-    if (topic.approvedUsers?.has(ctx.from.id)) return next();
-
-    try { await ctx.deleteMessage(); } catch {}
-    return next();
-  });
-
   // ── فلتر الكلمات المحظورة ────────────────────────────────────────────
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private') return next();
@@ -648,7 +569,7 @@ module.exports = function setupGroupHandlers(bot) {
     const g = db.getGroup(Number(ctx.match[1]));
     if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
     const warns   = [...g.warns.values()].reduce((a, w) => a + w.length, 0);
-    const pending = getPendingJoinRequests(g).length;
+    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending').length;
     const topMem  = [...g.members.values()].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
     await ctx.reply(
       `📊 *إحصائيات ${g.title}*\n\n` +

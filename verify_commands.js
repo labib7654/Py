@@ -22,6 +22,7 @@ const db         = require('./db');
 const { isDeveloper, isAdmin } = require('./helpers');
 const {
   sessions,
+  getOrCreateTopic,
   getVerifySettings,
   getAvailableTopics,
   buildAdminButtons,
@@ -42,20 +43,30 @@ module.exports = function setupVerifyCommands(bot) {
   bot.on('message', async (ctx, next) => {
     if (!ctx.chat || ctx.chat.type === 'private') return next();
     const msg = ctx.message;
+    if (!msg?.forum_topic_created) return next();
+
     const g = db.getGroup(ctx.chat.id);
     if (!g) return next();
 
-    const topicId = msg?.message_thread_id;
-    if (!topicId) return next();
+    const topicId = msg.message_thread_id;
+    const name    = msg.forum_topic_created.name;
+    if (!topicId || !name) return next();
 
-    const topicName = msg?.forum_topic_created?.name || g.topics?.get(topicId)?.name || `موضوع #${topicId}`;
-    const topic = db.getOrCreateTopic(g, topicId, topicName);
-    if (msg?.forum_topic_created?.name && topic.name !== msg.forum_topic_created.name) {
-      topic.name = msg.forum_topic_created.name;
+    // تسجيل الموضوع تلقائياً إن لم يكن مسجلاً
+    if (!g.topics?.has(topicId)) {
+      getOrCreateTopic(g, topicId, name);
       db.markDirty();
+
+      const vs = getVerifySettings(g);
+      if (vs.enabled) {
+        try {
+          await bot.telegram.sendMessage(ctx.chat.id,
+            `✅ *تم تسجيل الموضوع تلقائياً*\n\n📌 الاسم: *${name}*\n🆔 \`${topicId}\`\n\n_سيظهر للطلاب عند اختيار كليتهم._`,
+            { parse_mode: 'Markdown', message_thread_id: topicId }
+          );
+        } catch {}
+      }
     }
-    topic.lastSeenAt = new Date();
-    db.markDirty();
 
     return next();
   });
@@ -76,33 +87,76 @@ module.exports = function setupVerifyCommands(bot) {
 
     const msg = await ctx.reply('⏳ جاري جلب المواضيع...');
 
-    const currentTopicId = ctx.message?.message_thread_id;
-    if (currentTopicId && !g.topics?.has(currentTopicId)) {
-      db.getOrCreateTopic(g, currentTopicId, `موضوع #${currentTopicId}`);
-    }
+    try {
+      const result = await bot.telegram.callApi('getForumTopics', {
+        chat_id: ctx.chat.id,
+        limit: 100,
+      });
 
-    const topics = getAvailableTopics(g);
-    if (!topics.length) {
+      const fetched = result?.topics || [];
+      if (!fetched.length) {
+        const noTopicsMsg = await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
+          '⚠️ لم أجد مواضيع. تأكد أن المجموعة تدعم المواضيع (Forum) وأن البوت مشرف.'
+        );
+        setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 8000);
+        return;
+      }
+
+      let added = 0, updated = 0;
+      for (const t of fetched) {
+        const tid = t.message_thread_id;
+        if (!tid || !t.name) continue;
+        if (!g.topics.has(tid)) {
+          getOrCreateTopic(g, tid, t.name);
+          added++;
+        } else {
+          const ex = g.topics.get(tid);
+          if (ex.name !== t.name) { ex.name = t.name; updated++; db.markDirty(); }
+        }
+      }
+
+      const topics = getAvailableTopics(g);
+      const list   = topics.map((t, i) => `${i + 1}. *${t.name}* \`[${t.id}]\``).join('\n');
+
       await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
-        `⚠️ *لم يتم العثور على مواضيع مسجلة بعد*\n\n` +
-        `✅ سيقوم البوت بتسجيل أي موضوع يراه في الرسائل القادمة.\n` +
-        `📌 يمكنك أيضاً استخدام /regtopic من داخل الموضوع نفسه.`,
+        `✅ *تمت مزامنة المواضيع*\n\n` +
+        `➕ مضاف: \`${added}\` | 🔄 محدَّث: \`${updated}\`\n` +
+        `📋 الإجمالي: \`${topics.length}\`\n\n` +
+        `📋 *قائمة الكليات/المواضيع:*\n${list}\n\n` +
+        `_هذه هي الكليات التي سيختار منها الطلاب عند التسجيل._`,
         { parse_mode: 'Markdown' }
       );
-      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 10000);
-      return;
+
+      // حذف رسالة النتيجة بعد 15 ثانية
+      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 15000);
+
+    } catch (e) {
+      // إذا فشل الـ API، نحاول استخدام المواضيع المسجلة تلقائياً
+      const topics = getAvailableTopics(g);
+      if (topics.length > 0) {
+        const list = topics.map((t, i) => `${i + 1}. *${t.name}* \`[${t.id}]\``).join('\n');
+        await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
+          `⚠️ *تعذّر جلب المواضيع من Telegram API*\n` +
+          `_(هذا الخادم لا يدعم getForumTopics — طبيعي في بعض الإصدارات)_\n\n` +
+          `📋 *المواضيع المسجّلة حالياً (${topics.length}):*\n${list}\n\n` +
+          `✅ _المواضيع تُسجَّل تلقائياً عند إنشائها._\n` +
+          `📌 _لإضافة موضوع يدوياً: ادخل الموضوع واكتب /regtopic_`,
+          { parse_mode: 'Markdown' }
+        );
+      } else {
+        await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
+          `❌ *لا توجد مواضيع مسجّلة بعد*\n\n` +
+          `⚠️ _Telegram API لا يدعم جلب المواضيع تلقائياً في هذه المجموعة._\n\n` +
+          `📌 *طريقة التسجيل اليدوي:*\n` +
+          `1️⃣ ادخل داخل كل موضوع (كلية)\n` +
+          `2️⃣ اكتب الأمر: \`/regtopic اسم الكلية\`\n` +
+          `3️⃣ سيُسجَّل الموضوع تلقائياً\n\n` +
+          `💡 _بعد التسجيل اليدوي، ستظهر المواضيع للطلاب عند التحقق._`,
+          { parse_mode: 'Markdown' }
+        );
+      }
+      setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 20000);
     }
-
-    const list   = topics.map((t, i) => `${i + 1}. *${t.name}* \`[${t.id}]\``).join('\n');
-
-    await bot.telegram.editMessageText(ctx.chat.id, msg.message_id, null,
-      `✅ *تمت مزامنة المواضيع المحلية*\n\n` +
-      `📋 *المواضيع المسجّلة حالياً (${topics.length}):*\n${list}\n\n` +
-      `✅ _أي موضوع جديد يظهر في الرسائل سيتم تسجيله تلقائياً._`,
-      { parse_mode: 'Markdown' }
-    );
-
-    setTimeout(() => bot.telegram.deleteMessage(ctx.chat.id, msg.message_id).catch(() => {}), 15000);
   });
 
   // ════════════════════════════════════════════════════════════
@@ -256,7 +310,7 @@ module.exports = function setupVerifyCommands(bot) {
       // تجاهل المعتمدين
       if (vs.approvedMembers.has(userId)) continue;
       // تجاهل الانتظار
-      if (['pending', 'pending_verify', 'pending_direct'].includes(vs.pendingRequests.get(userId)?.status)) continue;
+      if (vs.pendingRequests.get(userId)?.status === 'pending') continue;
 
       try {
         const member = await bot.telegram.getChatMember(ctx.chat.id, userId);
@@ -294,7 +348,7 @@ module.exports = function setupVerifyCommands(bot) {
     if (!g) return ctx.reply('❌ المجموعة غير مسجّلة!');
 
     const vs      = getVerifySettings(g);
-    const pending = [...vs.pendingRequests.values()].filter(r => ['pending', 'pending_verify', 'pending_direct'].includes(r.status));
+    const pending = [...vs.pendingRequests.values()].filter(r => r.status === 'pending');
 
     if (!pending.length) return ctx.reply('✅ لا توجد طلبات معلقة حالياً.');
 
@@ -302,14 +356,14 @@ module.exports = function setupVerifyCommands(bot) {
     for (const req of pending.slice(0, 10)) {
       text +=
         `👤 ${req.firstName}${req.username ? ` (@${req.username})` : ''} \`${req.userId}\`\n` +
-        `🏛️ ${req.data?.university || req.data?.college || 'غير محدد'} | 📚 ${req.data?.major || 'غير محدد'} | 🔢 ${req.data?.studentId || req.data?.year || 'غير محدد'}\n` +
+        `🏛️ ${req.data?.college} | 📚 ${req.data?.major} | 📅 ${req.data?.year}\n` +
         `🕐 ${new Date(req.submittedAt).toLocaleString('ar-SA')}\n\n`;
     }
     if (pending.length > 10) text += `_...و ${pending.length - 10} طلب آخر_`;
 
     const rows = pending.slice(0, 5).map(req => [
       Markup.button.callback(
-        `👤 ${req.firstName.substring(0, 20)} — ${(req.data?.university || req.data?.college || '').substring(0, 12)}`,
+        `👤 ${req.firstName.substring(0, 20)} — ${req.data?.college?.substring(0, 12) || ''}`,
         `vfy_info_${req.userId}_${ctx.chat.id}`
       ),
     ]);
@@ -326,7 +380,7 @@ module.exports = function setupVerifyCommands(bot) {
     if (!g) return;
 
     const vs      = getVerifySettings(g);
-    const pending = [...vs.pendingRequests.values()].filter(r => ['pending', 'pending_verify', 'pending_direct'].includes(r.status));
+    const pending = [...vs.pendingRequests.values()].filter(r => r.status === 'pending');
 
     if (!pending.length) return ctx.editMessageText('✅ لا توجد طلبات معلقة.');
 
@@ -334,13 +388,13 @@ module.exports = function setupVerifyCommands(bot) {
     for (const req of pending.slice(0, 10)) {
       text +=
         `👤 ${req.firstName}${req.username ? ` (@${req.username})` : ''} \`${req.userId}\`\n` +
-        `🏛️ ${req.data?.university || req.data?.college || 'غير محدد'} | 📚 ${req.data?.major || 'غير محدد'}\n` +
+        `🏛️ ${req.data?.college} | 📚 ${req.data?.major}\n` +
         `🕐 ${new Date(req.submittedAt).toLocaleString('ar-SA')}\n\n`;
     }
 
     const rows = pending.slice(0, 5).map(req => [
       Markup.button.callback(
-        `👤 ${req.firstName.substring(0, 20)} — ${(req.data?.university || req.data?.college || '').substring(0, 12)}`,
+        `👤 ${req.firstName.substring(0, 20)} — ${req.data?.college?.substring(0, 12) || ''}`,
         `vfy_info_${req.userId}_${chatId}`
       ),
     ]);
@@ -364,7 +418,7 @@ module.exports = function setupVerifyCommands(bot) {
 
     const vs      = getVerifySettings(g);
     const allReqs = [...vs.pendingRequests.values()];
-    const pending = allReqs.filter(r => ['pending', 'pending_verify', 'pending_direct'].includes(r.status)).length;
+    const pending = allReqs.filter(r => r.status === 'pending').length;
     const approved = vs.approvedMembers.size;
     const rejected = allReqs.filter(r => r.status === 'rejected').length;
     const banned   = allReqs.filter(r => r.status === 'banned').length;
@@ -373,7 +427,7 @@ module.exports = function setupVerifyCommands(bot) {
     // توزيع على الكليات
     const dist = new Map();
     for (const [, m] of vs.approvedMembers) {
-      const name = m.topicName || m.studentData?.topicName || m.studentData?.university || String(m.topicId || 'غير محدد');
+      const name = m.topicName || String(m.topicId);
       dist.set(name, (dist.get(name) || 0) + 1);
     }
     const distText = [...dist.entries()]
@@ -414,7 +468,6 @@ module.exports = function setupVerifyCommands(bot) {
       return vs?.enabled && (
         vs.pendingRequests?.has(userId) ||
         vs.approvedMembers?.has(userId) ||
-        ['pending', 'pending_verify', 'pending_direct'].includes(g.joinRequests?.get(userId)?.status) ||
         g.members?.has(userId)
       );
     });
@@ -422,7 +475,7 @@ module.exports = function setupVerifyCommands(bot) {
     if (!myGroup) {
       return ctx.reply(
         `❌ *لم أجد مجموعة مرتبطة بحسابك.*\n\n` +
-        `يجب أن تنضم للمجموعة أولاً، أو يكون لديك طلب انضمام/تحقق مسجل، ثم أرسل /verify في الخاص.`,
+        `يجب أن تنضم للمجموعة أولاً، ثم أرسل /verify في الخاص.`,
         { parse_mode: 'Markdown' }
       );
     }
@@ -433,15 +486,15 @@ module.exports = function setupVerifyCommands(bot) {
       const info = vs.approvedMembers.get(userId);
       return ctx.reply(
         `✅ *حسابك معتمد بالفعل!*\n\n` +
-        `🏛️ الكلية: *${info.topicName || info.studentData?.topicName || info.studentData?.university || 'غير متاح'}*\n` +
-        `🔢 رقم القيد: \`${info.studentData?.studentId || info.studentId || 'غير متاح'}\`\n\n` +
+        `🏛️ الكلية: *${info.topicName}*\n` +
+        `🔢 رقم القيد: \`${info.studentData?.studentId || 'غير متاح'}\`\n\n` +
         `يمكنك المشاركة في موضوعك مباشرة.`,
         { parse_mode: 'Markdown' }
       );
     }
 
     const existing = vs.pendingRequests.get(userId);
-    if (['pending', 'pending_verify', 'pending_direct'].includes(existing?.status)) {
+    if (existing?.status === 'pending') {
       return ctx.reply(
         `📨 *لديك طلب قيد المراجعة.*\n\nانتظر حتى يراجعه المشرف وستصلك رسالة.`,
         { parse_mode: 'Markdown' }
@@ -459,7 +512,7 @@ module.exports = function setupVerifyCommands(bot) {
 
     // بدء جلسة جديدة
     const topics = getAvailableTopics(myGroup);
-    sessions.set(userId, { step: 'type_select', chatId: myGroup.chatId, data: {}, topics });
+    sessions.set(userId, { step: 'student_id', chatId: myGroup.chatId, data: {}, topics });
     await stepWelcome(bot, userId, myGroup.title);
   });
 
@@ -531,7 +584,7 @@ module.exports = function setupVerifyCommands(bot) {
     if (!g) return;
 
     const name  = ctx.message.text.split(' ').slice(1).join(' ').trim();
-    const topic = db.getOrCreateTopic(g, topicId, name || String(topicId));
+    const topic = getOrCreateTopic(g, topicId, name || String(topicId));
     if (name) topic.name = name;
     db.markDirty();
 
@@ -563,15 +616,12 @@ module.exports = function setupVerifyCommands(bot) {
       if (app) {
         found = true;
         text +=
-        `*${g.title}*\n` +
-          `  ✅ معتمد — ${app.topicName || app.studentData?.topicName || app.studentData?.university || 'غير محدد'}\n` +
-          `  🏛️ ${app.studentData?.university || app.studentData?.college || ''} | 📚 ${app.studentData?.major || ''}\n\n`;
-      } else if (['pending', 'pending_verify', 'pending_direct'].includes(req?.status)) {
+          `*${g.title}*\n` +
+          `  ✅ معتمد — ${app.topicName}\n` +
+          `  🏛️ ${app.studentData?.college || ''} | 📚 ${app.studentData?.major || ''}\n\n`;
+      } else if (req?.status === 'pending') {
         found = true;
         text += `*${g.title}*\n  ⏳ طلبك قيد المراجعة...\n\n`;
-      } else if (['pending_verify', 'pending_direct'].includes(g.joinRequests?.get(userId)?.status)) {
-        found = true;
-        text += `*${g.title}*\n  🟡 طلبك مسجل، لكن التحقق لم يكتمل بعد.\n\n`;
       }
     }
 

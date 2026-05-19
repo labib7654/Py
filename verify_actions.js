@@ -17,8 +17,6 @@ const {
   buildAdminButtons,
   VERIFY_COOLDOWN_MS,
   checkAndRestrictExistingMember,
-  resolveRegistrationTopic,
-  attachApprovedUserToTopic,
 } = require('./verify_helpers');
 
 // تتبع آخر رسالة تحقق أُرسلت للعضو (لتجنب الإزعاج المتكرر)
@@ -53,19 +51,15 @@ module.exports = function setupVerifyActions(bot) {
     req.reviewedBy = ctx.from.id;
 
     // حفظ الاعتماد
-    const approvedTopic = resolveRegistrationTopic(g, req.data || {});
     vs.approvedMembers.set(userId, {
       studentData: { ...req.data },
-      topicId:     approvedTopic?.topicId || null,
-      topicName:   approvedTopic?.topicName || req.data?.university || req.data?.college || null,
       approvedAt:  new Date(),
       approvedBy:  ctx.from.id,
     });
-    attachApprovedUserToTopic(g, userId, req.data || {});
 
     // قبول/رفع تقييد طلب الانضمام
     const jr = g.joinRequests?.get(userId);
-    if (jr && ['pending_verify', 'pending_direct', 'pending'].includes(jr.status)) {
+    if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
       if (jr.isExistingMember) {
         // عضو قديم → ارفع التقييد
         try {
@@ -146,7 +140,7 @@ module.exports = function setupVerifyActions(bot) {
 
     // رفض طلب الانضمام
     const jr = g.joinRequests?.get(userId);
-    if (jr && ['pending_verify', 'pending_direct', 'pending'].includes(jr.status)) {
+    if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
       try {
         await bot.telegram.declineChatJoinRequest(chatId, userId);
         jr.status = 'rejected';
@@ -245,11 +239,11 @@ module.exports = function setupVerifyActions(bot) {
       `📅 أول ظهور: ${user?.firstSeen ? new Date(user.firstSeen).toLocaleDateString('ar-SA') : 'غير معروف'}\n` +
       `🌍 محظور عالمياً: ${user?.globalBanned ? `✅ — ${user.bannedReason}` : '❌'}\n\n` +
       `📋 *البيانات المُدخلة:*\n` +
-      `👤 الاسم: *${req?.data?.fullName || req?.studentData?.fullName || 'غير محدد'}*\n` +
-      `🏛️ الجامعة: *${req?.data?.university || req?.studentData?.university || 'غير محدد'}*\n` +
-      `📚 التخصص: *${req?.data?.major || req?.studentData?.major || 'غير محدد'}*\n` +
-      `🔢 الرقم الجامعي: \`${req?.data?.studentId || req?.studentData?.studentId || 'غير محدد'}\`\n` +
-      `📱 الجوال: \`${req?.data?.phone || req?.studentData?.phone || 'غير محدد'}\`\n` +
+      `👤 الاسم: *${req?.data?.fullName || 'غير محدد'}*\n` +
+      `🏛️ الجامعة: *${req?.data?.university || 'غير محدد'}*\n` +
+      `📚 التخصص: *${req?.data?.major || 'غير محدد'}*\n` +
+      `🔢 الرقم الجامعي: \`${req?.data?.studentId || 'غير محدد'}\`\n` +
+      `📱 الجوال: \`${req?.data?.phone || 'غير محدد'}\`\n` +
       `🕐 تاريخ الطلب: ${req?.submittedAt ? new Date(req.submittedAt).toLocaleString('ar-SA') : 'غير محدد'}`;
 
     await ctx.reply(info, {

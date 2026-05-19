@@ -1,7 +1,7 @@
 const { Markup } = require('telegraf');
 const db         = require('./db');
 const {
-  isDeveloper, isAdmin, isOwner, isBotAdmin,
+  isDeveloper, isAdmin, isOwner,
   applyGroupPermissions, logAction,
   setJoinApproval, verifyAndRegisterOwner,
   lockTopic, unlockTopic, archiveTopic,
@@ -17,12 +17,6 @@ function formatDelay(seconds) {
   if (seconds < 60)   return `${seconds} ث`;
   if (seconds < 3600) return `${Math.round(seconds / 60)} د`;
   return `${(seconds / 3600).toFixed(1).replace('.0', '')} س`;
-}
-
-function getPendingJoinRequests(g) {
-  return [...(g.joinRequests?.values() || [])].filter(r =>
-    ['pending', 'pending_verify', 'pending_direct'].includes(r.status)
-  );
 }
 
 function groupSettingsKeyboard(chatId, s) {
@@ -91,14 +85,14 @@ async function buildTopicsMarkupRaw(bot, g, chatId) {
   const vs     = getVerifySettings(g);
   const topics = g.topics ? [...g.topics.entries()].filter(([, t]) => !t.archived) : [];
 
-    const rows = topics.map(([tid, t]) => {
-      const icon     = t.locked ? '🔒' : '🔓';
-      const isVerify = tid === vs.verifyTopicId ? ' ✅' : '';
-      return [
-      Markup.button.callback(`${icon} ${(t.name || String(tid)).slice(0, 22)}${isVerify}`, `tp_toggle_${tid}_${chatId}`),
-        Markup.button.callback('📌', `tp_setvfy_${tid}_${chatId}`),
-      ];
-    });
+  const rows = topics.map(([tid, t]) => {
+    const icon     = t.locked ? '🔒' : '🔓';
+    const isVerify = tid === vs.verifyTopicId ? ' ✅' : '';
+    return [
+      Markup.button.callback(`${icon} ${t.name.slice(0, 22)}${isVerify}`, `tp_toggle_${tid}_${chatId}`),
+      Markup.button.callback('📌', `tp_setvfy_${tid}_${chatId}`),
+    ];
+  });
 
   rows.push([
     Markup.button.callback(vs.enabled ? '🔴 تعطيل التحقق' : '🟢 تفعيل التحقق', `vfy_toggle_${chatId}`),
@@ -283,38 +277,62 @@ module.exports = function setupOwnerHandlers(bot) {
       return ctx.reply(`❌ تعذر فحص الصلاحيات: ${e.message}`);
     }
 
-    // ── تطبيق الحماية محلياً ───────────────────────────────────────
-    const g  = db.getGroup(targetChatId);
-    const ch = db.getChannel?.(targetChatId);
-    if (g) {
-      g.protectContent = newState;
-      if (g.communityId) {
-        const com = db.getCommunity(g.communityId);
-        if (com?.subGroups?.length) {
-          let ok = 0;
-          for (const sid of com.subGroups) {
-            const sub = db.getGroup(sid);
-            if (sub) {
-              sub.protectContent = newState;
-              ok++;
+    // ── تطبيق الحماية ───────────────────────────────────────
+    try {
+      await bot.telegram.callApi('setChatProtectContent', {
+        chat_id:         targetChatId,
+        protect_content: newState,
+      });
+
+      // حفظ في DB
+      const g  = db.getGroup(targetChatId);
+      const ch = db.getChannel?.(targetChatId);
+      if (g) {
+        g.protectContent = newState;
+        // تطبيق على مجتمع؟
+        if (g.communityId && newState) {
+          const com = db.getCommunity(g.communityId);
+          if (com?.subGroups?.length) {
+            let ok = 0;
+            for (const sid of com.subGroups) {
+              try {
+                await bot.telegram.callApi('setChatProtectContent', {
+                  chat_id: sid, protect_content: newState,
+                });
+                const sub = db.getGroup(sid);
+                if (sub) sub.protectContent = newState;
+                ok++;
+              } catch {}
             }
+            if (ok > 0) targetLabel += ` + ${ok} مجموعات فرعية`;
           }
-          if (ok > 0) targetLabel += ` + ${ok} مجموعات فرعية`;
         }
+      } else if (ch) {
+        ch.protectContent = newState;
       }
-    } else if (ch) {
-      ch.protectContent = newState;
+      db.markDirty();
+
+      const icon = newState ? '🔒' : '🔓';
+      const statusText = newState
+        ? `🔒 *حماية المحتوى مفعّلة*\n\n✅ لقطة الشاشة: محظورة\n✅ نسخ الرسائل: محظور\n✅ تحويل/توجيه: محظور`
+        : `🔓 *حماية المحتوى معطّلة*\n\nيمكن الآن نسخ وتوجيه الرسائل بحرية.`;
+
+      await ctx.replyWithMarkdown(
+        `${statusText}\n\n📌 المحادثة: *${targetLabel}*\n👤 بواسطة: ${ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name}`
+      );
+
+    } catch (e) {
+      const errMsg = e.description || e.message || String(e);
+      let hint = '';
+      if (errMsg.includes('not enough rights') || errMsg.includes('CHAT_ADMIN_REQUIRED'))
+        hint = 'البوت يحتاج صلاحية can_change_info';
+      else if (errMsg.includes('method not found'))
+        hint = 'Bot API قديم — شغّل: npm update telegraf';
+      else
+        hint = errMsg.slice(0, 100);
+
+      await ctx.replyWithMarkdown(`❌ *فشل تطبيق الحماية*\n\n⚠️ ${hint}`);
     }
-    db.markDirty();
-    db.saveData();
-
-    const statusText = newState
-      ? `🔒 *حماية المحتوى مفعّلة*\n\n✅ رسائل البوت ستُرسل محمية من النسخ/التوجيه\n✅ يتم تطبيقها على الرسائل الجديدة فقط`
-      : `🔓 *حماية المحتوى معطّلة*\n\nيمكن الآن نسخ وتوجيه رسائل البوت الجديدة بحرية.`;
-
-    await ctx.replyWithMarkdown(
-      `${statusText}\n\n📌 المحادثة: *${targetLabel}*\n👤 بواسطة: ${ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name}`
-    );
   });
 
   bot.command('addword', async (ctx) => {
@@ -446,7 +464,7 @@ module.exports = function setupOwnerHandlers(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.reply('❌ للمشرفين فقط!');
     const g = db.getGroup(chatId); if (!g) return ctx.reply('❌ بيانات غير موجودة!');
-    const pending = [...g.joinRequests.values()].filter(r => ['pending', 'pending_verify', 'pending_direct'].includes(r.status));
+    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
     if (!pending.length) return ctx.reply('📨 لا توجد طلبات انضمام معلقة.');
     const btns = pending.slice(0, 8).map(r => [
       Markup.button.callback(`✅ ${r.firstName.slice(0, 14)}`, `jr_approve_${r.userId}_${chatId}`),
@@ -467,8 +485,8 @@ module.exports = function setupOwnerHandlers(bot) {
     if (!topicId) return ctx.reply('❌ استخدم في موضوع أو: /locktopic <topic_id>');
     try {
       await lockTopic(bot, chatId, topicId);
-      const topic = db.getOrCreateTopic(g, topicId, String(topicId));
-      topic.locked = true;
+      if (!g.topics.has(topicId)) g.topics.set(topicId, { name: String(topicId), locked: false, archived: false, approvedUsers: new Set() });
+      g.topics.get(topicId).locked = true;
       await ctx.reply(`🔒 تم قفل الموضوع \`${topicId}\``, { parse_mode: 'Markdown' });
     } catch (e) { await ctx.reply(`❌ فشل: ${e.message}`); }
   });
@@ -498,7 +516,8 @@ module.exports = function setupOwnerHandlers(bot) {
     if (!topicId) return ctx.reply('❌ استخدم في موضوع أو: /archivetopic <topic_id>');
     try {
       await archiveTopic(bot, chatId, topicId);
-      const t = db.getOrCreateTopic(g, topicId, String(topicId));
+      if (!g.topics.has(topicId)) g.topics.set(topicId, { name: String(topicId), locked: false, archived: false, approvedUsers: new Set() });
+      const t = g.topics.get(topicId);
       t.locked = true; t.archived = true;
       await ctx.reply(`📁 تم أرشفة الموضوع \`${topicId}\``, { parse_mode: 'Markdown' });
     } catch (e) { await ctx.reply(`❌ فشل: ${e.message}`); }
@@ -662,9 +681,9 @@ module.exports = function setupOwnerHandlers(bot) {
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
 
     const newState = !g.joinRequestsEnabled;
-    const inviteLink = await setJoinApproval(bot, chatId, newState, g);
+    // نضبط الإعداد في تيليغرام أولاً
+    await setJoinApproval(bot, chatId, newState);
     g.joinRequestsEnabled = newState;
-    db.saveData();
 
     await ctx.answerCbQuery(
       newState
@@ -672,11 +691,6 @@ module.exports = function setupOwnerHandlers(bot) {
         : '🔓 موافقة الانضمام معطّلة — الدخول مباشر',
       { show_alert: true }
     );
-    if (newState && inviteLink) {
-      try {
-        await ctx.replyWithMarkdown(`🔗 *رابط طلب الانضمام الجاهز:*\n\n${inviteLink}`);
-      } catch {}
-    }
     await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
   });
 
@@ -790,8 +804,9 @@ module.exports = function setupOwnerHandlers(bot) {
   });
 
   // ── تبديل حماية المحتوى ──────────────────────────────────
-  // الحماية هنا محلية على رسائل البوت الجديدة، لأن Bot API لا يوفّر
-  // إعداداً دائماً على مستوى الشات لحماية كل الرسائل.
+  // يعمل مع: المجموعات (group/supergroup) والقنوات (channel) والمجتمعات
+  // الـ API الصحيح: setChatProtectContent (متاح في Bot API 5.3+)
+  // الشرط الوحيد: البوت مشرف ويملك can_change_info
   bot.action(/^toggle_protect_(-?\d+)$/, async (ctx) => {
     await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
@@ -822,9 +837,13 @@ module.exports = function setupOwnerHandlers(bot) {
         );
       }
 
-      if (!botMember.can_change_info && !botMember.can_post_messages) {
+      // can_change_info مطلوبة في المجموعات
+      // في القنوات: can_edit_messages أو can_change_info
+      const hasRight = botMember.can_change_info === true
+                    || botMember.can_post_messages === true; // قنوات
+      if (!hasRight) {
         return ctx.answerCbQuery(
-          '❌ البوت لا يملك صلاحية النشر/تغيير المعلومات اللازمة للتحكم برسائل الحماية.',
+          '❌ البوت لا يملك صلاحية "تغيير معلومات المجموعة"\n\nعدّل صلاحياته في الإعدادات.',
           { show_alert: true }
         );
       }
@@ -832,48 +851,87 @@ module.exports = function setupOwnerHandlers(bot) {
       return ctx.answerCbQuery(`❌ تعذر فحص صلاحيات البوت: ${e.message}`, { show_alert: true });
     }
 
-    // ── 5. تطبيق الحالة محلياً ─────────────────────────────
-    if (g) {
-      g.protectContent = newState;
-      if (g.communityId) {
-        const com = db.getCommunity(g.communityId);
-        if (com?.enabled && com.subGroups?.length) {
-          for (const subId of com.subGroups) {
-            const sub = db.getGroup(subId);
-            if (sub) sub.protectContent = newState;
+    // ── 5. تطبيق الحماية عبر Telegram Bot API ────────────────
+    // setChatProtectContent — Bot API 5.3+
+    // يعمل مع supergroup وchannel وcommunity
+    try {
+      await bot.telegram.callApi('setChatProtectContent', {
+        chat_id:         chatId,
+        protect_content: newState,
+      });
+
+      // ── 6. حفظ الحالة محلياً ─────────────────────────────
+      if (g) {
+        g.protectContent = newState;
+        // إذا كانت المجموعة في مجتمع — طبّق على كل المجموعات الفرعية أيضاً
+        if (g.communityId) {
+          const com = db.getCommunity(g.communityId);
+          if (com?.enabled && com.subGroups?.length) {
+            for (const subId of com.subGroups) {
+              try {
+                await bot.telegram.callApi('setChatProtectContent', {
+                  chat_id:         subId,
+                  protect_content: newState,
+                });
+                const sub = db.getGroup(subId);
+                if (sub) sub.protectContent = newState;
+              } catch { /* نتجاوز فشل المجموعات الفرعية */ }
+            }
           }
         }
+      } else if (ch) {
+        ch.protectContent = newState;
       }
-    } else if (ch) {
-      ch.protectContent = newState;
-    }
 
-    db.markDirty();
-    db.saveData();
+      db.markDirty();
 
-    const successMsg = newState
-      ? '🔒 *حماية المحتوى مفعّلة*\n\nسيتم إرسال رسائل البوت الجديدة بوضع محمي.'
-      : '🔓 *حماية المحتوى معطّلة*\n\nسيتم إرسال رسائل البوت الجديدة بدون حماية.';
+      // ── 7. رد نجاح + تحديث الأزرار ────────────────────────
+      const successMsg = newState
+        ? '🔒 *حماية المحتوى مفعّلة*\n\nلا يمكن الآن:\n• لقطة الشاشة\n• نسخ الرسائل\n• توجيه/تحويل الرسائل'
+        : '🔓 *حماية المحتوى معطّلة*\n\nيمكن الآن نسخ وتوجيه الرسائل بحرية.';
 
-    await ctx.answerCbQuery(
-      newState ? '🔒 تم تفعيل حماية المحتوى!' : '🔓 تم تعطيل حماية المحتوى!',
-      { show_alert: true }
-    );
+      await ctx.answerCbQuery(
+        newState ? '🔒 تم تفعيل حماية المحتوى!' : '🔓 تم تعطيل حماية المحتوى!',
+        { show_alert: true }
+      );
 
-    if (g) {
-      try {
-        await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
-      } catch {}
-    }
+      // تحديث لوحة الأزرار (للمجموعات فقط)
+      if (g) {
+        try {
+          await ctx.editMessageReplyMarkup(groupSettingsKeyboard(chatId, g).reply_markup);
+        } catch { /* قد تكون الرسالة قديمة */ }
+      }
 
-    if (g?.logChannelId) {
-      try {
-        await bot.telegram.sendMessage(
-          g.logChannelId,
-          `🛡️ *حماية المحتوى*\n\n${successMsg}\n\n👤 بواسطة: ${ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name}\n📌 المجموعة: *${g.title}*`,
-          { parse_mode: 'Markdown' }
-        );
-      } catch {}
+      // إشعار في مجموعة السجلات إن وُجدت
+      if (g?.logChannelId) {
+        try {
+          await bot.telegram.sendMessage(
+            g.logChannelId,
+            `🛡️ *حماية المحتوى*\n\n${successMsg}\n\n👤 بواسطة: ${ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name}\n📌 المجموعة: *${g.title}*`,
+            { parse_mode: 'Markdown' }
+          );
+        } catch {}
+      }
+
+    } catch (e) {
+      // ── تشخيص دقيق لأسباب الفشل ─────────────────────────
+      const errMsg = e.description || e.message || String(e);
+      let userHint = '';
+
+      if (errMsg.includes('not enough rights') || errMsg.includes('CHAT_ADMIN_REQUIRED')) {
+        userHint = '⚠️ البوت يحتاج صلاحية "تغيير معلومات المجموعة"';
+      } else if (errMsg.includes('method not found') || errMsg.includes('Bad Request')) {
+        userHint = '⚠️ هذه الميزة تحتاج Bot API 5.3+\nتأكد من تحديث المكتبة: npm update telegraf';
+      } else if (errMsg.includes('supergroup') || errMsg.includes('group')) {
+        userHint = '⚠️ تأكد أن المجموعة نوعها Supergroup\n(ابحث في الإعدادات عن "تحويل لسوبرقروب")';
+      } else if (errMsg.includes('Forbidden')) {
+        userHint = '⚠️ البوت محظور أو أُزيل من المجموعة';
+      } else {
+        userHint = `تفاصيل: ${errMsg.slice(0, 80)}`;
+      }
+
+      console.error(`[protect_content] chatId=${chatId} error:`, errMsg);
+      await ctx.answerCbQuery(`❌ فشل تطبيق الحماية\n\n${userHint}`, { show_alert: true });
     }
   });
 
@@ -1376,7 +1434,7 @@ module.exports = function setupOwnerHandlers(bot) {
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
     if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
-    const pending = getPendingJoinRequests(g);
+    const pending = [...g.joinRequests.values()].filter(r => r.status === 'pending');
     if (!pending.length)
       return ctx.editMessageText('📨 *لا توجد طلبات معلقة.*', { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', `group_home_${chatId}`)]]) });
     const btns = pending.slice(0, 8).map(r => [
@@ -1441,7 +1499,7 @@ ${statusLine}
       const members  = t.approvedUsers?.size || 0;
       return [
         Markup.button.callback(
-          `${icon} ${(t.name || String(tid)).slice(0, 20)}${isVerify} (${members})`,
+          `${icon} ${t.name.slice(0, 20)}${isVerify} (${members})`,
           `tp_manage_${tid}_${chatId}`
         ),
       ];
@@ -1861,7 +1919,16 @@ ${statusLine}
           name:    newName,
         });
         const newTopicId = result.message_thread_id;
-        db.getOrCreateTopic(g, newTopicId, newName);
+        g.topics.set(newTopicId, {
+          name:         newName,
+          locked:       false,
+          archived:     false,
+          approvedUsers: new Set(),
+          joinRequests:  new Map(),
+          cooldowns:     new Map(),
+          perms:         {},
+          createdAt:     new Date(),
+        });
         db.markDirty();
         await ctx.reply(
           `✅ تم إنشاء الموضوع *${newName}*\n🆔 ID: \`${newTopicId}\``,

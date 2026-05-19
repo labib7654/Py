@@ -20,20 +20,10 @@ const setupRadar         = require('./handler_radar');
 const setupAdder  
        = require('./handler_adder');
 const setupAI = require('./handler_ai');
-const setupVerifyRegistration = require('./verify_registration');
-const setupVerifyActions       = require('./verify_actions');
 const db = require('./db');
 
 if (!BOT_TOKEN)    { console.error('❌ BOT_TOKEN غير موجود!');    process.exit(1); }
 if (!DEVELOPER_ID) { console.error('❌ DEVELOPER_ID غير موجود!'); process.exit(1); }
-
-// ── Hardening: لا نسمح للـ process يسكت عن أخطاء غير معالجة ─────────
-process.on('unhandledRejection', (reason) => {
-  console.error('❌ unhandledRejection:', reason?.message || reason);
-});
-process.on('uncaughtException', (err) => {
-  console.error('❌ uncaughtException:', err?.message || err);
-});
 
 // ── allowed_updates شاملة ─────────────────────────────────
 const ALLOWED_UPDATES = [
@@ -74,34 +64,6 @@ async function syncBotChats(bot, botId) {
   console.log(`✅ تمت المزامنة: ${synced} نشطة، ${removed} محذوفة`);
 }
 
-function normalizeExternalUrl(url) {
-  if (!url) return '';
-  const s = String(url).trim();
-  if (!s) return '';
-  return s.endsWith('/') ? s.slice(0, -1) : s;
-}
-
-function getRenderExternalUrl() {
-  // Render غالباً يوفر RENDER_EXTERNAL_URL، وبعض البيئات توفر فقط hostname
-  const direct = normalizeExternalUrl(process.env.RENDER_EXTERNAL_URL);
-  if (direct) return direct;
-  const host = (process.env.RENDER_EXTERNAL_HOSTNAME || process.env.RENDER_EXTERNAL_HOST || '').trim();
-  if (host) return normalizeExternalUrl(`https://${host}`);
-  return '';
-}
-
-function isRenderRuntime() {
-  // لا نعتمد على متغير واحد فقط لأن بعض الإعدادات لا تمرره
-  if (process.env.RENDER === 'true') return true;
-  if (process.env.RENDER_SERVICE_ID) return true;
-  if (process.env.RENDER_INSTANCE_ID) return true;
-  if (process.env.RENDER_REGION) return true;
-  if (process.env.RENDER_GIT_REPO_SLUG) return true;
-  if (process.env.RENDER_EXTERNAL_URL) return true;
-  if (process.env.RENDER_EXTERNAL_HOSTNAME) return true;
-  return false;
-}
-
 // ══════════════════════════════════════════════════════════════
 //  نقطة الدخول الرئيسية — ننتظر تحميل البيانات أولاً
 // ══════════════════════════════════════════════════════════════
@@ -128,8 +90,6 @@ async function main() {
   setupAdder(bot);
   setupAI(bot);             // ✅ نظام الذكاء الاصطناعي
   setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)
-  setupVerifyRegistration(bot);  // ✅ نظام التحقق الجامعي (join_request)
-  setupVerifyActions(bot);       // ✅ قبول/رفض/تفاصيل
   setupTopicHandlers(bot);  // ✅ نظام طلبات المواضيع — يجب قبل setupGroupHandlers
   setupGroupHandlers(bot);
   setupAdminHandlers(bot);
@@ -206,51 +166,28 @@ async function main() {
   }
 
   // ── Webhook / Polling ─────────────────────────────────────
-  const RENDER_URL = getRenderExternalUrl();
-  const IS_RENDER  = isRenderRuntime();
-  let server = null;
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
 
   if (RENDER_URL) {
     const WEBHOOK_PATH = `/webhook/${BOT_TOKEN}`;
     const WEBHOOK_URL  = `${RENDER_URL}${WEBHOOK_PATH}`;
 
-    // نستقبل الـ update من Telegram ونمرره للبوت مباشرة
-    app.post(WEBHOOK_PATH, express.json(), async (req, res) => {
-      try {
-        await bot.handleUpdate(req.body, res);
-      } catch (e) {
-        console.error('❌ خطأ في معالجة الـ update:', e.message);
-        res.sendStatus(500);
-      }
-    });
+    app.use(bot.webhookCallback(WEBHOOK_PATH));
 
-    server = app.listen(PORT, async () => {
+    app.listen(PORT, async () => {
       console.log(`🌐 السيرفر يعمل على المنفذ ${PORT}`);
-
-      // Retry تعيين Webhook بدل ما يشتغل السيرفر لحاله بدون بوت
-      let attempt = 0;
-      const setWebhookWithRetry = async () => {
-        attempt++;
-        try {
-          await bot.telegram.setWebhook(WEBHOOK_URL, {
-            allowed_updates:      ALLOWED_UPDATES,
-            drop_pending_updates: true,
-          });
-          console.log(`✅ Webhook مفعّل: ${WEBHOOK_URL}`);
-          console.log('✅ البوت يعمل الآن بوضع Webhook!');
-          const botInfo = await bot.telegram.getMe();
-          setTimeout(() => syncBotChats(bot, botInfo.id).catch(console.error), 5000);
-          return;
-        } catch (err) {
-          const msg = err?.message || String(err);
-          const delay = Math.min(120000, 2000 * Math.pow(2, Math.min(6, attempt - 1)));
-          console.error(`❌ فشل تعيين Webhook (محاولة ${attempt}):`, msg);
-          console.warn(`⏳ إعادة المحاولة بعد ${Math.ceil(delay / 1000)}s...`);
-          setTimeout(setWebhookWithRetry, delay);
-        }
-      };
-
-      setWebhookWithRetry();
+      try {
+        await bot.telegram.setWebhook(WEBHOOK_URL, {
+          allowed_updates:      ALLOWED_UPDATES,
+          drop_pending_updates: true,
+        });
+        console.log(`✅ Webhook مفعّل: ${WEBHOOK_URL}`);
+        console.log('✅ البوت يعمل الآن بوضع Webhook!');
+        const botInfo = await bot.telegram.getMe();
+        setTimeout(() => syncBotChats(bot, botInfo.id).catch(console.error), 5000);
+      } catch (err) {
+        console.error('❌ فشل تعيين Webhook:', err.message);
+      }
     });
 
     startAutoApproveInterval(); // ✅ القبول التلقائي — يعمل في Webhook و Polling
@@ -268,12 +205,11 @@ async function main() {
     console.log(`🔁 Keep-alive مفعّل → ${RENDER_URL}/health`);
 
   } else {
-    server = app.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`🌐 السيرفر يعمل على المنفذ ${PORT}`);
     });
 
-    // Polling محلياً. على Render بدون External URL نخلّيه resilient وما يطيح.
-    async function startPolling(retries = 0, lastDelayMs = 5000) {
+    async function startPolling(retries = 0) {
       try {
         await bot.telegram.deleteWebhook({ drop_pending_updates: true });
         console.log('✅ تم حذف Webhook القديم');
@@ -285,45 +221,22 @@ async function main() {
         const botInfo = await bot.telegram.getMe();
         setTimeout(() => syncBotChats(bot, botInfo.id).catch(console.error), 5000);
       } catch (err) {
-        const msg = err?.message || String(err);
-        if (msg.includes('409')) {
-          const nextDelay = Math.min(120000, Math.max(5000, Math.floor(lastDelayMs * 1.6)));
-          if (IS_RENDER) {
-            console.warn('⚠️ Telegram 409 Conflict: يوجد instance ثانية للبوت شغالة (getUpdates).');
-            console.warn(`⏳ راح أعيد المحاولة تلقائياً بعد ${Math.ceil(nextDelay / 1000)}s (بدون إيقاف السيرفر) ...`);
-            setTimeout(() => startPolling(retries + 1, nextDelay), nextDelay);
-            return;
-          }
-          if (retries < 5) {
-            console.warn(`⚠️ تعارض — إعادة المحاولة ${retries + 1}/5 بعد ${Math.ceil(nextDelay / 1000)}s...`);
-            setTimeout(() => startPolling(retries + 1, nextDelay), nextDelay);
-            return;
-          }
+        if (err.message?.includes('409') && retries < 5) {
+          console.warn(`⚠️ تعارض — إعادة المحاولة ${retries + 1}/5 بعد 5 ثوانٍ...`);
+          setTimeout(() => startPolling(retries + 1), 5000);
+        } else {
+          console.error('❌ فشل تشغيل البوت:', err.message);
+          process.exit(1);
         }
-
-        console.error('❌ فشل تشغيل البوت:', msg);
-        if (IS_RENDER) {
-          const nextDelay = Math.min(120000, Math.max(10000, Math.floor(lastDelayMs * 1.8)));
-          console.warn(`⏳ إعادة محاولة تشغيل Polling بعد ${Math.ceil(nextDelay / 1000)}s...`);
-          setTimeout(() => startPolling(retries + 1, nextDelay), nextDelay);
-          return;
-        }
-        process.exit(1);
       }
     }
 
     startPolling();
     startAutoApproveInterval(); // ✅ القبول التلقائي في وضع Polling
-  }
 
-  // ── Graceful shutdown (يطبق على Webhook و Polling) ───────────
-  const shutdown = (signal) => {
-    try { bot.stop(signal); } catch {}
-    try { server?.close?.(); } catch {}
-    process.exit(0);
-  };
-  process.once('SIGINT',  () => shutdown('SIGINT'));
-  process.once('SIGTERM', () => shutdown('SIGTERM'));
+    process.once('SIGINT',  () => { bot.stop('SIGINT');  process.exit(0); });
+    process.once('SIGTERM', () => { bot.stop('SIGTERM'); process.exit(0); });
+  }
 }
 
 main().catch(err => {

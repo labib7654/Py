@@ -18,8 +18,6 @@ const {
   AUTO_APPROVE_DELAY,
   sessions,
   getVerifySettings,
-  resolveRegistrationTopic,
-  attachApprovedUserToTopic,
   buildAdminNotification,
   buildAdminButtons,
   notifyAll,
@@ -91,7 +89,7 @@ module.exports = function setupVerifyRegistration(bot) {
 
     // ── طلب معلق بالفعل ──────────────────────────────────────
     const existing = vs.pendingRequests.get(userId);
-    if (['pending', 'pending_verify', 'pending_direct'].includes(existing?.status)) {
+    if (existing?.status === 'pending') {
       try {
         await bot.telegram.sendMessage(userId,
           `📨 *لديك طلب قيد المراجعة.*\n\nانتظر حتى يراجعه المشرف وستصلك رسالة بالنتيجة.`,
@@ -293,11 +291,10 @@ module.exports = function setupVerifyRegistration(bot) {
     if (!g) return ctx.reply('❌ المجموعة غير موجودة. تواصل مع المشرف.');
 
     const vs = getVerifySettings(g);
-    const resolvedTopic = resolveRegistrationTopic(g, sess.data);
 
     // منع الطلبات المتعددة
     const existing = vs.pendingRequests.get(userId);
-    if (['pending', 'pending_verify', 'pending_direct'].includes(existing?.status)) {
+    if (existing?.status === 'pending') {
       sessions.delete(userId);
       try { await ctx.deleteMessage(); } catch {}
       return ctx.reply('📨 *لديك طلب قيد المراجعة بالفعل.*\n\nانتظر حتى يراجعه المشرف.', { parse_mode: 'Markdown' });
@@ -309,9 +306,6 @@ module.exports = function setupVerifyRegistration(bot) {
       username:    ctx.from.username  || '',
       firstName:   ctx.from.first_name || String(userId),
       data:        { ...sess.data },
-      studentData: { ...sess.data },
-      topicId:     resolvedTopic?.topicId || null,
-      topicName:   resolvedTopic?.topicName || sess.data.university || null,
       submittedAt: new Date(),
       status:      'pending',
     });
@@ -354,7 +348,7 @@ module.exports = function setupVerifyRegistration(bot) {
 
         // قبول/رفع تقييد طلب الانضمام
         const jr = g2.joinRequests?.get(userId);
-        if (jr && ['pending_verify', 'pending_direct', 'pending'].includes(jr.status)) {
+        if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
           if (jr.isExistingMember) {
             // عضو قديم → ارفع التقييد فقط
             try {
@@ -383,15 +377,11 @@ module.exports = function setupVerifyRegistration(bot) {
         }
 
         // حفظ الاعتماد
-        const approvedTopic = resolveRegistrationTopic(g2, sess.data);
         vs2.approvedMembers.set(userId, {
           studentData: { ...sess.data },
-          topicId:     approvedTopic?.topicId || null,
-          topicName:   approvedTopic?.topicName || sess.data.university || null,
           approvedAt:  new Date(),
           approvedBy:  'auto',
         });
-        attachApprovedUserToTopic(g2, userId, sess.data);
 
         db.markDirty();
 
