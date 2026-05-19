@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:17:29.980Z",
+  "savedAt": "2026-05-19T15:19:29.980Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -212,6 +212,16 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
+        },
+        "1361482400": {
+          "userId": 1361482400,
+          "username": "BMW51O",
+          "firstName": "....",
+          "role": "member",
+          "joinedAt": "2026-05-19T15:17:45.030Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-19T15:18:32.370Z"
         },
         "1443031310": {
           "userId": 1443031310,
@@ -2445,6 +2455,14 @@
       ],
       "wordViolations": {},
       "joinRequests": {
+        "1361482400": {
+          "userId": 1361482400,
+          "username": "BMW51O",
+          "firstName": "....",
+          "status": "pending_verify",
+          "requestedAt": "2026-05-19T15:18:32.772Z",
+          "isExistingMember": true
+        },
         "8265840070": {
           "userId": 8265840070,
           "username": "BMW0_0",
@@ -3223,33 +3241,23 @@
       "chatId": -1003928741558,
       "title": "⁨....⁩ و ⁨الا⁩",
       "type": "supergroup",
-      "ownerId": 1361482400,
-      "ownerUsername": "BMW51O",
+      "ownerId": null,
+      "ownerUsername": "",
       "ownerVerified": false,
       "ownerVerifiedAt": null,
       "addedBy": 0,
       "addedByUsername": "auto-detected",
-      "addedAt": "2026-05-19T15:14:32.348Z",
+      "addedAt": "2026-05-19T15:19:14.617Z",
       "members": {
         "1361482400": {
           "userId": 1361482400,
           "username": "BMW51O",
           "firstName": "....",
           "role": "member",
-          "joinedAt": "2026-05-19T15:14:32.531Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-05-19T15:14:34.851Z"
-        },
-        "8265840070": {
-          "userId": 8265840070,
-          "username": "BMW0_0",
-          "firstName": "ووة",
-          "role": "member",
-          "joinedAt": "2026-05-19T15:15:22.207Z",
+          "joinedAt": "2026-05-19T15:19:14.778Z",
           "messageCount": 1,
           "score": 1,
-          "lastMessageAt": "2026-05-19T15:15:22.238Z"
+          "lastMessageAt": "2026-05-19T15:19:14.778Z"
         }
       },
       "admins": {},
@@ -3490,17 +3498,33 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:44:54.456Z",
-      "lastSeen": "2026-05-19T15:16:53.516Z",
+      "lastSeen": "2026-05-19T15:19:19.265Z",
       "groups": [
-        -1003928741558
+        -1003928741558,
+        -1003969494192
       ],
       "channels": [],
       "bioBanInfo": null,
-      "seenInChats": {},
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T15:17:45.030Z",
+          "lastSeen": "2026-05-19T15:18:32.370Z"
+        },
+        "-1003928741558": {
+          "chatId": -1003928741558,
+          "chatTitle": "⁨....⁩ و ⁨الا⁩",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T15:19:14.778Z",
+          "lastSeen": "2026-05-19T15:19:14.778Z"
+        }
+      },
       "profileLink": "https://t.me/BMW51O",
       "lastName": "🇸🇦",
       "contactedBot": true,
-      "lastContactAt": "2026-05-18T13:45:14.070Z"
+      "lastContactAt": "2026-05-19T15:17:42.214Z"
     },
     "1443031310": {
       "userId": 1443031310,
@@ -3872,7 +3896,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-19T15:17:25.248Z",
+      "lastSeen": "2026-05-19T15:18:17.168Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -3936,7 +3960,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-19T15:15:22.206Z",
+      "lastSeen": "2026-05-19T15:18:32.790Z",
       "groups": [
         -1003969494192,
         -1003940779079,
