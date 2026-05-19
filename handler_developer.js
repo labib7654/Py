@@ -528,59 +528,94 @@ module.exports = function setupDeveloper(bot) {
     const g = db.getGroup(chatId);
     if (!g) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
 
-    let adminIds = new Set(), ownerLine = '', adminLines = [];
+    // ✅ إصلاح: adminIds تُبنى من db أولاً كـ fallback، ثم تُحدَّث من API
+    let adminIds = new Set([...g.admins.keys()]);
+    if (g.ownerId) adminIds.add(g.ownerId);
+
+    let ownerLine = '', adminLines = [];
+
+    // حاول تحديث من API — لكن لو فشل نكمل بالبيانات المحفوظة
     try {
       const list = await bot.telegram.getChatAdministrators(chatId);
+      adminIds = new Set(); // أعد البناء من API لو نجح
       for (const a of list) {
         if (a.user.is_bot) continue;
         adminIds.add(a.user.id);
-        const name = a.user.username ? `@${a.user.username}` : a.user.first_name;
+        const name = a.user.username ? `@${a.user.username}` : (a.user.first_name || String(a.user.id));
         if (a.status === 'creator') {
           ownerLine = `👑 المالك: ${name} \`[${a.user.id}]\``;
-          g.ownerId = a.user.id; g.ownerUsername = a.user.username || a.user.first_name;
+          g.ownerId = a.user.id;
+          g.ownerUsername = a.user.username || a.user.first_name;
         } else {
           const rec = g.admins.get(a.user.id);
           adminLines.push(`👮 ${name} \`[${a.user.id}]\`${rec ? ` ← @${rec.promotedByUsername}` : ''}`);
         }
       }
-    } catch {}
+    } catch {
+      // ✅ إصلاح: fallback — بناء ownerLine وادminLines من db
+      if (g.ownerId) {
+        const ownerName = g.ownerUsername || String(g.ownerId);
+        ownerLine = `👑 المالك: @${ownerName} \`[${g.ownerId}]\``;
+      }
+      for (const [uid, rec] of g.admins.entries()) {
+        const name = rec.username || String(uid);
+        adminLines.push(`👮 @${name} \`[${uid}]\``);
+      }
+    }
 
-    const allMembers = [...g.members.values()].filter(m => !adminIds.has(m.userId) && m.userId !== g.ownerId);
+    // ✅ إصلاح: فلترة صحيحة — استثنِ المشرفين والمالك فقط
+    const allMembers = [...g.members.values()].filter(m =>
+      !adminIds.has(m.userId) && m.userId !== g.ownerId
+    );
     const totalPages = Math.ceil(allMembers.length / PAGE) || 1;
-    const slice      = allMembers.slice(page * PAGE, (page + 1) * PAGE);
+    // تأكد أن page لا يتجاوز الحد
+    const safePage = Math.min(page, totalPages - 1);
+    const slice    = allMembers.slice(safePage * PAGE, (safePage + 1) * PAGE);
 
-    let text = `👥 *أعضاء ${g.title}*\n`;
-    text += `📊 الإجمالي: \`${allMembers.length}\` عضو | صفحة ${page + 1}/${totalPages}\n\n`;
-    if (page === 0) {
-      if (ownerLine)         text += `${ownerLine}\n\n`;
-      if (adminLines.length) text += `*المشرفون (${adminLines.length}):*\n${adminLines.join('\n')}\n\n`;
+    // ✅ إصلاح: نص مختصر لتجنب تجاوز حد Telegram (4096 حرف)
+    let text = `👥 *أعضاء ${(g.title || '').slice(0, 30)}*\n`;
+    text += `📊 الكل: \`${allMembers.length}\` | صفحة ${safePage + 1}/${totalPages}\n\n`;
+
+    if (safePage === 0) {
+      if (ownerLine) text += `${ownerLine}\n\n`;
+      if (adminLines.length) {
+        text += `*مشرفون (${adminLines.length}):*\n`;
+        // ✅ إصلاح: حد المشرفين في النص حتى لا تكبر الرسالة
+        adminLines.slice(0, 5).forEach(l => { text += `${l}\n`; });
+        if (adminLines.length > 5) text += `_... و${adminLines.length - 5} آخرين_\n`;
+        text += '\n';
+      }
     }
 
     const memberBtns = [];
     if (slice.length > 0) {
-      text += `*الأعضاء العاديون:*\n`;
+      text += `*الأعضاء:*\n`;
       slice.forEach(m => {
-        const name  = m.username ? `@${m.username}` : m.firstName;
-        const icons = `${(g.warns.get(m.userId)?.length || 0) > 0 ? '⚠️' : ''}${g.mutedUsers.has(m.userId) ? '🔇' : ''}${g.bannedUsers.has(m.userId) ? '🚫' : ''}`;
-        text += `👤 ${name} \`[${m.userId}]\` ${icons} 💬${m.messageCount || 0} ⭐${m.score || 0}\n`;
+        const name  = (m.username ? `@${m.username}` : (m.firstName || String(m.userId))).slice(0, 20);
+        const icons = `${(g.warns?.get(m.userId)?.length || 0) > 0 ? '⚠️' : ''}${g.mutedUsers?.has(m.userId) ? '🔇' : ''}${g.bannedUsers?.has(m.userId) ? '🚫' : ''}`;
+        // ✅ إصلاح: سطر مختصر لكل عضو
+        text += `👤 ${name} \`${m.userId}\` ${icons}\n`;
         memberBtns.push([
-          Markup.button.callback(`👤 ${name.slice(0, 16)} ${icons}`, `dev_mact_${m.userId}_${chatId}`),
-          Markup.button.callback(`🔍 تفاصيل`, `dev_profile_${m.userId}_${chatId}_${page}`),
+          Markup.button.callback(`👤 ${name.slice(0, 18)} ${icons}`.trim(), `dev_mact_${m.userId}_${chatId}`),
+          Markup.button.callback(`🔍`, `dev_profile_${m.userId}_${chatId}_${safePage}`),
         ]);
       });
     } else {
-      text += '_لا يوجد أعضاء عاديون_';
+      text += '_لا يوجد أعضاء_';
     }
 
     const navBtns = [];
-    if (page > 0)              navBtns.push(Markup.button.callback('◀️ السابق', `dev_members_${chatId}_p${page - 1}`));
-    if (page + 1 < totalPages) navBtns.push(Markup.button.callback('التالي ▶️', `dev_members_${chatId}_p${page + 1}`));
+    if (safePage > 0)              navBtns.push(Markup.button.callback('◀️ السابق', `dev_members_${chatId}_p${safePage - 1}`));
+    if (safePage + 1 < totalPages) navBtns.push(Markup.button.callback('التالي ▶️', `dev_members_${chatId}_p${safePage + 1}`));
 
     const keyboard = [...memberBtns];
     if (navBtns.length) keyboard.push(navBtns);
     keyboard.push([Markup.button.callback('🔙 رجوع', `dev_grp_${chatId}`)]);
 
-    await ctx.editMessageText(text, {
+    // ✅ إصلاح: قطع النص لو تجاوز حد Telegram
+    const safeText = text.length > 3800 ? text.slice(0, 3800) + '\n_..._' : text;
+
+    await ctx.editMessageText(safeText, {
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard(keyboard),
     });
