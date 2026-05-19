@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:31:02.484Z",
+  "savedAt": "2026-05-19T15:31:13.486Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3029,9 +3029,9 @@
           "firstName": "عآئش",
           "role": "owner",
           "joinedAt": "2026-05-18T22:28:27.671Z",
-          "messageCount": 9,
-          "score": 9,
-          "lastMessageAt": "2026-05-19T15:31:01.844Z"
+          "messageCount": 10,
+          "score": 10,
+          "lastMessageAt": "2026-05-19T15:31:13.006Z"
         },
         "7630845149": {
           "userId": 7630845149,
@@ -3064,6 +3064,12 @@
             "reason": "أضاف بوت (@Labib865_bot) للمجموعة",
             "warnedBy": 7243808108,
             "warnedAt": "2026-05-19T15:31:01.484Z",
+            "isAutomatic": true
+          },
+          {
+            "reason": "أضاف بوت (@Labib865_bot) للمجموعة",
+            "warnedBy": 7243808108,
+            "warnedAt": "2026-05-19T15:31:12.485Z",
             "isAutomatic": true
           }
         ]
@@ -3106,6 +3112,13 @@
         "canManageTopics": false
       },
       "auditLog": [
+        {
+          "action": "🤖 إزالة بوت",
+          "by": 8240566312,
+          "target": 7630845149,
+          "details": "البوت المضاف: @Labib865_bot",
+          "at": "2026-05-19T15:31:12.485Z"
+        },
         {
           "action": "🤖 إزالة بوت",
           "by": 8240566312,
@@ -7297,7 +7310,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-19T15:31:01.845Z",
+      "lastSeen": "2026-05-19T15:31:13.006Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -7340,7 +7353,7 @@
           "chatTitle": "مماحين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T22:28:27.813Z",
-          "lastSeen": "2026-05-19T15:31:01.845Z"
+          "lastSeen": "2026-05-19T15:31:13.006Z"
         }
       },
       "contactedBot": true,
