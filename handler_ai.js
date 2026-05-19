@@ -272,6 +272,30 @@ module.exports = function setupAI(bot) {
     await ctx.replyWithMarkdown(panelText(), panelMarkup());
   });
 
+  // ── اختبار الاتصال /aitest ────────────────────────────────
+  bot.command('aitest', async (ctx) => {
+    if (!isDev(ctx)) return;
+    await ctx.reply(`🔄 جاري اختبار الاتصال بـ ${AI_PROVIDER}...`);
+    try {
+      const ans = await smartAsk('قل: اختبار ناجح');
+      await ctx.reply(`✅ نجح الاتصال!\n\nالرد: ${ans}`);
+    } catch (e) {
+      // اختبار fetch مباشر للتشخيص
+      let netOk = false;
+      try {
+        const r = await fetch('https://www.google.com', { signal: AbortSignal.timeout(5000) });
+        netOk = r.ok;
+      } catch {}
+
+      await ctx.reply(
+        `❌ فشل الاتصال بـ ${AI_PROVIDER}\n\n` +
+        `الخطأ: ${e.message}\n\n` +
+        `🌐 الاتصال بالإنترنت: ${netOk ? '✅ يعمل' : '❌ محجوب'}\n` +
+        `🔑 Key: ${AI_API_KEY.slice(0,8)}... (${AI_API_KEY.length} حرف)`
+      );
+    }
+  });
+
   // ── فتح اللوحة من زر المطور ───────────────────────────────
   bot.action('ai_panel', async (ctx) => {
     if (!isDev(ctx)) return ctx.answerCbQuery('⛔');
