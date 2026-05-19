@@ -156,10 +156,13 @@ async function callGemini(question, systemPrompt) {
   });
   if (!res.ok) {
     const err = await res.text().catch(() => '');
+    console.error(`❌ Gemini error ${res.status}:`, err.slice(0, 300));
     throw new Error(`Gemini ${res.status}: ${err.slice(0, 120)}`);
   }
   const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+  const answer = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || null;
+  console.log(`✅ Gemini OK — ${answer?.slice(0,40)}...`);
+  return answer;
 }
 
 // ─── استدعاء OpenAI-compatible APIs (DeepSeek / OpenAI) ──────
@@ -255,6 +258,7 @@ function panelMarkup() {
 module.exports = function setupAI(bot) {
   if (!AI_ENABLED) { console.log('ℹ️ AI معطّل'); return; }
   if (!AI_API_KEY) { console.warn('⚠️ AI_API_KEY مفقود'); return; }
+  console.log(`🔑 AI_API_KEY: ${AI_API_KEY.slice(0,8)}... (${AI_API_KEY.length} chars) | Provider: ${AI_PROVIDER}`);
 
   const { DEVELOPER_ID } = require('./config');
   const isDev = ctx => ctx.from?.id === DEVELOPER_ID;
