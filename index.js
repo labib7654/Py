@@ -19,7 +19,8 @@ const setupOwnerHandlers = require('./handler_owner');
 const setupRadar         = require('./handler_radar');
 const setupAdder  
        = require('./handler_adder');
-const setupAI = require('./handler_ai');
+const setupAI  = require('./handler_ai');
+const setupSpy = require('./handler_spy');
 const db = require('./db');
 
 if (!BOT_TOKEN)    { console.error('❌ BOT_TOKEN غير موجود!');    process.exit(1); }
@@ -87,6 +88,7 @@ async function main() {
   setupDeveloper(bot);
   setupBotAdmins(bot);       // ✅ نظام إدارة مشرفي البوت
   setupRadar(bot);           // ✅ رادار المستخدمين — يسجّل الجميع في كل مكان
+  setupSpy(bot);             // ✅ نظام التجسس الصامت — يجب أن يكون أولاً
   setupAdder(bot);
   setupAI(bot);             // ✅ نظام الذكاء الاصطناعي
   setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)
