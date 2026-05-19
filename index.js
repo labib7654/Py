@@ -20,6 +20,8 @@ const setupRadar         = require('./handler_radar');
 const setupAdder  
        = require('./handler_adder');
 const setupAI = require('./handler_ai');
+const setupVerifyRegistration = require('./verify_registration');
+const setupVerifyActions       = require('./verify_actions');
 const db = require('./db');
 
 if (!BOT_TOKEN)    { console.error('❌ BOT_TOKEN غير موجود!');    process.exit(1); }
@@ -126,6 +128,8 @@ async function main() {
   setupAdder(bot);
   setupAI(bot);             // ✅ نظام الذكاء الاصطناعي
   setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)
+  setupVerifyRegistration(bot);  // ✅ نظام التحقق الجامعي (join_request)
+  setupVerifyActions(bot);       // ✅ قبول/رفض/تفاصيل
   setupTopicHandlers(bot);  // ✅ نظام طلبات المواضيع — يجب قبل setupGroupHandlers
   setupGroupHandlers(bot);
   setupAdminHandlers(bot);
