@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-19T15:31:29.990Z",
+  "savedAt": "2026-05-19T15:33:25.718Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3042,6 +3042,16 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
+        },
+        "8265840070": {
+          "userId": 8265840070,
+          "username": "BMW0_0",
+          "firstName": "ووة",
+          "role": "member",
+          "joinedAt": "2026-05-19T15:32:06.245Z",
+          "messageCount": 3,
+          "score": 3,
+          "lastMessageAt": "2026-05-19T15:32:32.879Z"
         }
       },
       "admins": {
@@ -3078,11 +3088,19 @@
       "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
       "welcomeEnabled": true,
       "antiSpam": true,
-      "muteNewMembers": false,
+      "muteNewMembers": true,
       "mutedUsers": [],
       "bannedUsers": [],
       "bannedWords": [],
-      "specialistWords": [],
+      "specialistWords": [
+        {
+          "word": "سكليف",
+          "specialistId": 8240566312,
+          "specialistUsername": "g_1_11111",
+          "addedBy": 8240566312,
+          "addedAt": "2026-05-19T15:33:24.717Z"
+        }
+      ],
       "wordViolations": {},
       "joinRequests": {},
       "joinRequestsEnabled": true,
@@ -4272,10 +4290,11 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:11:55.945Z",
-      "lastSeen": "2026-05-19T15:15:52.455Z",
+      "lastSeen": "2026-05-19T15:32:32.880Z",
       "groups": [
         -1003794953708,
-        -1003928741558
+        -1003928741558,
+        -1003595180224
       ],
       "channels": [],
       "seenInChats": {
@@ -4299,10 +4318,17 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-19T15:15:22.207Z",
           "lastSeen": "2026-05-19T15:15:22.239Z"
+        },
+        "-1003595180224": {
+          "chatId": -1003595180224,
+          "chatTitle": "مماحين",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-19T15:32:06.245Z",
+          "lastSeen": "2026-05-19T15:32:32.880Z"
         }
       },
       "contactedBot": true,
-      "lastContactAt": "2026-05-18T20:28:04.654Z",
+      "lastContactAt": "2026-05-19T15:32:03.409Z",
       "bioBanInfo": null
     },
     "6061773220": {
@@ -7310,7 +7336,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-19T15:31:13.006Z",
+      "lastSeen": "2026-05-19T15:33:24.557Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -7357,7 +7383,7 @@
         }
       },
       "contactedBot": true,
-      "lastContactAt": "2026-05-19T00:18:45.473Z",
+      "lastContactAt": "2026-05-19T15:33:20.912Z",
       "bioBanInfo": null
     },
     "8751278667": {
