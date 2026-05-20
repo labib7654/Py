@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-20T06:37:14.516Z",
+  "savedAt": "2026-05-20T06:39:14.837Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3518,6 +3518,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-19T19:57:13.976Z"
+        },
+        "8229034635": {
+          "userId": 8229034635,
+          "username": "",
+          "firstName": "ً~~",
+          "role": "member",
+          "joinedAt": "2026-05-20T06:37:45.169Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-20T06:37:45.169Z"
         }
       },
       "admins": {},
@@ -10369,6 +10379,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-19T19:57:13.976Z",
           "lastSeen": "2026-05-19T19:57:13.976Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8229034635": {
+      "userId": 8229034635,
+      "username": "",
+      "firstName": "ً~~",
+      "lastName": "",
+      "profileLink": "tg://user?id=8229034635",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-20T06:37:45.169Z",
+      "lastSeen": "2026-05-20T06:37:45.169Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003750270631": {
+          "chatId": -1003750270631,
+          "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-20T06:37:45.169Z",
+          "lastSeen": "2026-05-20T06:37:45.169Z"
         }
       },
       "contactedBot": false,
