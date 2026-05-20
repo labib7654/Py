@@ -419,7 +419,7 @@ module.exports = function setupVerifyRegistration(bot) {
             `🤖 *قبول تلقائي*\n\n` +
             `👤 ${req.firstName}${req.username ? ` (@${req.username})` : ''}\n` +
             `🆔 \`${userId}\`\n` +
-            `✅ تم قبوله تلقائياً بعد 24 ساعة`,
+            `✅ تم قبوله تلقائياً بعد دقيقتين`,
             null
           );
         } catch {}

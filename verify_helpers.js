@@ -12,7 +12,7 @@ const { DEVELOPER_ID } = require('./config');
 
 // ─── ثوابت ────────────────────────────────────────────────────
 const VERIFY_COOLDOWN_MS  = 24 * 60 * 60 * 1000; // 24 ساعة بعد الرفض
-const AUTO_APPROVE_DELAY  = 24 * 60 * 60 * 1000; // 24 ساعة للقبول التلقائي (تم رفعه من دقيقتين)
+const AUTO_APPROVE_DELAY  = 2 * 60 * 1000; // دقيقتان للقبول التلقائي
 
 // ─── حالة المحادثات الخاصة (session مؤقتة في الذاكرة) ────────
 // Map: userId → { step, chatId, data }
@@ -378,11 +378,11 @@ async function openTopicForApprovedUser(bot, chatId, topicId) {
 }
 
 async function openTopic(bot, chatId, topicId) {
-  try { await bot.telegram.reopenForumTopic(chatId, topicId); } catch {}
+  try { await bot.telegram.reopenForumTopic(chatId, topicId); return true; } catch { return false; }
 }
 
 async function closeTopic(bot, chatId, topicId) {
-  try { await bot.telegram.closeForumTopic(chatId, topicId); } catch {}
+  try { await bot.telegram.closeForumTopic(chatId, topicId); return true; } catch { return false; }
 }
 
 // ═══════════════════════════════════════════════════════════════

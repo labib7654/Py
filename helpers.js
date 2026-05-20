@@ -53,10 +53,18 @@ async function getTargetUser(ctx) {
   }
   const args = msg?.text ? msg.text.split(' ').slice(1) : [];
   if (args[0]?.startsWith('@')) {
-    try {
-      const m = await ctx.getChatMember(args[0].replace('@', ''));
-      if (m?.user) return { id: m.user.id, username: m.user.username || '', firstName: m.user.first_name || String(m.user.id) };
-    } catch {}
+    const targetUsername = args[0].replace('@', '').toLowerCase();
+    const db = require('./db');
+    const g = db.getGroup(ctx.chat.id);
+    if (g) {
+      for (const [uid, member] of g.members) {
+        if ((member.username || '').toLowerCase() === targetUsername) {
+          return { id: uid, username: member.username, firstName: member.firstName || String(uid) };
+        }
+      }
+    }
+    // fallback: لن تنجح بالنص عبر API (بالرقم فقط)
+    return null;
   }
   if (args[0] && /^\d+$/.test(args[0])) return { id: Number(args[0]), username: '', firstName: args[0] };
   return null;
