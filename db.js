@@ -138,7 +138,6 @@ function getOrCreateGroup(chatId, title, type, addedBy, addedByUsername) {
       joinRequests:        new Map(),
       joinRequestsEnabled: false,
       autoApproveJoin:     false,   // قبول تلقائي بعد 5 دقائق
-      autoApproveDelay:    300,     // التأخير بالثواني (300 = 5 دقائق)
       rules:               '',
       communityId:         null,
       protectContent:      false,
@@ -354,32 +353,24 @@ function getStats() {
 // ═══════════════════════════════════════════════════════════════
 
 function buildJSON() {
-  // دالة مساعدة آمنة لتحويل Map إلى Object
-  const safeFromEntries = (map) => {
-    try { return Object.fromEntries(map || []); } catch { return {}; }
-  };
-  const safeSpread = (iterable) => {
-    try { return [...(iterable || [])]; } catch { return []; }
-  };
-
   return JSON.stringify({
     savedAt: new Date().toISOString(),
-    botAdmins: safeSpread(botAdmins),
+    botAdmins: [...botAdmins],
     groups: Object.fromEntries(
       [...groups.entries()].map(([k, v]) => [k, {
         ...v,
-        members:             safeFromEntries(v.members),
-        admins:              safeFromEntries(v.admins),
-        warns:               safeFromEntries(v.warns),
-        mutedUsers:          safeSpread(v.mutedUsers),
-        bannedUsers:         safeSpread(v.bannedUsers),
-        timedMutes:          safeFromEntries(v.timedMutes),
-        timedBans:           safeFromEntries(v.timedBans),
-        joinRequests:        safeFromEntries(v.joinRequests),
-        joinRequestCooldown: safeFromEntries(v.joinRequestCooldown),
-        wordViolations:      safeFromEntries(v.wordViolations),
+        members:             Object.fromEntries(v.members),
+        admins:              Object.fromEntries(v.admins),
+        warns:               Object.fromEntries([...v.warns.entries()]),
+        mutedUsers:          [...v.mutedUsers],
+        bannedUsers:         [...v.bannedUsers],
+        timedMutes:          Object.fromEntries(v.timedMutes),
+        timedBans:           Object.fromEntries(v.timedBans),
+        joinRequests:        Object.fromEntries(v.joinRequests),
+        joinRequestCooldown: Object.fromEntries(v.joinRequestCooldown),
+        wordViolations:      Object.fromEntries(v.wordViolations),
         topics: Object.fromEntries(
-          [...(v.topics || new Map()).entries()].map(([tid, tv]) => [tid, {
+          [...v.topics.entries()].map(([tid, tv]) => [tid, {
             ...tv,
             approvedUsers: tv.approvedUsers ? [...tv.approvedUsers] : [],
             joinRequests: tv.joinRequests
@@ -395,14 +386,14 @@ function buildJSON() {
     channels: Object.fromEntries(
       [...channels.entries()].map(([k, v]) => [k, {
         ...v,
-        subscribers: safeFromEntries(v.subscribers),
+        subscribers: Object.fromEntries(v.subscribers),
       }])
     ),
     users: Object.fromEntries(
       [...users.entries()].map(([k, v]) => [k, {
         ...v,
-        groups:      safeSpread(v.groups),
-        channels:    safeSpread(v.channels),
+        groups:      [...v.groups],
+        channels:    [...v.channels],
         bioBanInfo:  v.bioBanInfo  || null,
         seenInChats: v.seenInChats || {},
         profileLink: v.profileLink || '',
@@ -414,11 +405,11 @@ function buildJSON() {
     communities: Object.fromEntries(
       [...communities.entries()].map(([k, v]) => [k, {
         ...v,
-        subGroups:       safeSpread(v.subGroups),
+        subGroups:       [...v.subGroups],
         memberJoins:     Object.fromEntries(
-          [...(v.memberJoins || new Map()).entries()].map(([uk, uv]) => [uk, safeSpread(uv)])
+          [...v.memberJoins.entries()].map(([uk, uv]) => [uk, [...uv]])
         ),
-        autoBannedUsers: safeFromEntries(v.autoBannedUsers),
+        autoBannedUsers: Object.fromEntries(v.autoBannedUsers || new Map()),
       }])
     ),
     aiCfg: aiCfg,

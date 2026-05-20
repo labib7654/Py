@@ -406,16 +406,16 @@ module.exports = function setupAdminHandlers(bot) {
     const warns = g.warns.get(tid);
     warns.push({ reason: 'تحذير يدوي', warnedBy: ctx.from.id, warnedAt: new Date() });
     const m = g.members.get(tid);
-    db.markDirty();
-    try {
-      await logAction(bot, g, `⚠️ تحذير ${warns.length}/${g.maxWarns}`, ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, '');
-      if (warns.length >= g.maxWarns) {
-        await bot.telegram.banChatMember(cid, tid);
-        await ctx.answerCbQuery(`🚫 وصل الحد الأقصى — تم الحظر!`, { show_alert: true });
-      } else {
-        await ctx.answerCbQuery(`⚠️ تحذير ${warns.length}/${g.maxWarns} تم!`, { show_alert: true });
-      }
+    await logAction(bot, g, `⚠️ تحذير ${warns.length}/${g.maxWarns}`, ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, '''); }
+      await ctx.answerCbQuery('✅ تم الطرد!', { show_alert: true });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });
 
-};
+  // تحذير (زر)
+  bot.action(/^warn_(\d+)_(-?\d+)$/, async (ctx) => {
+    await ctx.answerCbQuery();
+    const [tid, cid] = [Number(ctx.match[1]), Number(ctx.match[2])];
+    if (!isDeveloper(ctx) && !await isAdmin(bot, cid, ctx.from.id))
+      return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
+    const g = db.getGroup(cid); if (!g) return ctx.answerCbQuery('❌ بيانات غير موجودة!', { show_alert: true });
+    if (!g.warns.has(tid)) g.warn
