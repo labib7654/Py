@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-20T13:51:15.420Z",
+  "savedAt": "2026-05-20T13:55:15.424Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3538,6 +3538,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-20T06:37:45.169Z"
+        },
+        "7761596731": {
+          "userId": 7761596731,
+          "username": "Ala_aldiyn",
+          "firstName": "​☠︎ ⌠ ؏ـلاء الـديـن ⌡ ☠︎",
+          "role": "member",
+          "joinedAt": "2026-05-20T13:54:35.389Z",
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-20T13:54:51.738Z"
         }
       },
       "admins": {},
@@ -10445,6 +10455,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-20T09:24:21.741Z",
           "lastSeen": "2026-05-20T09:24:21.741Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7761596731": {
+      "userId": 7761596731,
+      "username": "Ala_aldiyn",
+      "firstName": "​☠︎ ⌠ ؏ـلاء الـديـن ⌡ ☠︎",
+      "lastName": "~",
+      "profileLink": "https://t.me/Ala_aldiyn",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-20T13:54:35.389Z",
+      "lastSeen": "2026-05-20T13:54:51.738Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003750270631": {
+          "chatId": -1003750270631,
+          "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-20T13:54:35.389Z",
+          "lastSeen": "2026-05-20T13:54:51.738Z"
         }
       },
       "contactedBot": false,
