@@ -30,6 +30,9 @@ const {
   stepPhoneVerify,
   stepRequestContact,
   stepConfirm,
+  getAvailableTopics,
+  findBestTopicMatch,
+  calcVerificationScore,
 } = require('./verify_helpers');
 
 module.exports = function setupVerifyRegistration(bot) {
@@ -365,24 +368,46 @@ module.exports = function setupVerifyRegistration(bot) {
     const notifBtns = buildAdminButtons(userId, sess.chatId);
     await notifyAll(bot, g, notifText, notifBtns);
 
-    // ── القبول التلقائي بعد دقيقتين ─────────────────────────
-    setTimeout(async () => {
-      const g2  = db.getGroup(sess.chatId);
-      if (!g2) return;
-      const vs2 = getVerifySettings(g2);
-      const req = vs2.pendingRequests.get(userId);
+    // ── Smart Auto-Approve بناءً على VerificationScore ────────
+    const { score, delay } = calcVerificationScore(sess.data);
 
-      // إذا لا يزال pending (لم يقبله مشرف ولم يرفضه)
-      if (req && req.status === 'pending') {
+    if (delay === null) {
+      // Score منخفض → يبقى pending للمشرف
+      await ctx.reply(
+        `⏳ *طلبك قيد المراجعة اليدوية*\n\nسيراجع المشرف بياناتك ويردّ عليك قريباً.\n_شكراً لصبرك!_`,
+        { parse_mode: 'Markdown' }
+      );
+    } else {
+      const delayMins = Math.round(delay / 60000);
+      await ctx.reply(
+        `✅ *تم إرسال طلبك بنجاح!*\n\n` +
+        `📋 *ملخص بياناتك:*\n` +
+        `👤 الاسم: *${sess.data.fullName}*\n` +
+        `🏛️ الجامعة: *${sess.data.university}*\n` +
+        `📚 التخصص: *${sess.data.major}*\n` +
+        `🔢 الرقم الجامعي: \`${sess.data.studentId}\`\n` +
+        `📱 الجوال: \`${sess.data.phone}\`\n\n` +
+        `⏳ *جاري المراجعة...*\n` +
+        `سيتم قبولك تلقائياً خلال *${delayMins} دقيقة*، أو يدوياً من المشرف.\n\n` +
+        `_شكراً لصبرك!_`,
+        { parse_mode: 'Markdown' }
+      );
+
+      setTimeout(async () => {
+        const g2  = db.getGroup(sess.chatId);
+        if (!g2) return;
+        const vs2 = getVerifySettings(g2);
+        const req = vs2.pendingRequests.get(userId);
+        if (!req || req.status !== 'pending') return;
+
         req.status     = 'approved_auto';
         req.reviewedAt = new Date();
 
-        // قبول/رفع تقييد طلب الانضمام
+        // رفع التقييد
         const jr = g2.joinRequests?.get(userId);
         if (jr && (jr.status === 'pending_verify' || jr.status === 'pending')) {
-          if (jr.isExistingMember) {
-            // عضو قديم → ارفع التقييد فقط
-            try {
+          try {
+            if (jr.isExistingMember) {
               await bot.telegram.restrictChatMember(sess.chatId, userId, {
                 permissions: {
                   can_send_messages: true, can_send_audios: true,
@@ -392,43 +417,27 @@ module.exports = function setupVerifyRegistration(bot) {
                   can_send_other_messages: true, can_add_web_page_previews: true,
                 },
               });
-              jr.status = 'approved_auto';
-            } catch (e) {
-              console.warn('[AutoApprove] فشل رفع التقييد:', e.message);
-            }
-          } else {
-            // عضو جديد → قبول طلب الانضمام
-            try {
+            } else {
               await bot.telegram.approveChatJoinRequest(sess.chatId, userId);
-              jr.status = 'approved_auto';
-            } catch (e) {
-              console.warn('[AutoApprove] فشل قبول الانضمام:', e.message);
             }
-          }
+            jr.status = 'approved_auto';
+          } catch (e) { console.warn('[AutoApprove]', e.message); }
         }
 
-        // ── ربط الكلية بموضوع المجموعة ──────────────────────
-        const { getAvailableTopics } = require('./verify_helpers');
-        const availableTopics = getAvailableTopics(g2);
-        const matchedTopic = availableTopics.find(t =>
-          t.name.includes(sess.data?.university || '') ||
-          (sess.data?.university || '').includes(t.name) ||
-          t.name.includes(sess.data?.major || '') ||
-          (sess.data?.major || '').includes(t.name)
-        ) || availableTopics[0] || null;
+        // Fuzzy match للكلية
+        const availableTopics  = getAvailableTopics(g2);
+        const matchedTopic     = findBestTopicMatch(availableTopics, sess.data);
 
-        // حفظ الاعتماد مع بيانات الموضوع
         vs2.approvedMembers.set(userId, {
           studentData: { ...sess.data },
           topicId:    matchedTopic?.id   || null,
           topicName:  matchedTopic?.name || sess.data?.university || null,
           approvedAt:  new Date(),
           approvedBy:  'auto',
+          score,
         });
-
         db.markDirty();
 
-        // إشعار الطالب
         try {
           await bot.telegram.sendMessage(userId,
             `🎉 *تم قبول انضمامك تلقائياً!*\n\n` +
@@ -439,18 +448,18 @@ module.exports = function setupVerifyRegistration(bot) {
           );
         } catch {}
 
-        // إشعار المشرفين
         try {
           await notifyAll(bot, g2,
             `🤖 *قبول تلقائي*\n\n` +
             `👤 ${req.firstName}${req.username ? ` (@${req.username})` : ''}\n` +
             `🆔 \`${userId}\`\n` +
-            `✅ تم قبوله تلقائياً بعد دقيقتين`,
+            `📊 Score: \`${score}/100\`\n` +
+            `✅ تم قبوله تلقائياً بعد ${delayMins} دقيقة`,
             null
           );
         } catch {}
-      }
-    }, AUTO_APPROVE_DELAY);
+      }, delay);
+    }
   });
 
 

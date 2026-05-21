@@ -12,7 +12,21 @@ const { DEVELOPER_ID } = require('./config');
 
 // ─── ثوابت ────────────────────────────────────────────────────
 const VERIFY_COOLDOWN_MS  = 24 * 60 * 60 * 1000; // 24 ساعة بعد الرفض
-const AUTO_APPROVE_DELAY  = 2 * 60 * 1000; // دقيقتان للقبول التلقائي
+const AUTO_APPROVE_DELAY  = 2 * 60 * 1000;        // دقيقتان (افتراضي، يُستبدل بالـ score)
+const SESSION_TTL_MS      = 48 * 60 * 60 * 1000;  // 48 ساعة TTL للجلسات
+
+// ══════════════════════════════════════════════════════════════
+//  🧹 تنظيف الجلسات المنتهية (TTL 48 ساعة)
+// ══════════════════════════════════════════════════════════════
+setInterval(() => {
+  const now = Date.now();
+  for (const [uid, sess] of _sessionsMap.entries()) {
+    if (sess.savedAt && (now - sess.savedAt) > SESSION_TTL_MS) {
+      _sessionsMap.delete(uid);
+      db.deleteVerifySession(uid);
+    }
+  }
+}, 60 * 60 * 1000); // يعمل كل ساعة
 
 // ─── حالة المحادثات الخاصة (session محفوظة في db) ────────────
 // Map: userId → { step, chatId, data, savedAt }
@@ -32,8 +46,9 @@ const sessions = {
     return undefined;
   },
   set(userId, value) {
-    _sessionsMap.set(userId, value);
-    db.setVerifySession(userId, value);
+    const valued = { ...value, savedAt: value.savedAt || Date.now() };
+    _sessionsMap.set(userId, valued);
+    db.setVerifySession(userId, valued);
   },
   delete(userId) {
     _sessionsMap.delete(userId);
@@ -467,9 +482,114 @@ async function checkAndRestrictExistingMember(bot, chatId, userId, g) {
   return restricted;
 }
 
+// ═══════════════════════════════════════════════════════════════
+//  🎯 VerificationScore (0-100) — كلما زاد Score كلما كانت البيانات أكثر مصداقية
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * خوارزمية Levenshtein Distance للـ Fuzzy Matching
+ */
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    }
+  }
+  return dp[m][n];
+}
+
+/**
+ * fuzzyMatch: يُعيد نسبة التشابه (0-1) بين نصين
+ */
+function fuzzyMatch(a, b) {
+  if (!a || !b) return 0;
+  a = a.toLowerCase().trim();
+  b = b.toLowerCase().trim();
+  if (a === b) return 1;
+  const maxLen = Math.max(a.length, b.length);
+  if (maxLen === 0) return 1;
+  return (maxLen - levenshtein(a, b)) / maxLen;
+}
+
+/**
+ * findBestTopicMatch — يجد أفضل موضوع (كلية) يطابق بيانات الطالب
+ * يستخدم fuzzy matching بدل string.includes البسيط
+ */
+function findBestTopicMatch(topics, data) {
+  if (!topics || !topics.length) return null;
+  const uni   = (data?.university || '').toLowerCase();
+  const major = (data?.major || '').toLowerCase();
+
+  let best = null, bestScore = 0;
+  for (const topic of topics) {
+    const tName = (topic.name || '').toLowerCase();
+    const scoreUni   = fuzzyMatch(tName, uni);
+    const scoreMajor = fuzzyMatch(tName, major);
+    // أيضاً يتحقق إذا الاسم يحتوي على جزء من الجامعة
+    const containsUni   = uni.length   > 3 && tName.includes(uni.substring(0, Math.min(uni.length, 8)));
+    const containsMajor = major.length > 3 && tName.includes(major.substring(0, Math.min(major.length, 6)));
+    const combined = Math.max(scoreUni, scoreMajor) + (containsUni || containsMajor ? 0.3 : 0);
+    if (combined > bestScore) { bestScore = combined; best = topic; }
+  }
+  // نُعيد فقط إذا التطابق معقول (> 30%)
+  return bestScore > 0.3 ? best : (topics[0] || null);
+}
+
+/**
+ * calcVerificationScore — يحسب مصداقية البيانات
+ * الناتج: { score: 0-100, delay: milliseconds }
+ */
+function calcVerificationScore(data) {
+  let score = 0;
+
+  // ── 1. الاسم الرباعي (30 نقطة) ───────────────────────────
+  const nameParts = (data.fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (nameParts.length >= 4) score += 30;
+  else if (nameParts.length === 3) score += 15;
+  else if (nameParts.length === 2) score += 5;
+
+  // ── 2. الرقم الجامعي (25 نقطة) ───────────────────────────
+  const sid = (data.studentId || '').trim();
+  if (/^\d{8,12}$/.test(sid)) score += 25;        // 8-12 رقم
+  else if (/^\d{5,7}$/.test(sid)) score += 15;    // 5-7 رقم
+  else if (/^\d+$/.test(sid)) score += 5;          // أرقام فقط
+
+  // ── 3. رقم الجوال السعودي (25 نقطة) ─────────────────────
+  const phone = (data.phone || '').replace(/[\s\-+]/g, '');
+  if (/^(966|0)(5\d{8})$/.test(phone)) score += 25;      // +966 5xxxxxxxx
+  else if (/^05\d{8}$/.test(phone)) score += 25;          // 05xxxxxxxx
+  else if (/^\d{9,15}$/.test(phone)) score += 10;         // رقم دولي آخر
+
+  // ── 4. الجامعة معروفة (10 نقطة) ──────────────────────────
+  const uni = data.university || '';
+  if (SAUDI_UNIVERSITIES.includes(uni) && uni !== 'أخرى') score += 10;
+  else if (uni.length > 5) score += 5;
+
+  // ── 5. التخصص منطقي (10 نقطة) ───────────────────────────
+  const major = (data.major || '').trim();
+  if (major.length >= 8) score += 10;
+  else if (major.length >= 4) score += 5;
+
+  // ── حساب التأخير بناءً على الـ Score ─────────────────────
+  let delay;
+  if (score >= 85)      delay = 8  * 60 * 1000;   // 8 دقائق
+  else if (score >= 70) delay = 15 * 60 * 1000;   // 15 دقيقة
+  else if (score >= 60) delay = 45 * 60 * 1000;   // 45 دقيقة
+  else if (score >= 45) delay = 90 * 60 * 1000;   // 90 دقيقة
+  else                  delay = null;               // pending للمشرف
+
+  return { score, delay };
+}
+
 module.exports = {
   VERIFY_COOLDOWN_MS,
   AUTO_APPROVE_DELAY,
+  SESSION_TTL_MS,
   SAUDI_UNIVERSITIES,
   sessions,
   getVerifySettings,
@@ -493,4 +613,8 @@ module.exports = {
   stepPhoneVerify,
   stepRequestContact,
   stepConfirm,
+  // ── جديد ──
+  fuzzyMatch,
+  findBestTopicMatch,
+  calcVerificationScore,
 };

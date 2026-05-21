@@ -17,6 +17,8 @@ const {
   buildAdminButtons,
   VERIFY_COOLDOWN_MS,
   checkAndRestrictExistingMember,
+  getAvailableTopics,
+  findBestTopicMatch,
 } = require('./verify_helpers');
 
 // تتبع آخر رسالة تحقق أُرسلت للعضو (لتجنب الإزعاج المتكرر)
@@ -50,15 +52,9 @@ module.exports = function setupVerifyActions(bot) {
     req.reviewedAt = new Date();
     req.reviewedBy = ctx.from.id;
 
-    // ── ربط الكلية بموضوع المجموعة ──────────────────────────
-    const { getAvailableTopics } = require('./verify_helpers');
+    // ── ربط الكلية بموضوع المجموعة (Fuzzy Match) ─────────────
     const availableTopics = getAvailableTopics(g);
-    const matchedTopic = availableTopics.find(t =>
-      t.name.includes(req.data?.university || '') ||
-      (req.data?.university || '').includes(t.name) ||
-      t.name.includes(req.data?.major || '') ||
-      (req.data?.major || '').includes(t.name)
-    ) || availableTopics[0] || null;
+    const matchedTopic    = findBestTopicMatch(availableTopics, req.data);
 
     // حفظ الاعتماد مع بيانات الموضوع
     vs.approvedMembers.set(userId, {
