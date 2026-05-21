@@ -381,6 +381,16 @@ function buildJSON() {
               : {},
           }])
         ),
+        verifySystem: v.verifySystem ? {
+          ...v.verifySystem,
+          pendingRequests: Object.fromEntries(v.verifySystem.pendingRequests || new Map()),
+          approvedMembers: Object.fromEntries(v.verifySystem.approvedMembers || new Map()),
+          rejectedMembers: Object.fromEntries(v.verifySystem.rejectedMembers || new Map()),
+          cooldowns:       Object.fromEntries(
+            [...(v.verifySystem.cooldowns || new Map()).entries()]
+              .map(([uk, uv]) => [uk, Number(uv)])
+          ),
+        } : undefined,
       }])
     ),
     channels: Object.fromEntries(
@@ -414,6 +424,7 @@ function buildJSON() {
     ),
     aiCfg: aiCfg,
     aiQA: [...aiQA.values()],
+    verifySessions: Object.fromEntries(_verifySessions),
   }, null, 2);
 }
 
@@ -491,6 +502,15 @@ function parseData(raw) {
       console.log(`🧠 AI: تم تحميل ${aiQA.size} سؤال`);
     }
 
+    // ── verifySessions ────────────────────────────────────────
+    if (data.verifySessions && typeof data.verifySessions === 'object') {
+      _verifySessions.clear();
+      for (const [k, v] of Object.entries(data.verifySessions)) {
+        _verifySessions.set(Number(k), v);
+      }
+      console.log(`🔐 تم تحميل ${_verifySessions.size} جلسة تحقق`);
+    }
+
     // ── groups ────────────────────────────────────────────────
     for (const [k, v] of Object.entries(data.groups || {})) {
       const topicsMap = new Map();
@@ -548,6 +568,21 @@ function parseData(raw) {
           autoLockOnCreate:      false,
           ownerBypassAll:        true,
         },
+        verifySystem: v.verifySystem ? {
+          ...v.verifySystem,
+          pendingRequests: new Map(
+            Object.entries(v.verifySystem.pendingRequests || {}).map(([uk, uv]) => [Number(uk), uv])
+          ),
+          approvedMembers: new Map(
+            Object.entries(v.verifySystem.approvedMembers || {}).map(([uk, uv]) => [Number(uk), uv])
+          ),
+          rejectedMembers: new Map(
+            Object.entries(v.verifySystem.rejectedMembers || {}).map(([uk, uv]) => [Number(uk), uv])
+          ),
+          cooldowns: new Map(
+            Object.entries(v.verifySystem.cooldowns || {}).map(([uk, uv]) => [Number(uk), Number(uv)])
+          ),
+        } : undefined,
         perms: v.perms || {
           canSendMessages:   true,
           canSendMedia:      true,
@@ -680,6 +715,25 @@ setInterval(() => {
 let _readyResolve;
 const _readyPromise = new Promise(res => { _readyResolve = res; });
 
+// ═══════════════════════════════════════════════════════════════
+//  Verify Sessions — persistent wizard sessions
+// ═══════════════════════════════════════════════════════════════
+const _verifySessions = new Map(); // userId → session
+
+function getVerifySession(userId) {
+  return _verifySessions.get(Number(userId)) || null;
+}
+
+function setVerifySession(userId, session) {
+  _verifySessions.set(Number(userId), session);
+  markDirty();
+}
+
+function deleteVerifySession(userId) {
+  _verifySessions.delete(Number(userId));
+  markDirty();
+}
+
 // عداد التغييرات — يزداد عند أي تعديل على البيانات
 let _changeCount = 0;
 function markDirty() { _changeCount++; }
@@ -735,6 +789,7 @@ module.exports = {
   addAuditLog,
   getStats,
   saveData, markDirty,
+  getVerifySession, setVerifySession, deleteVerifySession,
   isBotAdmin, addBotAdmin, removeBotAdmin, allBotAdmins, clearBotAdmins,
   getAiCfg, setAiCfg, allAiQA, getAiQA, setAiQA, hasAiQA, clearAiQA,
   waitReady,

@@ -21,6 +21,7 @@ const {
   buildAdminNotification,
   buildAdminButtons,
   notifyAll,
+  restrictUser,
   stepWelcome,
   stepSelectUniversity,
   stepMajor,
@@ -46,16 +47,14 @@ module.exports = function setupVerifyRegistration(bot) {
     const user   = req.from;
 
     const g = db.getGroup(chatId);
-    if (!g) return next(); // المجموعة غير مسجلة
+    if (!g) return next();
 
     const vs = getVerifySettings(g);
     if (!vs.enabled) {
-      // نظام التحقق معطل → قبول فوري
       try { await bot.telegram.approveChatJoinRequest(chatId, userId); } catch {}
       return next();
     }
 
-    // تجاهل البوتات
     if (user.is_bot) {
       try { await bot.telegram.approveChatJoinRequest(chatId, userId); } catch {}
       return next();
@@ -110,12 +109,38 @@ module.exports = function setupVerifyRegistration(bot) {
     });
     db.markDirty();
 
+    // ════════════════════════════════════════════════════════════
+    //  🔒 RACE CONDITION FIX
+    //  نقبل الطلب أولاً (يدخل المجموعة) ثم نقيّده فوراً
+    //  هذا يضمن أنه لن يستطيع الكتابة قبل إكمال التحقق
+    // ════════════════════════════════════════════════════════════
+    try {
+      await bot.telegram.approveChatJoinRequest(chatId, userId);
+    } catch (e) {
+      console.warn(`[JoinRequest] فشل قبول الطلب لـ ${userId}:`, e.message);
+    }
+
+    // تقييد فوري بعد القبول مباشرة
+    const restricted = await restrictUser(bot, chatId, userId);
+
+    // verification loop — نتحقق أن التقييد نجح (يعوّض عن API lag)
+    if (!restricted) {
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        await new Promise(r => setTimeout(r, attempt * 1500));
+        const retried = await restrictUser(bot, chatId, userId);
+        if (retried) break;
+        if (attempt === 3) {
+          console.warn(`[JoinRequest] فشل تقييد ${userId} بعد 3 محاولات في ${chatId}`);
+        }
+      }
+    }
+
     // ── إرسال رابط التحقق للمستخدم ───────────────────────────
     const botInfo = await bot.telegram.getMe();
     try {
       await bot.telegram.sendMessage(userId,
         `👋 *أهلاً بك!*\n\n` +
-        `طلبت الانضمام لـ *${g.title}*\n\n` +
+        `انضممت لـ *${g.title}* لكن وصولك مقيّد مؤقتاً.\n\n` +
         `🔐 هذه مجموعة تتطلب التحقق من هويتك الجامعية.\n` +
         `اضغط الزر أدناه لإكمال خطوات التسجيل:`,
         {
@@ -129,15 +154,16 @@ module.exports = function setupVerifyRegistration(bot) {
         }
       );
     } catch (e) {
-      // إذا حظر المستخدم البوت → رفض طلبه تلقائياً لأنه لن يستطيع إكمال التحقق
+      // المستخدم حظر البوت → نطرده لأنه لن يستطيع إكمال التحقق
       console.warn(`[JoinRequest] لا يمكن إرسال رسالة لـ ${userId}:`, e.message);
       try {
-        await bot.telegram.declineChatJoinRequest(chatId, userId);
+        await bot.telegram.banChatMember(chatId, userId);
+        await bot.telegram.unbanChatMember(chatId, userId); // kick
         const jr2 = g.joinRequests?.get(userId);
         if (jr2) { jr2.status = 'rejected_bot_blocked'; db.markDirty(); }
       } catch {}
     }
-  });
+  });;
 
 
 

@@ -406,7 +406,7 @@ module.exports = function setupAdminHandlers(bot) {
     const warns = g.warns.get(tid);
     warns.push({ reason: 'تحذير يدوي', warnedBy: ctx.from.id, warnedAt: new Date() });
     const m = g.members.get(tid);
-    await logAction(bot, g, `⚠️ تحذير ${warns.length}/${g.maxWarns}`, ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, '''); }
+    await logAction(bot, g, `⚠️ تحذير ${warns.length}/${g.maxWarns}`, ctx.from, { id: tid, username: m?.username || '', firstName: m?.firstName || String(tid) }, ''); }
       await ctx.answerCbQuery('✅ تم الطرد!', { show_alert: true });
     } catch (e) { await ctx.answerCbQuery(`❌ ${e.message}`, { show_alert: true }); }
   });

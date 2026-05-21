@@ -14,9 +14,35 @@ const { DEVELOPER_ID } = require('./config');
 const VERIFY_COOLDOWN_MS  = 24 * 60 * 60 * 1000; // 24 ساعة بعد الرفض
 const AUTO_APPROVE_DELAY  = 2 * 60 * 1000; // دقيقتان للقبول التلقائي
 
-// ─── حالة المحادثات الخاصة (session مؤقتة في الذاكرة) ────────
-// Map: userId → { step, chatId, data }
-const sessions = new Map();
+// ─── حالة المحادثات الخاصة (session محفوظة في db) ────────────
+// Map: userId → { step, chatId, data, savedAt }
+// نستخدم wrapper يحفظ التغييرات تلقائياً في db
+const _sessionsMap = new Map();
+
+const sessions = {
+  get(userId) {
+    // أولاً: من الذاكرة
+    if (_sessionsMap.has(userId)) return _sessionsMap.get(userId);
+    // ثانياً: من db (بعد restart)
+    const stored = db.getVerifySession(userId);
+    if (stored) {
+      _sessionsMap.set(userId, stored);
+      return stored;
+    }
+    return undefined;
+  },
+  set(userId, value) {
+    _sessionsMap.set(userId, value);
+    db.setVerifySession(userId, value);
+  },
+  delete(userId) {
+    _sessionsMap.delete(userId);
+    db.deleteVerifySession(userId);
+  },
+  has(userId) {
+    return _sessionsMap.has(userId) || !!db.getVerifySession(userId);
+  },
+};
 
 // ─── قائمة جامعات المملكة العربية السعودية ───────────────────
 const SAUDI_UNIVERSITIES = [
