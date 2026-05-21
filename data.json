@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T14:53:29.114Z",
+  "savedAt": "2026-05-21T14:55:29.134Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3045,9 +3045,19 @@
           "firstName": "ㅤㅤㅤㅤ",
           "role": "member",
           "joinedAt": "2026-05-21T13:55:42.409Z",
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-21T14:54:10.489Z"
+        },
+        "6275988426": {
+          "userId": 6275988426,
+          "username": "B_7a3j",
+          "firstName": "صياد الارواح",
+          "role": "member",
+          "joinedAt": "2026-05-21T14:54:24.212Z",
           "messageCount": 1,
           "score": 1,
-          "lastMessageAt": "2026-05-21T13:55:42.409Z"
+          "lastMessageAt": "2026-05-21T14:54:24.212Z"
         }
       },
       "admins": {},
@@ -3101,6 +3111,14 @@
           "firstName": "اوب",
           "status": "pending_verify",
           "requestedAt": "2026-05-21T13:49:05.011Z",
+          "isExistingMember": true
+        },
+        "6275988426": {
+          "userId": 6275988426,
+          "username": "B_7a3j",
+          "firstName": "صياد الارواح",
+          "status": "pending_verify",
+          "requestedAt": "2026-05-21T14:54:24.640Z",
           "isExistingMember": true
         }
       },
@@ -4484,7 +4502,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-21T14:53:28.595Z",
+      "lastSeen": "2026-05-21T14:54:42.869Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -4523,7 +4541,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-05-21T13:55:42.409Z",
-          "lastSeen": "2026-05-21T13:55:42.409Z"
+          "lastSeen": "2026-05-21T14:54:10.490Z"
         }
       },
       "profileLink": "https://t.me/Labibrd",
@@ -4573,7 +4591,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-21T13:52:25.096Z",
+      "lastSeen": "2026-05-21T14:54:24.663Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -4974,10 +4992,11 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T08:53:11.496Z",
-      "lastSeen": "2026-05-21T13:53:07.078Z",
+      "lastSeen": "2026-05-21T14:54:24.213Z",
       "groups": [
         -1002648125233,
-        -1003969494192
+        -1003969494192,
+        -1002985211839
       ],
       "channels": [],
       "seenInChats": {
@@ -4994,6 +5013,13 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:12:12.076Z",
           "lastSeen": "2026-05-18T14:12:12.076Z"
+        },
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-21T14:54:24.213Z",
+          "lastSeen": "2026-05-21T14:54:24.213Z"
         }
       },
       "contactedBot": true,
