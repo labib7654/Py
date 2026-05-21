@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T14:55:29.134Z",
+  "savedAt": "2026-05-21T15:03:29.115Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -33,8 +33,8 @@
       "maxWarns": 3,
       "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
       "welcomeEnabled": true,
-      "antiSpam": false,
-      "muteNewMembers": false,
+      "antiSpam": true,
+      "muteNewMembers": true,
       "mutedUsers": [],
       "bannedUsers": [
         7574941687,
@@ -44,12 +44,12 @@
       "bannedWords": [],
       "wordViolations": {},
       "joinRequests": {},
-      "joinRequestsEnabled": false,
+      "joinRequestsEnabled": true,
       "rules": "",
       "communityId": null,
       "protectContent": false,
-      "antiLinks": false,
-      "antiBot": false,
+      "antiLinks": true,
+      "antiBot": true,
       "logChannelId": null,
       "timedMutes": {},
       "timedBans": {},
@@ -4992,7 +4992,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T08:53:11.496Z",
-      "lastSeen": "2026-05-21T14:54:24.213Z",
+      "lastSeen": "2026-05-21T14:56:37.258Z",
       "groups": [
         -1002648125233,
         -1003969494192,
