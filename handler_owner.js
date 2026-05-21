@@ -674,9 +674,8 @@ module.exports = function setupOwnerHandlers(bot) {
 
   // ── تبديل Join Requests ───────────────────────────────────
   bot.action(/^toggle_joinreq_(-?\d+)$/, async (ctx) => {
-    await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
-    const g = db.getGroup(chatId); if (!g) return;
+    const g = db.getGroup(chatId); if (!g) return ctx.answerCbQuery();
     if (!isDeveloper(ctx) && !await isAdmin(bot, chatId, ctx.from.id))
       return ctx.answerCbQuery('❌ للمشرفين فقط!', { show_alert: true });
 
@@ -698,10 +697,9 @@ module.exports = function setupOwnerHandlers(bot) {
   bot.action(/^toggle_autoapprove_(-?\d+)$/, async (ctx) => {
     if (!isDeveloper(ctx) && !isBotAdmin(ctx) && !await isAdmin(bot, Number(ctx.match[1]), ctx.from.id))
       return ctx.answerCbQuery('⛔ للمشرفين فقط', { show_alert: true });
-    await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const g = db.getGroup(chatId);
-    if (!g) return;
+    if (!g) return ctx.answerCbQuery();
     g.autoApproveJoin = !g.autoApproveJoin;
     db.saveData();
     await ctx.answerCbQuery(
