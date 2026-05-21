@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T10:41:05.653Z",
+  "savedAt": "2026-05-21T10:41:27.680Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3005,9 +3005,9 @@
           "firstName": "عآئش",
           "role": "member",
           "joinedAt": "2026-05-18T22:15:36.566Z",
-          "messageCount": 2,
-          "score": 2,
-          "lastMessageAt": "2026-05-21T10:40:55.105Z"
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-18T22:15:36.566Z"
         },
         "6740522308": {
           "userId": 6740522308,
@@ -3055,14 +3055,6 @@
           "firstName": ".",
           "status": "pending_verify",
           "requestedAt": "2026-05-21T10:32:58.614Z",
-          "isExistingMember": true
-        },
-        "8240566312": {
-          "userId": 8240566312,
-          "username": "g_1_11111",
-          "firstName": "عآئش",
-          "status": "pending_verify",
-          "requestedAt": "2026-05-21T10:40:55.461Z",
           "isExistingMember": true
         }
       },
@@ -4374,7 +4366,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-21T10:40:55.682Z",
+      "lastSeen": "2026-05-21T10:32:58.646Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -4595,7 +4587,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T23:47:43.215Z",
-      "lastSeen": "2026-05-21T10:40:38.195Z",
+      "lastSeen": "2026-05-21T10:33:04.565Z",
       "groups": [
         -1003969494192,
         -1002985211839
@@ -7676,7 +7668,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-21T10:41:04.449Z",
+      "lastSeen": "2026-05-19T21:58:14.414Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -7698,7 +7690,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T22:15:36.566Z",
-          "lastSeen": "2026-05-21T10:40:55.106Z"
+          "lastSeen": "2026-05-18T22:15:36.566Z"
         },
         "-1002648125233": {
           "chatId": -1002648125233,
