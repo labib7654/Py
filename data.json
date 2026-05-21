@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T13:52:26.312Z",
+  "savedAt": "2026-05-21T13:53:59.432Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3715,6 +3715,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-21T13:52:25.093Z"
+        },
+        "7411444902": {
+          "userId": 7411444902,
+          "username": "Labibrd",
+          "firstName": "ㅤㅤㅤㅤ",
+          "role": "member",
+          "joinedAt": "2026-05-21T13:53:25.065Z",
+          "messageCount": 3,
+          "score": 3,
+          "lastMessageAt": "2026-05-21T13:53:43.842Z"
         }
       },
       "admins": {},
@@ -3816,7 +3826,8 @@
         "approvedMembers": {},
         "rejectedMembers": {},
         "cooldowns": {}
-      }
+      },
+      "inviteLink": "https://t.me/+b5oF9qXvJsQyMGZk"
     }
   },
   "channels": {},
@@ -4463,13 +4474,14 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-21T10:32:15.854Z",
+      "lastSeen": "2026-05-21T13:53:58.113Z",
       "groups": [
         -1003940779079,
         -1003969494192,
         -1002648125233,
         -1003916370715,
-        -1002608245805
+        -1002608245805,
+        -1003730257958
       ],
       "channels": [],
       "bioBanInfo": null,
@@ -4487,6 +4499,13 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-19T15:39:22.764Z",
           "lastSeen": "2026-05-19T18:54:10.777Z"
+        },
+        "-1003730257958": {
+          "chatId": -1003730257958,
+          "chatTitle": "جامعة الأمير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-21T13:53:25.065Z",
+          "lastSeen": "2026-05-21T13:53:43.843Z"
         }
       },
       "profileLink": "https://t.me/Labibrd",
@@ -4758,7 +4777,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T23:47:43.215Z",
-      "lastSeen": "2026-05-21T13:52:24.561Z",
+      "lastSeen": "2026-05-21T13:52:42.772Z",
       "groups": [
         -1003969494192,
         -1002985211839,
@@ -4937,7 +4956,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T08:53:11.496Z",
-      "lastSeen": "2026-05-19T16:23:52.416Z",
+      "lastSeen": "2026-05-21T13:53:07.078Z",
       "groups": [
         -1002648125233,
         -1003969494192
