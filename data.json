@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T13:49:23.268Z",
+  "savedAt": "2026-05-21T13:49:59.431Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3472,7 +3472,7 @@
       },
       "auditLog": [],
       "verifySystem": {
-        "enabled": true,
+        "enabled": false,
         "verifyTopicId": null,
         "pendingRequests": {},
         "approvedMembers": {},
@@ -4623,7 +4623,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T23:47:43.215Z",
-      "lastSeen": "2026-05-21T10:40:38.195Z",
+      "lastSeen": "2026-05-21T13:49:48.413Z",
       "groups": [
         -1003969494192,
         -1002985211839
@@ -10360,7 +10360,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-19T01:47:30.593Z",
-      "lastSeen": "2026-05-21T13:49:22.024Z",
+      "lastSeen": "2026-05-21T13:49:35.332Z",
       "groups": [
         -1003969494192,
         -1002608245805,
