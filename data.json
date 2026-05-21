@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T09:07:15.066Z",
+  "savedAt": "2026-05-21T09:17:15.070Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2399,6 +2399,16 @@
           "firstName": "امل ~",
           "role": "member",
           "joinedAt": "2026-05-21T08:11:29.469Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "7103963382": {
+          "userId": 7103963382,
+          "username": "sattam568",
+          "firstName": "سطام",
+          "role": "member",
+          "joinedAt": "2026-05-21T09:15:36.788Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -10559,6 +10569,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-21T08:11:29.469Z",
           "lastSeen": "2026-05-21T08:11:29.469Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7103963382": {
+      "userId": 7103963382,
+      "username": "sattam568",
+      "firstName": "سطام",
+      "lastName": "🌗",
+      "profileLink": "https://t.me/sattam568",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-21T09:15:32.428Z",
+      "lastSeen": "2026-05-21T09:15:36.788Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-21T09:15:36.788Z",
+          "lastSeen": "2026-05-21T09:15:36.788Z"
         }
       },
       "contactedBot": false,
