@@ -315,27 +315,45 @@ module.exports = function setupDeveloper(bot) {
     await ctx.answerCbQuery();
     const page      = Number(ctx.match[2] || 0);
     const PAGE_SIZE = 8;
-    const groups    = db.allGroups();
-    if (!groups.length)
+    const allGroups = db.allGroups();
+    if (!allGroups.length)
       return ctx.editMessageText('👥 *لا توجد مجموعات حتى الآن.*', { parse_mode: 'Markdown', ...back('dev_back') });
-    const slice = groups.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+    const forums      = allGroups.filter(g => g.type === 'forum');
+    const supergroups = allGroups.filter(g => g.type === 'supergroup');
+    const groups      = allGroups.filter(g => g.type === 'group' || !g.type || g.type === 'unknown');
+
+    const sorted = [
+      ...forums.map(g => ({ ...g, _icon: '🎓' })),
+      ...supergroups.map(g => ({ ...g, _icon: '👥' })),
+      ...groups.map(g => ({ ...g, _icon: '💬' })),
+    ];
+
+    const slice = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
     const btns  = slice.map(g => [
       Markup.button.callback(
-        `${g.type === 'channel' ? '📢' : '👥'} ${g.title.slice(0, 24)} (${g.members.size})`,
+        `${g._icon} ${g.title.slice(0, 24)} (${g.members.size})`,
         `dev_grp_${g.chatId}`
       ),
     ]);
+
     const navBtns = [];
     if (page > 0) navBtns.push(Markup.button.callback('◀️ السابق', `dev_groups_${page - 1}`));
-    if ((page + 1) * PAGE_SIZE < groups.length) navBtns.push(Markup.button.callback('التالي ▶️', `dev_groups_${page + 1}`));
+    if ((page + 1) * PAGE_SIZE < sorted.length) navBtns.push(Markup.button.callback('التالي ▶️', `dev_groups_${page + 1}`));
     if (navBtns.length) btns.push(navBtns);
     btns.push([Markup.button.callback('🔙 رجوع', 'dev_back')]);
+
+    const summary = [
+      forums.length      ? `🎓 ${forums.length} مجتمع` : null,
+      supergroups.length ? `👥 ${supergroups.length} سوبر` : null,
+      groups.length      ? `💬 ${groups.length} عادي` : null,
+    ].filter(Boolean).join(' | ');
+
     await ctx.editMessageText(
-      `👥 *المجموعات* (${groups.length}) — صفحة ${page + 1}`,
+      `👥 *المجموعات* (${sorted.length}) — ${summary}\nصفحة ${page + 1}`,
       { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) }
     );
   });
-
   bot.action(/^dev_grp_(-?\d+)$/, async (ctx) => {
     if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
     await ctx.answerCbQuery();
@@ -509,7 +527,12 @@ module.exports = function setupDeveloper(bot) {
     const page   = Number(ctx.match[2] || 0);
     const PAGE   = 6;
     const g = db.getGroup(chatId);
-    if (!g) return ctx.answerCbQuery('❌ غير موجودة!', { show_alert: true });
+    if (!g) {
+      return ctx.editMessageText('❌ هذه المجموعة غير موجودة في قاعدة البيانات.', {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([[Markup.button.callback('🔙 رجوع', 'dev_groups')]]),
+      });
+    }
 
     // ✅ إصلاح: adminIds تُبنى من db أولاً كـ fallback، ثم تُحدَّث من API
     let adminIds = new Set([...g.admins.keys()]);
@@ -1174,12 +1197,16 @@ module.exports = function setupDeveloper(bot) {
       } catch (e) { console.error('bot_users empty:', e.message); return; }
     }
 
-    // إحصاء مجموعات كل مستخدم
+    // إحصاء مجموعات وقنوات كل مستخدم
     const addedByStats = new Map();
-    for (const g of db.allGroups()) {
-      if (!addedByStats.has(g.addedBy))
-        addedByStats.set(g.addedBy, { username: g.addedByUsername, groups: 0 });
-      addedByStats.get(g.addedBy).groups++;
+    const allEntities = [
+      ...db.allGroups().map(g => ({ addedBy: g.addedBy, addedByUsername: g.addedByUsername })),
+      ...db.allChannels().map(c => ({ addedBy: c.addedBy, addedByUsername: c.addedByUsername })),
+    ];
+    for (const e of allEntities) {
+      if (!addedByStats.has(e.addedBy))
+        addedByStats.set(e.addedBy, { username: e.addedByUsername, groups: 0 });
+      addedByStats.get(e.addedBy).groups++;
     }
 
     const totalPages = Math.ceil(allUsers.length / PAGE_SIZE);
@@ -1209,8 +1236,15 @@ module.exports = function setupDeveloper(bot) {
     try {
       await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(btns) });
     } catch (e) {
-      if (!e.message?.includes('message is not modified'))
+      if (e.message?.includes('message is not modified')) {
+        const ts = new Date().toLocaleTimeString('ar-SA');
+        await ctx.editMessageText(text + `\n\n_🕐 ${ts}_`, {
+          parse_mode: 'Markdown',
+          ...Markup.inlineKeyboard(btns),
+        });
+      } else {
         console.error('bot_users edit error:', e.message);
+      }
     }
   });
 
