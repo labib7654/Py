@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T10:32:12.800Z",
+  "savedAt": "2026-05-21T10:34:12.800Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3008,6 +3008,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T22:15:36.566Z"
+        },
+        "6740522308": {
+          "userId": 6740522308,
+          "username": "sh3iw",
+          "firstName": ".",
+          "role": "member",
+          "joinedAt": "2026-05-21T10:32:52.502Z",
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-21T10:32:58.062Z"
         }
       },
       "admins": {},
@@ -3038,7 +3048,16 @@
         }
       ],
       "wordViolations": {},
-      "joinRequests": {},
+      "joinRequests": {
+        "6740522308": {
+          "userId": 6740522308,
+          "username": "sh3iw",
+          "firstName": ".",
+          "status": "pending_verify",
+          "requestedAt": "2026-05-21T10:32:58.614Z",
+          "isExistingMember": true
+        }
+      },
       "joinRequestsEnabled": true,
       "rules": "",
       "communityId": null,
@@ -4274,7 +4293,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-21T10:32:11.983Z",
+      "lastSeen": "2026-05-21T10:32:15.854Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -4342,12 +4361,12 @@
     "7243808108": {
       "userId": 7243808108,
       "username": "Labibytr_bot",
-      "firstName": "الجامعة",
+      "firstName": "ادارة",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-19T16:28:01.412Z",
+      "lastSeen": "2026-05-21T10:32:58.646Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -4568,9 +4587,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T23:47:43.215Z",
-      "lastSeen": "2026-05-19T16:28:08.037Z",
+      "lastSeen": "2026-05-21T10:33:04.565Z",
       "groups": [
-        -1003969494192
+        -1003969494192,
+        -1002985211839
       ],
       "channels": [],
       "seenInChats": {
@@ -4580,6 +4600,13 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-17T23:47:43.216Z",
           "lastSeen": "2026-05-19T16:28:00.169Z"
+        },
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-21T10:32:52.502Z",
+          "lastSeen": "2026-05-21T10:32:58.062Z"
         }
       },
       "contactedBot": false,
