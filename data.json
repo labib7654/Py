@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T14:07:52.442Z",
+  "savedAt": "2026-05-21T14:07:59.431Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3776,7 +3776,7 @@
       "wordViolations": {},
       "joinRequests": {},
       "joinRequestsEnabled": true,
-      "autoApproveJoin": true,
+      "autoApproveJoin": false,
       "rules": "",
       "communityId": null,
       "protectContent": false,
@@ -4484,7 +4484,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-21T14:07:51.439Z",
+      "lastSeen": "2026-05-21T13:56:46.245Z",
       "groups": [
         -1003940779079,
         -1003969494192,
