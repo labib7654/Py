@@ -521,12 +521,15 @@ module.exports = function setupDeveloper(bot) {
 
   // ── dev_members مع pagination وزر تفاصيل لكل عضو ──────────────
   bot.action(/^dev_members_(-?\d+)(?:_p(\d+))?$/, async (ctx) => {
-    if (!isDeveloperOrBotAdmin(ctx)) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
-    await ctx.answerCbQuery();
     const chatId = Number(ctx.match[1]);
     const page   = Number(ctx.match[2] || 0);
     const PAGE   = 6;
     const g = db.getGroup(chatId);
+    const canAccess = isDeveloperOrBotAdmin(ctx)
+      || (g && g.ownerId === ctx.from.id)
+      || (g && g.admins.has(ctx.from.id));
+    if (!canAccess) return ctx.answerCbQuery('⛔ ممنوع', { show_alert: true });
+    await ctx.answerCbQuery();
     if (!g) {
       return ctx.editMessageText('❌ هذه المجموعة غير موجودة في قاعدة البيانات.', {
         parse_mode: 'Markdown',
