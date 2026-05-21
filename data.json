@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T13:53:59.432Z",
+  "savedAt": "2026-05-21T13:55:59.433Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3038,6 +3038,16 @@
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-05-21T13:49:04.630Z"
+        },
+        "7411444902": {
+          "userId": 7411444902,
+          "username": "Labibrd",
+          "firstName": "ㅤㅤㅤㅤ",
+          "role": "member",
+          "joinedAt": "2026-05-21T13:55:42.409Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-21T13:55:42.409Z"
         }
       },
       "admins": {},
@@ -4474,14 +4484,15 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-21T13:53:58.113Z",
+      "lastSeen": "2026-05-21T13:55:55.319Z",
       "groups": [
         -1003940779079,
         -1003969494192,
         -1002648125233,
         -1003916370715,
         -1002608245805,
-        -1003730257958
+        -1003730257958,
+        -1002985211839
       ],
       "channels": [],
       "bioBanInfo": null,
@@ -4506,6 +4517,13 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-21T13:53:25.065Z",
           "lastSeen": "2026-05-21T13:53:43.843Z"
+        },
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-21T13:55:42.409Z",
+          "lastSeen": "2026-05-21T13:55:42.409Z"
         }
       },
       "profileLink": "https://t.me/Labibrd",
