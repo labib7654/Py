@@ -1498,6 +1498,7 @@ module.exports = function setupDeveloper(bot) {
       if (g) g.protectContent = newState;
       else ch.protectContent  = newState;
       db.markDirty();
+      db.saveData(); // ✅ حفظ فوري لضمان الاستمرارية
 
       const label = g ? g.title : (ch?.title || 'القناة');
       await ctx.answerCbQuery(
@@ -1551,6 +1552,7 @@ module.exports = function setupDeveloper(bot) {
       await new Promise(r => setTimeout(r, 100));
     }
     db.markDirty();
+    db.saveData(); // ✅ حفظ فوري
     await ctx.reply(`🔒 *تم تفعيل حماية المحتوى على الجميع*\n\n✅ نجح: \`${ok}\`\n❌ فشل: \`${fail}\``, { parse_mode: 'Markdown' });
   });
 
@@ -1572,6 +1574,7 @@ module.exports = function setupDeveloper(bot) {
       await new Promise(r => setTimeout(r, 100));
     }
     db.markDirty();
+    db.saveData(); // ✅ حفظ فوري
     await ctx.reply(`🔓 *تم تعطيل حماية المحتوى على الجميع*\n\n✅ نجح: \`${ok}\`\n❌ فشل: \`${fail}\``, { parse_mode: 'Markdown' });
   });
 

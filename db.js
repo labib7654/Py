@@ -187,6 +187,7 @@ function getOrCreateChannel(chatId, title, username, addedBy, addedByUsername) {
       subscribers:      new Map(),
       ownerId:          null,
       ownerUsername:    '',
+      protectContent:   false,   // ✅ حماية المحتوى
     });
   }
   return channels.get(chatId);
@@ -599,8 +600,9 @@ function parseData(raw) {
     for (const [k, v] of Object.entries(data.channels || {})) {
       channels.set(Number(k), {
         ...v,
-        chatId:      Number(k),
-        subscribers: new Map(Object.entries(v.subscribers || {}).map(([uk, uv]) => [Number(uk), uv])),
+        chatId:         Number(k),
+        subscribers:    new Map(Object.entries(v.subscribers || {}).map(([uk, uv]) => [Number(uk), uv])),
+        protectContent: v.protectContent || false, // ✅ استعادة حالة الحماية
       });
     }
 

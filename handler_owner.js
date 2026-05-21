@@ -266,7 +266,7 @@ module.exports = function setupOwnerHandlers(bot) {
           `أضفه كمشرف في \`${targetChatId}\` مع صلاحية "تغيير معلومات المجموعة" أولاً.`
         );
       }
-      if (!botMember.can_change_info && !botMember.can_post_messages) {
+      if (!botMember.can_change_info && !botMember.can_edit_messages) {
         return ctx.replyWithMarkdown(
           '❌ *البوت لا يملك الصلاحية الكافية*\n\n' +
           'يحتاج صلاحية: `تغيير معلومات المجموعة` (can_change_info)\n\n' +
@@ -311,8 +311,7 @@ module.exports = function setupOwnerHandlers(bot) {
         ch.protectContent = newState;
       }
       db.markDirty();
-
-      const icon = newState ? '🔒' : '🔓';
+      db.saveData(); // ✅ حفظ فوري
       const statusText = newState
         ? `🔒 *حماية المحتوى مفعّلة*\n\n✅ لقطة الشاشة: محظورة\n✅ نسخ الرسائل: محظور\n✅ تحويل/توجيه: محظور`
         : `🔓 *حماية المحتوى معطّلة*\n\nيمكن الآن نسخ وتوجيه الرسائل بحرية.`;
@@ -835,10 +834,10 @@ module.exports = function setupOwnerHandlers(bot) {
         );
       }
 
-      // can_change_info مطلوبة في المجموعات
-      // في القنوات: can_edit_messages أو can_change_info
-      const hasRight = botMember.can_change_info === true
-                    || botMember.can_post_messages === true; // قنوات
+      // can_change_info مطلوبة في المجموعات والقنوات
+      const isChannel = !g; // إذا لم يكن مجموعة فهو قناة
+      const hasRight  = botMember.can_change_info === true
+                     || (isChannel && botMember.can_edit_messages === true);
       if (!hasRight) {
         return ctx.answerCbQuery(
           '❌ البوت لا يملك صلاحية "تغيير معلومات المجموعة"\n\nعدّل صلاحياته في الإعدادات.',
@@ -882,8 +881,7 @@ module.exports = function setupOwnerHandlers(bot) {
       }
 
       db.markDirty();
-
-      // ── 7. رد نجاح + تحديث الأزرار ────────────────────────
+      db.saveData(); // ✅ حفظ فوري لضمان بقاء الحالة بعد إعادة التشغيل
       const successMsg = newState
         ? '🔒 *حماية المحتوى مفعّلة*\n\nلا يمكن الآن:\n• لقطة الشاشة\n• نسخ الرسائل\n• توجيه/تحويل الرسائل'
         : '🔓 *حماية المحتوى معطّلة*\n\nيمكن الآن نسخ وتوجيه الرسائل بحرية.';
