@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T13:49:59.431Z",
+  "savedAt": "2026-05-21T13:51:04.745Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3683,6 +3683,86 @@
         "rejectedMembers": {},
         "cooldowns": {}
       }
+    },
+    "-1003730257958": {
+      "chatId": -1003730257958,
+      "title": "جامعة الأمير سلطان",
+      "type": "supergroup",
+      "ownerId": 6740522308,
+      "ownerUsername": "sh3iw",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "auto-detected",
+      "addedAt": "2026-05-21T13:50:06.355Z",
+      "members": {
+        "6740522308": {
+          "userId": 6740522308,
+          "username": "sh3iw",
+          "firstName": ".",
+          "role": "member",
+          "joinedAt": "2026-05-21T13:50:06.542Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-21T13:50:06.542Z"
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "specialistWords": [
+        {
+          "word": "احبك انيك",
+          "specialistId": 6740522308,
+          "specialistUsername": "sh3iw",
+          "addedBy": 6740522308,
+          "addedAt": "2026-05-21T13:51:03.744Z"
+        }
+      ],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": true,
+      "autoApproveJoin": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": true,
+        "verifyTopicId": null,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     }
   },
   "channels": {},
@@ -4623,10 +4703,11 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T23:47:43.215Z",
-      "lastSeen": "2026-05-21T13:49:48.413Z",
+      "lastSeen": "2026-05-21T13:51:03.543Z",
       "groups": [
         -1003969494192,
-        -1002985211839
+        -1002985211839,
+        -1003730257958
       ],
       "channels": [],
       "seenInChats": {
@@ -4643,10 +4724,17 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-21T10:32:52.502Z",
           "lastSeen": "2026-05-21T10:32:58.062Z"
+        },
+        "-1003730257958": {
+          "chatId": -1003730257958,
+          "chatTitle": "جامعة الأمير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-21T13:50:06.543Z",
+          "lastSeen": "2026-05-21T13:50:06.543Z"
         }
       },
-      "contactedBot": false,
-      "lastContactAt": null,
+      "contactedBot": true,
+      "lastContactAt": "2026-05-21T13:51:00.103Z",
       "bioBanInfo": null
     },
     "8265840070": {
