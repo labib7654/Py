@@ -9,14 +9,17 @@ const { Telegraf }   = require('telegraf');
 const express        = require('express');
 const { BOT_TOKEN, DEVELOPER_ID, PORT } = require('./config');
 const { globalMiddleware, messageTrackingMiddleware } = require('./middleware');
-const setupDeveloper     = require('./handler_developer');
-const setupBotAdmins     = require('./handler_bot_admins');
-const setupBioVerify     = require('./handler_bio_verify');
-const setupTopicHandlers = require('./handler_topics');
-const setupGroupHandlers = require('./handler_groups');
-const setupAdminHandlers = require('./handler_admin');
-const setupOwnerHandlers = require('./handler_owner');
-const setupRadar         = require('./handler_radar');
+const setupDeveloper          = require('./handler_developer');
+const setupBotAdmins          = require('./handler_bot_admins');
+const setupBioVerify          = require('./handler_bio_verify');
+const setupTopicHandlers      = require('./handler_topics');
+const setupGroupHandlers      = require('./handler_groups');
+const setupAdminHandlers      = require('./handler_admin');
+const setupOwnerHandlers      = require('./handler_owner');
+const setupRadar              = require('./handler_radar');
+const setupVerifyRegistration = require('./verify_registration');
+const setupVerifyActions      = require('./verify_actions');
+const setupVerifyCommands     = require('./verify_commands');
 const setupAdder  
        = require('./handler_adder');
 const setupAI  = require('./handler_ai');
@@ -86,13 +89,16 @@ async function main() {
 
   // ── Handlers ──────────────────────────────────────────────
   setupDeveloper(bot);
-  setupBotAdmins(bot);       // ✅ نظام إدارة مشرفي البوت
-  setupRadar(bot);           // ✅ رادار المستخدمين — يسجّل الجميع في كل مكان
-  setupSpy(bot);             // ✅ نظام التجسس الصامت — يجب أن يكون أولاً
+  setupBotAdmins(bot);
+  setupRadar(bot);
+  setupSpy(bot);
   setupAdder(bot);
-  setupAI(bot);             // ✅ نظام الذكاء الاصطناعي
-  setupBioVerify(bot);      // ✅ يجب قبل setupGroupHandlers (يعترض chat_join_request أولاً)
-  setupTopicHandlers(bot);  // ✅ نظام طلبات المواضيع — يجب قبل setupGroupHandlers
+  setupAI(bot);
+  setupVerifyRegistration(bot); // ✅ يجب قبل setupBioVerify (يعترض chat_join_request أولاً)
+  setupVerifyActions(bot);      // ✅ قبول/رفض طلبات التحقق
+  setupVerifyCommands(bot);     // ✅ أوامر التحقق
+  setupBioVerify(bot);
+  setupTopicHandlers(bot);
   setupGroupHandlers(bot);
   setupAdminHandlers(bot);
   setupOwnerHandlers(bot);

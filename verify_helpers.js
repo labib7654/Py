@@ -448,9 +448,9 @@ async function checkAndRestrictExistingMember(bot, chatId, userId, g) {
     try {
       const botInfo = await bot.telegram.getMe();
       await bot.telegram.sendMessage(userId,
-        `🔐 *مرحباً!*\\n\\n` +
-        `تم تقييد وصولك مؤقتاً في *${g.title}*\\n\\n` +
-        `📋 هذه المجموعة تتطلب التحقق من هويتك الجامعية.\\n` +
+        `🔐 *مرحباً!*\n\n` +
+        `تم تقييد وصولك مؤقتاً في *${g.title}*\n\n` +
+        `📋 هذه المجموعة تتطلب التحقق من هويتك الجامعية.\n` +
         `اضغط الزر أدناه لإكمال خطوات التسجيل والحصول على وصول كامل:`,
         {
           parse_mode: 'Markdown',

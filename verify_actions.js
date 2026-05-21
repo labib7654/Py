@@ -329,8 +329,8 @@ module.exports = function setupVerifyActions(bot) {
       try {
         const botInfo = await bot.telegram.getMe();
         await bot.telegram.sendMessage(userId,
-          `🔐 *مرحباً ${ctx.from.first_name || ''}!*\\n\\n` +
-          `تم تقييد وصولك في *${g.title}* لأن هذه المجموعة تتطلب التحقق من هويتك الجامعية.\\n\\n` +
+          `🔐 *مرحباً ${ctx.from.first_name || ''}!*\n\n` +
+          `تم تقييد وصولك في *${g.title}* لأن هذه المجموعة تتطلب التحقق من هويتك الجامعية.\n\n` +
           `📋 اضغط الزر أدناه لإكمال خطوات التسجيل والحصول على وصول كامل:`,
           {
             parse_mode: 'Markdown',
