@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-21T18:33:29.134Z",
+  "savedAt": "2026-05-21T18:37:29.354Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3856,6 +3856,78 @@
         "cooldowns": {}
       },
       "inviteLink": "https://t.me/+b5oF9qXvJsQyMGZk"
+    },
+    "-1003334375214": {
+      "chatId": -1003334375214,
+      "title": "قناة بوت خدمات يمن",
+      "type": "supergroup",
+      "ownerId": 8136523041,
+      "ownerUsername": "mohbaldeen",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "auto-detected",
+      "addedAt": "2026-05-21T18:36:26.901Z",
+      "members": {
+        "8136523041": {
+          "userId": 8136523041,
+          "username": "mohbaldeen",
+          "firstName": "محب الدين",
+          "role": "member",
+          "joinedAt": "2026-05-21T18:36:27.133Z",
+          "messageCount": 3,
+          "score": 3,
+          "lastMessageAt": "2026-05-21T18:36:42.616Z"
+        }
+      },
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "specialistWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "autoApproveJoin": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": [],
+      "verifySystem": {
+        "enabled": false,
+        "verifyTopicId": null,
+        "pendingRequests": {},
+        "approvedMembers": {},
+        "rejectedMembers": {},
+        "cooldowns": {}
+      }
     }
   },
   "channels": {},
@@ -10902,6 +10974,52 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-21T12:30:15.797Z",
           "lastSeen": "2026-05-21T12:30:15.797Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8533444837": {
+      "userId": 8533444837,
+      "username": "moob711",
+      "firstName": "m",
+      "lastName": "",
+      "profileLink": "https://t.me/moob711",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-21T18:35:20.613Z",
+      "lastSeen": "2026-05-21T18:35:20.613Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {},
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8136523041": {
+      "userId": 8136523041,
+      "username": "mohbaldeen",
+      "firstName": "محب الدين",
+      "lastName": "ابوسن",
+      "profileLink": "https://t.me/mohbaldeen",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-21T18:36:10.049Z",
+      "lastSeen": "2026-05-21T18:36:42.616Z",
+      "groups": [
+        -1003334375214
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003334375214": {
+          "chatId": -1003334375214,
+          "chatTitle": "قناة بوت خدمات يمن",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-21T18:36:27.133Z",
+          "lastSeen": "2026-05-21T18:36:38.967Z"
         }
       },
       "contactedBot": false,
