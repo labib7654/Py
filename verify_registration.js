@@ -37,6 +37,51 @@ const {
 
 module.exports = function setupVerifyRegistration(bot) {
 
+// ================================================
+//  معالج /start مع دعم verify_ (الأهم حالياً)
+// ================================================
+bot.start(async (ctx) => {
+  const text = ctx.message.text || '';
+  const payload = text.split(' ')[1];   // كل شيء بعد /start
+
+  // حالة التحقق الجامعي
+  if (payload && payload.startsWith('verify_')) {
+    const chatIdStr = payload.replace('verify_', '').trim();
+    const chatId = Number(chatIdStr);
+
+    if (!chatId || isNaN(chatId)) {
+      return ctx.reply('❌ رابط التحقق غير صالح، حاول مرة أخرى.');
+    }
+
+    const g = db.getGroup(chatId);
+    if (!g) {
+      return ctx.reply('❌ المجموعة غير موجودة أو تم حذفها.');
+    }
+
+    const vs = getVerifySettings(g);
+    if (!vs.enabled) {
+      return ctx.reply('⚠️ نظام التحقق معطل حالياً في هذه المجموعة.');
+    }
+
+    // بدء جلسة التحقق
+    const topics = getAvailableTopics(g);
+    sessions.set(ctx.from.id, { 
+      step: 'type_select', 
+      chatId: chatId, 
+      data: {}, 
+      topics,
+      savedAt: Date.now()
+    });
+
+    console.log(`[Verify] بدأ تحقق جديد للمستخدم ${ctx.from.id} في المجموعة ${chatId}`);
+    await stepWelcome(bot, ctx.from.id, g.title || 'المجموعة');
+    return;
+  }
+
+  // الـ /start العادي (لو ما فيه verify)
+  await ctx.reply('👋 مرحباً! أضفني إلى مجموعتك لأديرها بكفاءة.');
+});
+
   // ════════════════════════════════════════════════════════════
   //  📥 chat_join_request — اعتراض طلب الانضمام
   //  يُشغَّل عندما يضغط أي شخص "طلب الانضمام" في المجموعة
