@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-22T00:53:29.145Z",
+  "savedAt": "2026-05-22T00:55:29.444Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3602,6 +3602,16 @@
           "score": 28,
           "lastMessageAt": "2026-05-21T22:55:35.895Z"
         },
+        "2037197843": {
+          "userId": 2037197843,
+          "username": "SaDNoWw",
+          "firstName": "سلته",
+          "role": "member",
+          "joinedAt": "2026-05-22T00:54:14.229Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-22T00:54:14.229Z"
+        },
         "6942771795": {
           "userId": 6942771795,
           "username": "ali721399",
@@ -4514,6 +4524,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:25:53.759Z",
           "lastSeen": "2026-05-18T14:25:53.759Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "2037197843": {
+      "userId": 2037197843,
+      "username": "SaDNoWw",
+      "firstName": "سلته",
+      "lastName": "",
+      "profileLink": "https://t.me/SaDNoWw",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-22T00:54:14.229Z",
+      "lastSeen": "2026-05-22T00:54:14.232Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003750270631": {
+          "chatId": -1003750270631,
+          "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-22T00:54:14.232Z",
+          "lastSeen": "2026-05-22T00:54:14.232Z"
         }
       },
       "contactedBot": false,
