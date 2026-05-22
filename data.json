@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-22T08:43:29.251Z",
+  "savedAt": "2026-05-22T08:45:20.140Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2333,16 +2333,6 @@
           "score": 0,
           "lastMessageAt": null
         },
-        "8240566312": {
-          "userId": 8240566312,
-          "username": "g_1_11111",
-          "firstName": "عآئش",
-          "role": "member",
-          "joinedAt": "2026-05-19T01:41:20.975Z",
-          "messageCount": 2,
-          "score": 2,
-          "lastMessageAt": "2026-05-19T15:35:33.266Z"
-        },
         "8386797031": {
           "userId": 8386797031,
           "username": "J_8hs",
@@ -2785,16 +2775,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:12:12.076Z"
-        },
-        "8240566312": {
-          "userId": 8240566312,
-          "username": "g_1_11111",
-          "firstName": "عآئش",
-          "role": "member",
-          "joinedAt": "2026-05-18T22:15:45.419Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T22:15:45.419Z"
         }
       },
       "admins": {},
@@ -3172,16 +3152,6 @@
       "addedByUsername": "auto-detected",
       "addedAt": "2026-05-18T22:28:27.639Z",
       "members": {
-        "8240566312": {
-          "userId": 8240566312,
-          "username": "g_1_11111",
-          "firstName": "عآئش",
-          "role": "owner",
-          "joinedAt": "2026-05-18T22:28:27.671Z",
-          "messageCount": 10,
-          "score": 10,
-          "lastMessageAt": "2026-05-19T15:31:13.006Z"
-        },
         "7630845149": {
           "userId": 7630845149,
           "username": "Labib865_bot",
@@ -3211,6 +3181,16 @@
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-05-19T20:41:36.050Z"
+        },
+        "8240566312": {
+          "userId": 8240566312,
+          "username": "g_1_11111",
+          "firstName": "عآئش",
+          "role": "member",
+          "joinedAt": "2026-05-22T08:45:18.858Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-22T08:45:18.858Z"
         }
       },
       "admins": {
@@ -8030,13 +8010,11 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-21T10:43:51.766Z",
+      "lastSeen": "2026-05-22T08:45:19.141Z",
       "groups": [
         -1003794953708,
         -1002985211839,
-        -1002648125233,
-        -1003595180224,
-        -1003969494192
+        -1003595180224
       ],
       "channels": [],
       "seenInChats": {
@@ -8073,7 +8051,7 @@
           "chatTitle": "مماحين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T22:28:27.813Z",
-          "lastSeen": "2026-05-19T15:31:13.006Z"
+          "lastSeen": "2026-05-22T08:45:18.859Z"
         }
       },
       "contactedBot": true,
