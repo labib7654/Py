@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-23T22:37:31.238Z",
+  "savedAt": "2026-05-23T22:43:29.813Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2402,6 +2402,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-23T04:20:40.525Z"
+        },
+        "7615217593": {
+          "userId": 7615217593,
+          "username": "",
+          "firstName": "Hadel",
+          "role": "member",
+          "joinedAt": "2026-05-23T22:42:25.457Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
         }
       },
       "admins": {},
@@ -4648,7 +4658,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-05-23T16:37:47.315Z",
+      "lastSeen": "2026-05-23T22:41:13.992Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -11268,6 +11278,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-23T11:33:58.300Z",
           "lastSeen": "2026-05-23T11:33:58.300Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7615217593": {
+      "userId": 7615217593,
+      "username": "",
+      "firstName": "Hadel",
+      "lastName": "",
+      "profileLink": "tg://user?id=7615217593",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-23T22:42:25.456Z",
+      "lastSeen": "2026-05-23T22:42:25.457Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-23T22:42:25.457Z",
+          "lastSeen": "2026-05-23T22:42:25.457Z"
         }
       },
       "contactedBot": false,
