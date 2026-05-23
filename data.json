@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-23T04:13:29.530Z",
+  "savedAt": "2026-05-23T04:21:31.122Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2402,6 +2402,16 @@
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
+        },
+        "8040287785": {
+          "userId": 8040287785,
+          "username": "AbuAyman1",
+          "firstName": "أبو أيمن",
+          "role": "member",
+          "joinedAt": "2026-05-23T04:20:40.525Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-23T04:20:40.525Z"
         }
       },
       "admins": {},
@@ -2485,6 +2495,14 @@
           "status": "approved_auto",
           "bio": "",
           "inviteLink": "https://t.me/+mMMSMLgl..."
+        },
+        "8040287785": {
+          "userId": 8040287785,
+          "username": "AbuAyman1",
+          "firstName": "أبو أيمن",
+          "status": "pending_verify",
+          "requestedAt": "2026-05-23T04:20:41.396Z",
+          "isExistingMember": true
         }
       },
       "joinRequestsEnabled": true,
@@ -4712,7 +4730,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-21T14:54:24.663Z",
+      "lastSeen": "2026-05-23T04:20:41.417Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -11183,6 +11201,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-22T22:08:06.808Z",
           "lastSeen": "2026-05-22T22:08:06.808Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8040287785": {
+      "userId": 8040287785,
+      "username": "AbuAyman1",
+      "firstName": "أبو أيمن",
+      "lastName": "",
+      "profileLink": "https://t.me/AbuAyman1",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-23T04:20:40.525Z",
+      "lastSeen": "2026-05-23T04:20:40.526Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-23T04:20:40.526Z",
+          "lastSeen": "2026-05-23T04:20:40.526Z"
         }
       },
       "contactedBot": false,
