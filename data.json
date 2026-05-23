@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-23T11:33:29.630Z",
+  "savedAt": "2026-05-23T11:34:00.251Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2503,6 +2503,13 @@
           "status": "pending_verify",
           "requestedAt": "2026-05-23T04:20:41.396Z",
           "isExistingMember": true
+        },
+        "5369785185": {
+          "userId": 5369785185,
+          "username": "Zyad2006e",
+          "firstName": "¥",
+          "status": "rejected_bot_blocked",
+          "requestedAt": "2026-05-23T11:33:55.962Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -4730,7 +4737,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-23T04:20:41.417Z",
+      "lastSeen": "2026-05-23T11:33:59.250Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -11229,6 +11236,32 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-23T04:20:40.526Z",
           "lastSeen": "2026-05-23T04:20:40.526Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "5369785185": {
+      "userId": 5369785185,
+      "username": "Zyad2006e",
+      "firstName": "¥",
+      "lastName": "",
+      "profileLink": "https://t.me/Zyad2006e",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-23T11:33:55.959Z",
+      "lastSeen": "2026-05-23T11:33:58.300Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-23T11:33:58.300Z",
+          "lastSeen": "2026-05-23T11:33:58.300Z"
         }
       },
       "contactedBot": false,
