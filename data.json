@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-23T12:43:29.646Z",
+  "savedAt": "2026-05-23T12:51:31.176Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2698,6 +2698,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-22T09:25:53.507Z"
+        },
+        "8466574509": {
+          "userId": 8466574509,
+          "username": "Fager_Ahed",
+          "firstName": "Reham",
+          "role": "member",
+          "joinedAt": "2026-05-23T12:49:58.196Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-23T12:49:58.888Z"
         }
       },
       "admins": {},
@@ -8032,9 +8042,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:16:41.971Z",
-      "lastSeen": "2026-05-19T16:51:10.102Z",
+      "lastSeen": "2026-05-23T12:50:04.022Z",
       "groups": [
-        -1003969494192
+        -1003969494192,
+        -1003854112996
       ],
       "channels": [],
       "seenInChats": {
@@ -8044,6 +8055,13 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:17:59.406Z",
           "lastSeen": "2026-05-19T16:50:28.539Z"
+        },
+        "-1003854112996": {
+          "chatId": -1003854112996,
+          "chatTitle": "⁨m⁩ و ⁨..⁩",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-23T12:49:58.196Z",
+          "lastSeen": "2026-05-23T12:49:58.889Z"
         }
       },
       "contactedBot": true,
