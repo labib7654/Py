@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-24T02:00:19.189Z",
+  "savedAt": "2026-05-24T02:00:34.067Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2516,7 +2516,7 @@
           "username": "",
           "firstName": "Armin",
           "status": "rejected_bot_blocked",
-          "requestedAt": "2026-05-24T02:00:14.308Z"
+          "requestedAt": "2026-05-24T02:00:30.684Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -3234,6 +3234,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-22T08:45:18.858Z"
+        },
+        "8577725333": {
+          "userId": 8577725333,
+          "username": "",
+          "firstName": "Armin",
+          "role": "member",
+          "joinedAt": "2026-05-24T02:00:24.184Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-24T02:00:24.883Z"
         }
       },
       "admins": {
@@ -4764,7 +4774,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-24T02:00:18.188Z",
+      "lastSeen": "2026-05-24T02:00:33.066Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -11339,9 +11349,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-24T02:00:14.308Z",
-      "lastSeen": "2026-05-24T02:00:18.472Z",
+      "lastSeen": "2026-05-24T02:00:32.199Z",
       "groups": [
-        -1003916370715
+        -1003916370715,
+        -1003595180224
       ],
       "channels": [],
       "seenInChats": {
@@ -11350,7 +11361,7 @@
           "chatTitle": "مجتمع جامعة الامير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-05-24T02:00:17.109Z",
-          "lastSeen": "2026-05-24T02:00:17.109Z"
+          "lastSeen": "2026-05-24T02:00:32.199Z"
         },
         "-1003916370715": {
           "chatId": -1003916370715,
@@ -11358,6 +11369,13 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-24T02:00:18.472Z",
           "lastSeen": "2026-05-24T02:00:18.472Z"
+        },
+        "-1003595180224": {
+          "chatId": -1003595180224,
+          "chatTitle": "مماحين",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-24T02:00:24.183Z",
+          "lastSeen": "2026-05-24T02:00:24.884Z"
         }
       },
       "contactedBot": false,
