@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-24T02:10:06.219Z",
+  "savedAt": "2026-05-24T02:11:31.264Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3497,9 +3497,9 @@
           "firstName": "Armin",
           "role": "member",
           "joinedAt": "2026-05-24T02:00:18.472Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-24T02:00:18.472Z"
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-05-24T02:10:06.930Z"
         }
       },
       "admins": {},
@@ -11349,7 +11349,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-24T02:00:14.308Z",
-      "lastSeen": "2026-05-24T02:10:05.663Z",
+      "lastSeen": "2026-05-24T02:10:06.930Z",
       "groups": [
         -1003916370715,
         -1003595180224
@@ -11368,7 +11368,7 @@
           "chatTitle": "رجال",
           "chatType": "supergroup",
           "firstSeen": "2026-05-24T02:00:18.472Z",
-          "lastSeen": "2026-05-24T02:00:18.472Z"
+          "lastSeen": "2026-05-24T02:10:06.930Z"
         },
         "-1003595180224": {
           "chatId": -1003595180224,
