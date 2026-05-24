@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-24T14:23:48.470Z",
+  "savedAt": "2026-05-24T14:24:41.294Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1102,16 +1102,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:10.322Z"
-        },
-        "7643543626": {
-          "userId": 7643543626,
-          "username": "",
-          "firstName": "ralu",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:23:30.417Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
         },
         "6789413385": {
           "userId": 6789413385,
@@ -7396,10 +7386,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:23:30.417Z",
-      "lastSeen": "2026-05-18T14:23:30.417Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-24T14:24:40.293Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
