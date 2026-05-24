@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-24T14:21:27.563Z",
+  "savedAt": "2026-05-24T14:21:31.923Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -622,16 +622,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:20:57.052Z"
-        },
-        "8670755952": {
-          "userId": 8670755952,
-          "username": "CEDNT_3A_CHOC",
-          "firstName": "Тех Поддержка",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:52.732Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:20:55.657Z"
         },
         "6300973110": {
           "userId": 6300973110,
@@ -5698,10 +5688,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:52.732Z",
-      "lastSeen": "2026-05-18T14:20:55.657Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-24T14:21:30.922Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
