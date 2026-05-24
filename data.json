@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-24T02:03:29.871Z",
+  "savedAt": "2026-05-24T02:10:06.219Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3240,10 +3240,10 @@
           "username": "",
           "firstName": "Armin",
           "role": "member",
-          "joinedAt": "2026-05-24T02:00:24.184Z",
+          "joinedAt": "2026-05-24T02:10:05.662Z",
           "messageCount": 1,
           "score": 1,
-          "lastMessageAt": "2026-05-24T02:00:24.883Z"
+          "lastMessageAt": "2026-05-24T02:10:05.662Z"
         }
       },
       "admins": {
@@ -11349,7 +11349,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-24T02:00:14.308Z",
-      "lastSeen": "2026-05-24T02:00:37.914Z",
+      "lastSeen": "2026-05-24T02:10:05.663Z",
       "groups": [
         -1003916370715,
         -1003595180224
@@ -11375,7 +11375,7 @@
           "chatTitle": "مماحين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-24T02:00:24.183Z",
-          "lastSeen": "2026-05-24T02:00:24.884Z"
+          "lastSeen": "2026-05-24T02:10:05.663Z"
         }
       },
       "contactedBot": false,
