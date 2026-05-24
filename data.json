@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-24T14:13:30.105Z",
+  "savedAt": "2026-05-24T14:21:27.563Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -752,16 +752,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:00.057Z"
-        },
-        "5807426072": {
-          "userId": 5807426072,
-          "username": "",
-          "firstName": "กิตติพงศ์",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:53.727Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:01.023Z"
         },
         "7869564774": {
           "userId": 7869564774,
@@ -6124,10 +6114,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:53.727Z",
-      "lastSeen": "2026-05-18T14:21:01.023Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-24T14:21:26.563Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
