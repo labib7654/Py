@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-24T14:22:00.024Z",
+  "savedAt": "2026-05-24T14:22:10.330Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -802,16 +802,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:03.326Z"
-        },
-        "5989984931": {
-          "userId": 5989984931,
-          "username": "LenaKulikova_w",
-          "firstName": "am",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:54.029Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:00.863Z"
         },
         "8126471313": {
           "userId": 8126471313,
@@ -6314,10 +6304,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:54.029Z",
-      "lastSeen": "2026-05-18T14:21:00.863Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-24T14:22:09.329Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
