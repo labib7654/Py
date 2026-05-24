@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-24T13:53:30.098Z",
+  "savedAt": "2026-05-24T13:55:00.675Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2517,6 +2517,13 @@
           "firstName": "Armin",
           "status": "rejected_bot_blocked",
           "requestedAt": "2026-05-24T02:00:36.372Z"
+        },
+        "8453216245": {
+          "userId": 8453216245,
+          "username": "",
+          "firstName": "متعب",
+          "status": "rejected_bot_blocked",
+          "requestedAt": "2026-05-24T13:54:56.861Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -4774,7 +4781,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-24T02:00:38.804Z",
+      "lastSeen": "2026-05-24T13:54:59.673Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -11376,6 +11383,32 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-24T02:00:24.183Z",
           "lastSeen": "2026-05-24T02:10:05.663Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8453216245": {
+      "userId": 8453216245,
+      "username": "",
+      "firstName": "متعب",
+      "lastName": "",
+      "profileLink": "tg://user?id=8453216245",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-24T13:54:56.861Z",
+      "lastSeen": "2026-05-24T13:54:58.517Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-24T13:54:58.517Z",
+          "lastSeen": "2026-05-24T13:54:58.517Z"
         }
       },
       "contactedBot": false,
