@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-24T14:22:10.330Z",
+  "savedAt": "2026-05-24T14:22:12.345Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -792,16 +792,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:01.192Z"
-        },
-        "7868740609": {
-          "userId": 7868740609,
-          "username": "Yoonphanchi",
-          "firstName": "Żäý Ýář🥀💔",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:53.925Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:03.326Z"
         },
         "8126471313": {
           "userId": 8126471313,
@@ -6250,10 +6240,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:53.925Z",
-      "lastSeen": "2026-05-18T14:21:03.326Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-24T14:22:11.345Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
