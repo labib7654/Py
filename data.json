@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-25T07:53:30.438Z",
+  "savedAt": "2026-05-25T07:59:31.628Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3408,9 +3408,9 @@
           "firstName": "Group",
           "role": "member",
           "joinedAt": "2026-05-19T16:31:04.782Z",
-          "messageCount": 62,
-          "score": 62,
-          "lastMessageAt": "2026-05-25T04:54:03.198Z"
+          "messageCount": 63,
+          "score": 63,
+          "lastMessageAt": "2026-05-25T07:58:50.994Z"
         },
         "2037197843": {
           "userId": 2037197843,
@@ -3868,7 +3868,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T13:49:52.695Z",
-      "lastSeen": "2026-05-25T04:54:03.198Z",
+      "lastSeen": "2026-05-25T07:58:50.993Z",
       "groups": [
         -1003969494192,
         -1003750270631
