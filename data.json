@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-26T14:21:32.465Z",
+  "savedAt": "2026-05-26T14:22:07.036Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1012,16 +1012,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:08.192Z"
-        },
-        "8670848007": {
-          "userId": 8670848007,
-          "username": "",
-          "firstName": "Ewmhya",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:21:02.867Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:08.376Z"
         },
         "6506064142": {
           "userId": 6506064142,
@@ -7010,10 +7000,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:21:02.867Z",
-      "lastSeen": "2026-05-18T14:21:08.376Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-26T14:22:06.036Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
