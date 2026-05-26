@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-26T16:03:32.509Z",
+  "savedAt": "2026-05-26T16:11:32.517Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3431,6 +3431,16 @@
           "messageCount": 6,
           "score": 6,
           "lastMessageAt": "2026-05-26T15:45:29.276Z"
+        },
+        "7833516083": {
+          "userId": 7833516083,
+          "username": "AlSaadiy_M",
+          "firstName": "⚡برو⚡",
+          "role": "member",
+          "joinedAt": "2026-05-26T16:10:54.727Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-26T16:10:54.727Z"
         }
       },
       "admins": {},
@@ -11025,6 +11035,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-24T13:54:58.517Z",
           "lastSeen": "2026-05-25T19:46:44.178Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7833516083": {
+      "userId": 7833516083,
+      "username": "AlSaadiy_M",
+      "firstName": "⚡برو⚡",
+      "lastName": "𝒜ℬ",
+      "profileLink": "https://t.me/AlSaadiy_M",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-26T16:10:54.727Z",
+      "lastSeen": "2026-05-26T16:10:54.728Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003750270631": {
+          "chatId": -1003750270631,
+          "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-26T16:10:54.728Z",
+          "lastSeen": "2026-05-26T16:10:54.728Z"
         }
       },
       "contactedBot": false,
