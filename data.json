@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-27T11:57:33.201Z",
+  "savedAt": "2026-05-27T12:03:31.118Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -4427,6 +4427,26 @@
           "lastSeen": "2026-05-18T20:51:48.251Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "2103753749": {
+      "userId": 2103753749,
+      "username": "Khminiu",
+      "firstName": "خميني",
+      "lastName": "",
+      "profileLink": "https://t.me/Khminiu",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-27T12:03:05.143Z",
+      "lastSeen": "2026-05-27T12:03:05.143Z",
+      "groups": [
+        -1002985211839
+      ],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
