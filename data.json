@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-27T20:03:31.124Z",
+  "savedAt": "2026-05-27T20:06:51.089Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1049,16 +1049,6 @@
           "firstName": "Валенти",
           "role": "member",
           "joinedAt": "2026-05-18T14:25:53.765Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "7629266611": {
-          "userId": 7629266611,
-          "username": "",
-          "firstName": "မောင်ပလာတာ",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:25:54.024Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -7502,10 +7492,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:25:54.024Z",
-      "lastSeen": "2026-05-18T14:25:54.024Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-27T20:06:50.087Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
