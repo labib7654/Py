@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-27T12:03:31.118Z",
+  "savedAt": "2026-05-27T12:05:33.206Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2763,14 +2763,21 @@
           "userId": 8754860295,
           "username": "xi_eb",
           "firstName": "☠️القائد محمد ☠️",
-          "role": "member",
+          "role": "admin",
           "joinedAt": "2026-05-27T11:56:31.515Z",
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-05-27T11:56:42.341Z"
         }
       },
-      "admins": {},
+      "admins": {
+        "8754860295": {
+          "username": "xi_eb",
+          "promotedBy": 2103753749,
+          "promotedByUsername": "Khminiu",
+          "promotedAt": "2026-05-27T12:04:07.188Z"
+        }
+      },
       "warns": {
         "7243808108": [
           {
@@ -4441,7 +4448,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-27T12:03:05.143Z",
-      "lastSeen": "2026-05-27T12:03:05.143Z",
+      "lastSeen": "2026-05-27T12:04:07.187Z",
       "groups": [
         -1002985211839
       ],
@@ -11154,7 +11161,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-27T11:56:31.515Z",
-      "lastSeen": "2026-05-27T11:56:42.342Z",
+      "lastSeen": "2026-05-27T12:04:07.188Z",
       "groups": [
         -1002985211839
       ],
@@ -11165,7 +11172,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-05-27T11:56:31.515Z",
-          "lastSeen": "2026-05-27T11:56:42.342Z"
+          "lastSeen": "2026-05-27T12:04:07.188Z"
         }
       },
       "contactedBot": false,
