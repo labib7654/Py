@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-27T19:03:31.125Z",
+  "savedAt": "2026-05-27T19:06:32.073Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1073,16 +1073,6 @@
           "score": 0,
           "lastMessageAt": null
         },
-        "8434160107": {
-          "userId": 8434160107,
-          "username": "",
-          "firstName": "Mark",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:25:53.929Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
         "7629266611": {
           "userId": 7629266611,
           "username": "",
@@ -1839,16 +1829,6 @@
           "firstName": "Григорий",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:50.350Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "7566824009": {
-          "userId": 7566824009,
-          "username": "",
-          "firstName": "why",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:50.357Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -7560,10 +7540,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:25:53.923Z",
-      "lastSeen": "2026-05-18T14:25:53.924Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-27T19:06:31.071Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
@@ -10120,10 +10098,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:50.357Z",
-      "lastSeen": "2026-05-18T20:51:50.357Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-27T19:06:30.890Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
