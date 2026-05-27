@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-27T11:03:31.118Z",
+  "savedAt": "2026-05-27T11:05:50.400Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -352,16 +352,6 @@
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-05-18T11:02:57.597Z"
-        },
-        "8152109579": {
-          "userId": 8152109579,
-          "username": "",
-          "firstName": "ri",
-          "role": "member",
-          "joinedAt": "2026-05-17T21:35:28.434Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-17T21:35:28.531Z"
         },
         "8597018389": {
           "userId": 8597018389,
@@ -4542,15 +4532,13 @@
     "8152109579": {
       "userId": 8152109579,
       "username": "",
-      "firstName": "ri",
+      "firstName": "كابتن تساهيل رياض احمد قاسم",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.434Z",
-      "lastSeen": "2026-05-17T21:35:28.531Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-27T11:05:49.399Z",
+      "groups": [],
       "channels": [],
       "bioBanInfo": null,
       "seenInChats": {},
