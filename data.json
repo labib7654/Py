@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-28T10:13:31.136Z",
+  "savedAt": "2026-05-28T10:14:16.591Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -782,16 +782,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:03.168Z"
-        },
-        "8403853178": {
-          "userId": 8403853178,
-          "username": "ANyMo91",
-          "firstName": "브리스타 🐙🌊RIVER",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:54.729Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:03.656Z"
         },
         "8069812195": {
           "userId": 8069812195,
@@ -6346,10 +6336,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:54.729Z",
-      "lastSeen": "2026-05-18T14:21:03.656Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-28T10:14:15.589Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
