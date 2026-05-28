@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-28T18:13:31.146Z",
+  "savedAt": "2026-05-28T18:21:31.637Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1689,16 +1689,6 @@
           "firstName": "Mvooxa",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:50.252Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8446130830": {
-          "userId": 8446130830,
-          "username": "dj20jd",
-          "firstName": "Pizza",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:50.258Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -9888,10 +9878,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:50.258Z",
-      "lastSeen": "2026-05-18T20:51:50.258Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-28T18:21:30.637Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
