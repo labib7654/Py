@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-28T21:03:31.149Z",
+  "savedAt": "2026-05-28T21:05:27.078Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1964,6 +1964,13 @@
           "firstName": "متعب",
           "status": "rejected_bot_blocked",
           "requestedAt": "2026-05-28T19:24:09.468Z"
+        },
+        "8723920005": {
+          "userId": 8723920005,
+          "username": "atas200",
+          "firstName": "A",
+          "status": "rejected_bot_blocked",
+          "requestedAt": "2026-05-28T21:05:22.964Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -4343,7 +4350,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-28T19:24:12.458Z",
+      "lastSeen": "2026-05-28T21:05:26.077Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10947,6 +10954,32 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-27T18:19:58.810Z",
           "lastSeen": "2026-05-27T18:20:01.249Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8723920005": {
+      "userId": 8723920005,
+      "username": "atas200",
+      "firstName": "A",
+      "lastName": "",
+      "profileLink": "https://t.me/atas200",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-28T21:05:22.964Z",
+      "lastSeen": "2026-05-28T21:05:25.108Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-28T21:05:25.108Z",
+          "lastSeen": "2026-05-28T21:05:25.108Z"
         }
       },
       "contactedBot": false,
