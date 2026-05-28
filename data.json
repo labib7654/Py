@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-28T10:26:59.801Z",
+  "savedAt": "2026-05-28T10:29:35.702Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -782,16 +782,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:04.824Z"
-        },
-        "7420054018": {
-          "userId": 7420054018,
-          "username": "",
-          "firstName": "Маша Коко",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:54.734Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:04.484Z"
         },
         "7959012581": {
           "userId": 7959012581,
@@ -6452,10 +6442,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:54.734Z",
-      "lastSeen": "2026-05-18T14:21:04.484Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-28T10:29:34.701Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
