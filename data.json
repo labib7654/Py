@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-28T20:13:31.148Z",
+  "savedAt": "2026-05-28T20:17:59.161Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1569,16 +1569,6 @@
           "firstName": "Аня",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:49.459Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "6344175121": {
-          "userId": 6344175121,
-          "username": "AnastasiyaZvyagina480",
-          "firstName": "Анастасия",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:49.460Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -9548,10 +9538,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:49.460Z",
-      "lastSeen": "2026-05-18T20:51:49.460Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-28T20:17:58.160Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
