@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-28T21:05:27.078Z",
+  "savedAt": "2026-05-28T21:05:32.962Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1970,7 +1970,7 @@
           "username": "atas200",
           "firstName": "A",
           "status": "rejected_bot_blocked",
-          "requestedAt": "2026-05-28T21:05:22.964Z"
+          "requestedAt": "2026-05-28T21:05:29.744Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -4350,7 +4350,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-28T21:05:26.077Z",
+      "lastSeen": "2026-05-28T21:05:31.961Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10970,7 +10970,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-28T21:05:22.964Z",
-      "lastSeen": "2026-05-28T21:05:25.108Z",
+      "lastSeen": "2026-05-28T21:05:31.091Z",
       "groups": [],
       "channels": [],
       "seenInChats": {
@@ -10979,7 +10979,7 @@
           "chatTitle": "مجتمع جامعة الامير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-05-28T21:05:25.108Z",
-          "lastSeen": "2026-05-28T21:05:25.108Z"
+          "lastSeen": "2026-05-28T21:05:31.091Z"
         }
       },
       "contactedBot": false,
