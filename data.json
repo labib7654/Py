@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-29T17:02:26.578Z",
+  "savedAt": "2026-05-29T17:02:33.534Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -742,16 +742,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:01.524Z"
-        },
-        "7269842869": {
-          "userId": 7269842869,
-          "username": "",
-          "firstName": "Nkosinathi",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:54.733Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:03.812Z"
         },
         "6508143502": {
           "userId": 6508143502,
@@ -6289,10 +6279,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:54.733Z",
-      "lastSeen": "2026-05-18T14:21:03.812Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-29T17:02:32.533Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
