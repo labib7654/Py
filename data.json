@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-29T17:14:49.988Z",
+  "savedAt": "2026-05-29T17:14:53.569Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1489,16 +1489,6 @@
           "firstName": "Нина",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:49.553Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8734176771": {
-          "userId": 8734176771,
-          "username": "",
-          "firstName": "Znnem",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:49.651Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -9507,10 +9497,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:49.557Z",
-      "lastSeen": "2026-05-18T20:51:49.651Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-29T17:14:52.568Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
