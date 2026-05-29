@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-29T14:53:31.168Z",
+  "savedAt": "2026-05-29T14:55:36.059Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1819,6 +1819,16 @@
           "firstName": "Hadel",
           "role": "member",
           "joinedAt": "2026-05-23T22:42:25.457Z",
+          "messageCount": 0,
+          "score": 0,
+          "lastMessageAt": null
+        },
+        "8460259531": {
+          "userId": 8460259531,
+          "username": "",
+          "firstName": "اسيل",
+          "role": "member",
+          "joinedAt": "2026-05-29T14:54:11.458Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -10944,6 +10954,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-28T21:05:25.108Z",
           "lastSeen": "2026-05-28T21:05:31.091Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8460259531": {
+      "userId": 8460259531,
+      "username": "",
+      "firstName": "اسيل",
+      "lastName": "",
+      "profileLink": "tg://user?id=8460259531",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-29T14:54:11.458Z",
+      "lastSeen": "2026-05-29T14:54:11.458Z",
+      "groups": [
+        -1003969494192
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-29T14:54:11.458Z",
+          "lastSeen": "2026-05-29T14:54:11.458Z"
         }
       },
       "contactedBot": false,
