@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-29T08:43:31.161Z",
+  "savedAt": "2026-05-29T08:45:35.511Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2706,8 +2706,8 @@
       "chatId": -1003595180224,
       "title": "مماحين",
       "type": "supergroup",
-      "ownerId": 8240566312,
-      "ownerUsername": "g_1_11111",
+      "ownerId": 8386797031,
+      "ownerUsername": "J_8hs",
       "ownerVerified": false,
       "ownerVerifiedAt": null,
       "addedBy": 0,
@@ -2738,7 +2738,7 @@
           "userId": 8386797031,
           "username": "J_8hs",
           "firstName": "اوب",
-          "role": "member",
+          "role": "owner",
           "joinedAt": "2026-05-19T15:34:36.621Z",
           "messageCount": 2,
           "score": 2,
@@ -7577,7 +7577,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:28:52.986Z",
-      "lastSeen": "2026-05-24T06:01:52.991Z",
+      "lastSeen": "2026-05-29T08:45:18.893Z",
       "groups": [
         -1003794953708,
         -1002985211839,
@@ -10189,7 +10189,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-19T01:47:30.593Z",
-      "lastSeen": "2026-05-21T13:49:35.332Z",
+      "lastSeen": "2026-05-29T08:45:18.893Z",
       "groups": [
         -1003969494192,
         -1002608245805,
@@ -10225,7 +10225,7 @@
           "chatTitle": "مماحين",
           "chatType": "supergroup",
           "firstSeen": "2026-05-19T15:34:36.621Z",
-          "lastSeen": "2026-05-19T15:34:36.621Z"
+          "lastSeen": "2026-05-29T08:45:18.893Z"
         },
         "-1002985211839": {
           "chatId": -1002985211839,
