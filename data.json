@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-29T18:53:31.171Z",
+  "savedAt": "2026-05-29T19:00:03.252Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1349,16 +1349,6 @@
           "firstName": "Wisok",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:48.854Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "5406847620": {
-          "userId": 5406847620,
-          "username": "",
-          "firstName": "Jelar Kumar",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:48.956Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8897,10 +8887,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:48.956Z",
-      "lastSeen": "2026-05-18T20:51:48.956Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-29T19:00:02.250Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
