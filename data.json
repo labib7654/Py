@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-30T20:11:08.116Z",
+  "savedAt": "2026-05-30T20:11:15.998Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1329,16 +1329,6 @@
           "firstName": "Văn",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:49.154Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8618546826": {
-          "userId": 8618546826,
-          "username": "dahacokcalis",
-          "firstName": "Stephen",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:49.254Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -9031,10 +9021,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:49.159Z",
-      "lastSeen": "2026-05-18T20:51:49.254Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-30T20:11:14.998Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
