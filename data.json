@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-30T20:11:15.998Z",
+  "savedAt": "2026-05-30T20:11:18.015Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1189,16 +1189,6 @@
           "firstName": "Таисия",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:47.558Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8711249234": {
-          "userId": 8711249234,
-          "username": "",
-          "firstName": "Vfldrf",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:47.655Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8239,10 +8229,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:47.655Z",
-      "lastSeen": "2026-05-18T20:51:47.655Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-30T20:11:17.015Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
