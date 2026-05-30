@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-30T07:13:31.185Z",
+  "savedAt": "2026-05-30T07:16:50.484Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1359,16 +1359,6 @@
           "firstName": "narathip",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:48.959Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "5475341616": {
-          "userId": 5475341616,
-          "username": "",
-          "firstName": "لال محمد",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:49.154Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -9035,10 +9025,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:49.154Z",
-      "lastSeen": "2026-05-18T20:51:49.154Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-30T07:16:49.483Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
