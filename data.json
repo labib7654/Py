@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-30T21:43:31.198Z",
+  "savedAt": "2026-05-30T21:49:25.052Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1781,6 +1781,13 @@
           "firstName": "A",
           "status": "rejected_bot_blocked",
           "requestedAt": "2026-05-28T21:05:29.744Z"
+        },
+        "5727226624": {
+          "userId": 5727226624,
+          "username": "ghjgdjvgjfdhj",
+          "firstName": "ملك",
+          "status": "rejected_bot_blocked",
+          "requestedAt": "2026-05-30T21:49:20.940Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -4156,7 +4163,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-30T15:03:08.814Z",
+      "lastSeen": "2026-05-30T21:49:24.051Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10778,6 +10785,32 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-29T14:54:11.458Z",
           "lastSeen": "2026-05-29T14:54:11.458Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "5727226624": {
+      "userId": 5727226624,
+      "username": "ghjgdjvgjfdhj",
+      "firstName": "ملك",
+      "lastName": "",
+      "profileLink": "https://t.me/ghjgdjvgjfdhj",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-30T21:49:20.939Z",
+      "lastSeen": "2026-05-30T21:49:23.027Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-30T21:49:23.027Z",
+          "lastSeen": "2026-05-30T21:49:23.027Z"
         }
       },
       "contactedBot": false,
