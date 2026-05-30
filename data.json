@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-30T07:23:31.185Z",
+  "savedAt": "2026-05-30T07:25:01.664Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1049,16 +1049,6 @@
           "firstName": "Safiatou dorcas",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:46.201Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8139165698": {
-          "userId": 8139165698,
-          "username": "",
-          "firstName": "Jacopo",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:46.252Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -7679,10 +7669,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:46.251Z",
-      "lastSeen": "2026-05-18T20:51:46.252Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-30T07:25:00.662Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
