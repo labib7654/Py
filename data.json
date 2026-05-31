@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-31T15:03:31.216Z",
+  "savedAt": "2026-05-31T15:11:14.397Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1788,6 +1788,13 @@
           "firstName": "ملك",
           "status": "rejected_bot_blocked",
           "requestedAt": "2026-05-30T21:49:20.940Z"
+        },
+        "8218210895": {
+          "userId": 8218210895,
+          "username": "Ihhccg",
+          "firstName": "رغد يحيى",
+          "status": "rejected_bot_blocked",
+          "requestedAt": "2026-05-31T15:11:10.386Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -4201,7 +4208,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-05-30T21:49:24.051Z",
+      "lastSeen": "2026-05-31T15:11:13.397Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10849,6 +10856,32 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-30T21:49:23.027Z",
           "lastSeen": "2026-05-30T21:49:23.027Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8218210895": {
+      "userId": 8218210895,
+      "username": "Ihhccg",
+      "firstName": "رغد يحيى",
+      "lastName": "",
+      "profileLink": "https://t.me/Ihhccg",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-31T15:11:10.386Z",
+      "lastSeen": "2026-05-31T15:11:12.040Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-31T15:11:12.040Z",
+          "lastSeen": "2026-05-31T15:11:12.040Z"
         }
       },
       "contactedBot": false,
