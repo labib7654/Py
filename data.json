@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-31T19:13:31.221Z",
+  "savedAt": "2026-05-31T19:23:31.221Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3127,6 +3127,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-26T16:10:54.727Z"
+        },
+        "8619887508": {
+          "userId": 8619887508,
+          "username": "ttttaahaa",
+          "firstName": "طـــ𝓣𝓪♡𝓱𝓪ـــه ✨🤍",
+          "role": "member",
+          "joinedAt": "2026-05-31T19:22:31.696Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-05-31T19:22:31.696Z"
         }
       },
       "admins": {},
@@ -10870,6 +10880,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-31T15:11:12.040Z",
           "lastSeen": "2026-05-31T15:11:12.040Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8619887508": {
+      "userId": 8619887508,
+      "username": "ttttaahaa",
+      "firstName": "طـــ𝓣𝓪♡𝓱𝓪ـــه ✨🤍",
+      "lastName": "",
+      "profileLink": "https://t.me/ttttaahaa",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-05-31T19:22:31.696Z",
+      "lastSeen": "2026-05-31T19:22:31.696Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003750270631": {
+          "chatId": -1003750270631,
+          "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+          "chatType": "supergroup",
+          "firstSeen": "2026-05-31T19:22:31.696Z",
+          "lastSeen": "2026-05-31T19:22:31.696Z"
         }
       },
       "contactedBot": false,
