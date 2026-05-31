@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-05-31T18:53:31.221Z",
+  "savedAt": "2026-05-31T18:59:39.734Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1129,16 +1129,6 @@
           "firstName": "Tkadpg",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:46.854Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8502792009": {
-          "userId": 8502792009,
-          "username": "",
-          "firstName": "Charles",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:46.952Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8015,10 +8005,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:46.952Z",
-      "lastSeen": "2026-05-18T20:51:46.952Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-05-31T18:59:38.731Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
