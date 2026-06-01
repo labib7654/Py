@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-01T15:09:36.655Z",
+  "savedAt": "2026-06-01T15:11:37.050Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -10956,6 +10956,24 @@
           "lastSeen": "2026-06-01T11:51:19.693Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6422832472": {
+      "userId": 6422832472,
+      "username": "",
+      "firstName": "أصل العرب",
+      "lastName": "",
+      "profileLink": "tg://user?id=6422832472",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-01T15:11:36.049Z",
+      "lastSeen": "2026-06-01T15:11:36.049Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
