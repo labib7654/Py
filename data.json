@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-01T21:48:58.858Z",
+  "savedAt": "2026-06-01T21:52:13.645Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -222,16 +222,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-19T15:18:32.370Z"
-        },
-        "1456265014": {
-          "userId": 1456265014,
-          "username": "",
-          "firstName": "manish kumar",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:54.235Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:02.356Z"
         },
         "1512857932": {
           "userId": 1512857932,
@@ -3668,10 +3658,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:54.234Z",
-      "lastSeen": "2026-05-18T14:21:02.356Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-01T21:52:12.643Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
