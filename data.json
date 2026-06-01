@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-01T12:33:31.245Z",
+  "savedAt": "2026-06-01T12:35:36.618Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1762,8 +1762,8 @@
           "userId": 8453216245,
           "username": "",
           "firstName": "متعب",
-          "status": "rejected_bot_blocked",
-          "requestedAt": "2026-06-01T00:48:33.081Z"
+          "status": "pending_verify",
+          "requestedAt": "2026-06-01T12:35:35.173Z"
         },
         "8723920005": {
           "userId": 8723920005,
@@ -10698,8 +10698,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-24T13:54:56.861Z",
-      "lastSeen": "2026-06-01T00:48:34.803Z",
-      "groups": [],
+      "lastSeen": "2026-06-01T12:35:35.173Z",
+      "groups": [
+        -1003969494192
+      ],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
