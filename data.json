@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-02T19:03:31.284Z",
+  "savedAt": "2026-06-02T19:13:17.839Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -522,16 +522,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:20:56.141Z"
-        },
-        "8484144128": {
-          "userId": 8484144128,
-          "username": "",
-          "firstName": "ካሀኒ ፌረንቶ",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:52.642Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:20:56.888Z"
         },
         "6300973110": {
           "userId": 6300973110,
@@ -4989,10 +4979,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:52.641Z",
-      "lastSeen": "2026-05-18T14:20:56.888Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-02T19:13:16.838Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
