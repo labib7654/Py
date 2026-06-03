@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-03T18:43:31.335Z",
+  "savedAt": "2026-06-03T18:49:04.462Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -292,16 +292,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:05.671Z"
-        },
-        "2074363618": {
-          "userId": 2074363618,
-          "username": "",
-          "firstName": "Min Htet",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:48.251Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
         },
         "8607336247": {
           "userId": 8607336247,
@@ -3929,10 +3919,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:48.251Z",
-      "lastSeen": "2026-05-18T20:51:48.251Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-03T18:49:03.461Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
