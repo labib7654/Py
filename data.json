@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-03T18:41:05.001Z",
+  "savedAt": "2026-06-03T18:41:20.742Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1039,16 +1039,6 @@
           "firstName": "Morad",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:47.358Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "7505082330": {
-          "userId": 7505082330,
-          "username": "SuzanneWilliamsg38",
-          "firstName": "Таисия",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:47.558Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8057,10 +8047,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:47.558Z",
-      "lastSeen": "2026-05-18T20:51:47.558Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-03T18:41:19.742Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
