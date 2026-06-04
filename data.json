@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-04T20:03:40.057Z",
+  "savedAt": "2026-06-04T20:06:36.381Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1435,6 +1435,13 @@
           "firstName": "رغد يحيى",
           "status": "rejected_bot_blocked",
           "requestedAt": "2026-05-31T15:11:10.386Z"
+        },
+        "8268941970": {
+          "userId": 8268941970,
+          "username": "",
+          "firstName": "Egypt 2026 🖤",
+          "status": "rejected_bot_blocked",
+          "requestedAt": "2026-06-04T20:06:33.040Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -3878,7 +3885,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-06-04T19:58:27.825Z",
+      "lastSeen": "2026-06-04T20:06:35.380Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10590,6 +10597,32 @@
           "chatType": "supergroup",
           "firstSeen": "2026-06-02T19:55:30.198Z",
           "lastSeen": "2026-06-02T19:55:30.914Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8268941970": {
+      "userId": 8268941970,
+      "username": "",
+      "firstName": "Egypt 2026 🖤",
+      "lastName": "Новиков",
+      "profileLink": "tg://user?id=8268941970",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-04T20:06:33.039Z",
+      "lastSeen": "2026-06-04T20:06:34.440Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {
+        "-1003969494192": {
+          "chatId": -1003969494192,
+          "chatTitle": "مجتمع جامعة الامير سلطان",
+          "chatType": "supergroup",
+          "firstSeen": "2026-06-04T20:06:34.440Z",
+          "lastSeen": "2026-06-04T20:06:34.440Z"
         }
       },
       "contactedBot": false,
