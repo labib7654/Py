@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-04T13:43:31.375Z",
+  "savedAt": "2026-06-04T13:45:25.646Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -989,16 +989,6 @@
           "firstName": "Etzuz",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:48.957Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "7995297978": {
-          "userId": 7995297978,
-          "username": "",
-          "firstName": "narathip",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:48.959Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8547,10 +8537,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:48.959Z",
-      "lastSeen": "2026-05-18T20:51:48.959Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-04T13:45:24.643Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
