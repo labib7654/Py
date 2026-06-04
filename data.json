@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-04T13:33:31.374Z",
+  "savedAt": "2026-06-04T13:36:36.933Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -652,16 +652,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:07.235Z"
-        },
-        "7660969866": {
-          "userId": 7660969866,
-          "username": "",
-          "firstName": "Yyeu",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:58.083Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:07.399Z"
         },
         "8461305155": {
           "userId": 8461305155,
@@ -6295,10 +6285,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:58.083Z",
-      "lastSeen": "2026-05-18T14:21:07.399Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-04T13:36:35.931Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
