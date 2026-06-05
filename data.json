@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-05T15:49:43.995Z",
+  "savedAt": "2026-06-05T15:49:53.957Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -929,16 +929,6 @@
           "firstName": "спайдер",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:48.455Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8356447572": {
-          "userId": 8356447572,
-          "username": "squarrqt",
-          "firstName": "Astrid",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:48.554Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8346,10 +8336,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:48.553Z",
-      "lastSeen": "2026-05-18T20:51:48.554Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-05T15:49:52.956Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
