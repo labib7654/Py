@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-05T15:49:16.140Z",
+  "savedAt": "2026-06-05T15:49:43.995Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -969,16 +969,6 @@
           "firstName": "curly",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:49.287Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8759820038": {
-          "userId": 8759820038,
-          "username": "",
-          "firstName": "Pghjseopjh",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:49.454Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8806,10 +8796,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:49.454Z",
-      "lastSeen": "2026-05-18T20:51:49.454Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-05T15:49:42.995Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
