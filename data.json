@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-05T11:33:31.414Z",
+  "savedAt": "2026-06-05T11:35:41.129Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2832,6 +2832,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-06-05T11:28:33.062Z"
+        },
+        "6672821819": {
+          "userId": 6672821819,
+          "username": "boooom5i5",
+          "firstName": "A.Sliman bom",
+          "role": "member",
+          "joinedAt": "2026-06-05T11:33:56.869Z",
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-06-05T11:34:15.787Z"
         }
       },
       "admins": {},
@@ -10673,6 +10683,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-06-05T11:28:33.062Z",
           "lastSeen": "2026-06-05T11:28:33.062Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6672821819": {
+      "userId": 6672821819,
+      "username": "boooom5i5",
+      "firstName": "A.Sliman bom",
+      "lastName": "",
+      "profileLink": "https://t.me/boooom5i5",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-05T11:33:56.869Z",
+      "lastSeen": "2026-06-05T11:34:15.787Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003750270631": {
+          "chatId": -1003750270631,
+          "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+          "chatType": "supergroup",
+          "firstSeen": "2026-06-05T11:33:56.869Z",
+          "lastSeen": "2026-06-05T11:34:15.787Z"
         }
       },
       "contactedBot": false,
