@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-06T21:23:31.521Z",
+  "savedAt": "2026-06-06T21:29:41.370Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2619,9 +2619,9 @@
           "firstName": "Group",
           "role": "member",
           "joinedAt": "2026-05-19T16:31:04.782Z",
-          "messageCount": 196,
-          "score": 196,
-          "lastMessageAt": "2026-06-06T20:39:36.011Z"
+          "messageCount": 197,
+          "score": 197,
+          "lastMessageAt": "2026-06-06T21:29:16.061Z"
         },
         "1750996932": {
           "userId": 1750996932,
@@ -2779,9 +2779,9 @@
           "firstName": "سًـيّف آلَآسًـلَآم آلَدُهِمِـيّ",
           "role": "member",
           "joinedAt": "2026-06-05T22:49:07.222Z",
-          "messageCount": 4,
-          "score": 4,
-          "lastMessageAt": "2026-06-06T21:16:00.744Z"
+          "messageCount": 5,
+          "score": 5,
+          "lastMessageAt": "2026-06-06T21:29:01.787Z"
         }
       },
       "admins": {},
@@ -3149,7 +3149,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T13:49:52.695Z",
-      "lastSeen": "2026-06-06T20:39:36.011Z",
+      "lastSeen": "2026-06-06T21:29:16.061Z",
       "groups": [
         -1003969494192,
         -1003750270631,
@@ -10653,7 +10653,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-06-05T22:49:07.222Z",
-      "lastSeen": "2026-06-06T21:16:00.744Z",
+      "lastSeen": "2026-06-06T21:29:01.787Z",
       "groups": [
         -1003750270631
       ],
@@ -10664,7 +10664,7 @@
           "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
           "chatType": "supergroup",
           "firstSeen": "2026-06-05T22:49:07.223Z",
-          "lastSeen": "2026-06-06T21:16:00.744Z"
+          "lastSeen": "2026-06-06T21:29:01.787Z"
         }
       },
       "contactedBot": false,
