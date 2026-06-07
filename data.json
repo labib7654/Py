@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-07T19:06:18.392Z",
+  "savedAt": "2026-06-07T19:07:16.816Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -482,16 +482,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:20:58.093Z"
-        },
-        "6965268503": {
-          "userId": 6965268503,
-          "username": "",
-          "firstName": "Syahfieq",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:53.337Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:20:58.767Z"
         },
         "7971234567": {
           "userId": 7971234567,
@@ -4902,10 +4892,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:53.337Z",
-      "lastSeen": "2026-05-18T14:20:58.767Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-07T19:07:15.815Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
