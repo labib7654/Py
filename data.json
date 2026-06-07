@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-07T19:34:06.575Z",
+  "savedAt": "2026-06-07T19:36:40.289Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -699,16 +699,6 @@
           "firstName": "Tbspekdtwv",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:46.258Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "7086831803": {
-          "userId": 7086831803,
-          "username": "",
-          "firstName": "Nana",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:46.354Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -7154,10 +7144,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:46.354Z",
-      "lastSeen": "2026-05-18T20:51:46.354Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-07T19:36:39.287Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
