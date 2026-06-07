@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-07T19:15:23.617Z",
+  "savedAt": "2026-06-07T19:15:33.753Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -729,16 +729,6 @@
           "firstName": "Iuptftzabz",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:45.628Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "7311358377": {
-          "userId": 7311358377,
-          "username": "Yakiroslej",
-          "firstName": "Farest kill",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:46.182Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -7068,10 +7058,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:46.180Z",
-      "lastSeen": "2026-05-18T20:51:46.182Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-07T19:15:32.752Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
