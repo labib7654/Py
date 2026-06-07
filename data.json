@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-07T19:23:31.598Z",
+  "savedAt": "2026-06-07T19:29:21.091Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -462,16 +462,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:20:58.093Z"
-        },
-        "7971234567": {
-          "userId": 7971234567,
-          "username": "",
-          "firstName": "Jieel",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:53.429Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:20:59.106Z"
         },
         "6787806049": {
           "userId": 6787806049,
@@ -4854,10 +4844,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:53.429Z",
-      "lastSeen": "2026-05-18T14:20:59.106Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-07T19:29:20.091Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
