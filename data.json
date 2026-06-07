@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-07T19:07:16.816Z",
+  "savedAt": "2026-06-07T19:07:18.946Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -512,16 +512,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:01.192Z"
-        },
-        "5716781916": {
-          "userId": 5716781916,
-          "username": "",
-          "firstName": "อีลียะห์",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:54.233Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:01.858Z"
         },
         "7584932055": {
           "userId": 7584932055,
@@ -5470,10 +5460,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:54.233Z",
-      "lastSeen": "2026-05-18T14:21:01.858Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-07T19:07:17.945Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
