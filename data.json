@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-07T01:53:31.534Z",
+  "savedAt": "2026-06-07T02:01:41.429Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2779,9 +2779,9 @@
           "firstName": "سًـيّف آلَآسًـلَآم آلَدُهِمِـيّ",
           "role": "member",
           "joinedAt": "2026-06-05T22:49:07.222Z",
-          "messageCount": 7,
-          "score": 7,
-          "lastMessageAt": "2026-06-06T23:50:56.715Z"
+          "messageCount": 8,
+          "score": 8,
+          "lastMessageAt": "2026-06-07T01:59:55.446Z"
         }
       },
       "admins": {},
@@ -10653,7 +10653,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-06-05T22:49:07.222Z",
-      "lastSeen": "2026-06-06T23:50:56.715Z",
+      "lastSeen": "2026-06-07T01:59:55.447Z",
       "groups": [
         -1003750270631
       ],
@@ -10664,7 +10664,7 @@
           "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
           "chatType": "supergroup",
           "firstSeen": "2026-06-05T22:49:07.223Z",
-          "lastSeen": "2026-06-06T23:50:56.715Z"
+          "lastSeen": "2026-06-07T01:59:55.447Z"
         }
       },
       "contactedBot": false,
