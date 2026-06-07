@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-07T19:36:40.289Z",
+  "savedAt": "2026-06-07T19:39:18.446Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -432,16 +432,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:20:54.224Z"
-        },
-        "7053369381": {
-          "userId": 7053369381,
-          "username": "Nardakadam",
-          "firstName": "Nardak",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:52.526Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:20:55.974Z"
         },
         "7787956656": {
           "userId": 7787956656,
@@ -4450,10 +4440,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:52.526Z",
-      "lastSeen": "2026-05-18T14:20:55.974Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-07T19:39:17.446Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
