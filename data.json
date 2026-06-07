@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-07T19:33:31.598Z",
+  "savedAt": "2026-06-07T19:33:46.338Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -719,16 +719,6 @@
           "firstName": "Nana",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:46.354Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8537248695": {
-          "userId": 8537248695,
-          "username": "",
-          "firstName": "Hplzb",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:46.357Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -7224,10 +7214,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:46.357Z",
-      "lastSeen": "2026-05-18T20:51:46.357Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-07T19:33:45.337Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
