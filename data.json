@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-07T19:05:51.285Z",
+  "savedAt": "2026-06-07T19:05:53.203Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -472,16 +472,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:20:56.141Z"
-        },
-        "6300973110": {
-          "userId": 6300973110,
-          "username": "",
-          "firstName": "SIBERI",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:52.825Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:20:57.405Z"
         },
         "8430792194": {
           "userId": 8430792194,
@@ -4774,10 +4764,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:52.825Z",
-      "lastSeen": "2026-05-18T14:20:57.406Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-07T19:05:52.202Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
