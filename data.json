@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-09T19:43:31.804Z",
+  "savedAt": "2026-06-09T19:48:42.077Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -172,16 +172,6 @@
           "messageCount": 8,
           "score": 8,
           "lastMessageAt": "2026-05-18T15:00:49.447Z"
-        },
-        "1032892579": {
-          "userId": 1032892579,
-          "username": "vqanxcjJ",
-          "firstName": "Feyera",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:49.358Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
         },
         "1087968824": {
           "userId": 1087968824,
@@ -2921,10 +2911,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:49.358Z",
-      "lastSeen": "2026-05-18T20:51:49.358Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-09T19:48:41.075Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
