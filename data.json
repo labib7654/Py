@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-10T22:53:31.926Z",
+  "savedAt": "2026-06-10T22:55:46.108Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2565,13 +2565,13 @@
         },
         "7937203587": {
           "userId": 7937203587,
-          "username": "",
+          "username": "kenan35f",
           "firstName": "سًـيّف آلَآسًـلَآم آلَدُهِمِـيّ",
           "role": "member",
           "joinedAt": "2026-06-05T22:49:07.222Z",
-          "messageCount": 33,
-          "score": 33,
-          "lastMessageAt": "2026-06-09T18:44:44.618Z"
+          "messageCount": 34,
+          "score": 34,
+          "lastMessageAt": "2026-06-10T22:54:36.807Z"
         }
       },
       "admins": {},
@@ -10391,15 +10391,15 @@
     },
     "7937203587": {
       "userId": 7937203587,
-      "username": "",
+      "username": "kenan35f",
       "firstName": "سًـيّف آلَآسًـلَآم آلَدُهِمِـيّ",
       "lastName": "",
-      "profileLink": "tg://user?id=7937203587",
+      "profileLink": "https://t.me/kenan35f",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-06-05T22:49:07.222Z",
-      "lastSeen": "2026-06-09T18:44:44.618Z",
+      "lastSeen": "2026-06-10T22:54:36.807Z",
       "groups": [
         -1003750270631
       ],
@@ -10410,7 +10410,7 @@
           "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
           "chatType": "supergroup",
           "firstSeen": "2026-06-05T22:49:07.223Z",
-          "lastSeen": "2026-06-09T18:44:44.618Z"
+          "lastSeen": "2026-06-10T22:54:36.807Z"
         }
       },
       "contactedBot": false,
