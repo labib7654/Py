@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-11T02:03:31.947Z",
+  "savedAt": "2026-06-11T02:05:46.114Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1683,9 +1683,9 @@
           "firstName": "☫نبراس ☫",
           "role": "member",
           "joinedAt": "2026-05-18T00:22:45.230Z",
-          "messageCount": 50,
-          "score": 50,
-          "lastMessageAt": "2026-06-11T00:38:11.920Z"
+          "messageCount": 51,
+          "score": 51,
+          "lastMessageAt": "2026-06-11T02:04:02.065Z"
         },
         "8240566312": {
           "userId": 8240566312,
@@ -2569,9 +2569,9 @@
           "firstName": "سًـيّف آلَآسًـلَآم آلَدُهِمِـيّ",
           "role": "member",
           "joinedAt": "2026-06-05T22:49:07.222Z",
-          "messageCount": 37,
-          "score": 37,
-          "lastMessageAt": "2026-06-11T01:37:29.703Z"
+          "messageCount": 38,
+          "score": 38,
+          "lastMessageAt": "2026-06-11T02:04:32.907Z"
         }
       },
       "admins": {},
@@ -3954,7 +3954,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:22:45.032Z",
-      "lastSeen": "2026-06-11T00:38:11.920Z",
+      "lastSeen": "2026-06-11T02:04:02.066Z",
       "groups": [
         -1002985211839
       ],
@@ -3965,7 +3965,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:22:45.230Z",
-          "lastSeen": "2026-06-11T00:38:11.920Z"
+          "lastSeen": "2026-06-11T02:04:02.066Z"
         }
       },
       "contactedBot": false,
@@ -10399,7 +10399,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-06-05T22:49:07.222Z",
-      "lastSeen": "2026-06-11T01:37:29.703Z",
+      "lastSeen": "2026-06-11T02:04:32.907Z",
       "groups": [
         -1003750270631
       ],
@@ -10410,7 +10410,7 @@
           "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
           "chatType": "supergroup",
           "firstSeen": "2026-06-05T22:49:07.223Z",
-          "lastSeen": "2026-06-11T01:37:29.703Z"
+          "lastSeen": "2026-06-11T02:04:32.907Z"
         }
       },
       "contactedBot": false,
