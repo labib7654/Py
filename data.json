@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-13T21:43:32.377Z",
+  "savedAt": "2026-06-13T21:45:47.039Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1663,9 +1663,9 @@
           "firstName": "☫نبراس ☫",
           "role": "member",
           "joinedAt": "2026-05-18T00:22:45.230Z",
-          "messageCount": 60,
-          "score": 60,
-          "lastMessageAt": "2026-06-12T20:48:42.758Z"
+          "messageCount": 61,
+          "score": 61,
+          "lastMessageAt": "2026-06-13T21:44:39.086Z"
         },
         "8240566312": {
           "userId": 8240566312,
@@ -2389,9 +2389,9 @@
           "firstName": "Group",
           "role": "member",
           "joinedAt": "2026-05-19T16:31:04.782Z",
-          "messageCount": 410,
-          "score": 410,
-          "lastMessageAt": "2026-06-13T21:18:46.894Z"
+          "messageCount": 411,
+          "score": 411,
+          "lastMessageAt": "2026-06-13T21:44:29.129Z"
         },
         "1750996932": {
           "userId": 1750996932,
@@ -2927,7 +2927,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T13:49:52.695Z",
-      "lastSeen": "2026-06-13T21:18:46.894Z",
+      "lastSeen": "2026-06-13T21:44:29.129Z",
       "groups": [
         -1003969494192,
         -1003750270631,
@@ -3942,7 +3942,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:22:45.032Z",
-      "lastSeen": "2026-06-12T20:48:42.758Z",
+      "lastSeen": "2026-06-13T21:44:39.089Z",
       "groups": [
         -1002985211839
       ],
@@ -3953,7 +3953,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:22:45.230Z",
-          "lastSeen": "2026-06-12T20:48:42.758Z"
+          "lastSeen": "2026-06-13T21:44:39.089Z"
         }
       },
       "contactedBot": false,
