@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-13T22:13:32.381Z",
+  "savedAt": "2026-06-13T22:23:32.383Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1663,9 +1663,9 @@
           "firstName": "☫نبراس ☫",
           "role": "member",
           "joinedAt": "2026-05-18T00:22:45.230Z",
-          "messageCount": 61,
-          "score": 61,
-          "lastMessageAt": "2026-06-13T21:44:39.086Z"
+          "messageCount": 62,
+          "score": 62,
+          "lastMessageAt": "2026-06-13T22:22:05.051Z"
         },
         "8240566312": {
           "userId": 8240566312,
@@ -1723,9 +1723,9 @@
           "firstName": "☠️ا̶ل̶ق̶ا̶ئد̶ م̶ح̶م̶د̶☠️",
           "role": "admin",
           "joinedAt": "2026-05-27T11:56:31.515Z",
-          "messageCount": 33,
-          "score": 33,
-          "lastMessageAt": "2026-06-11T03:02:33.418Z"
+          "messageCount": 34,
+          "score": 34,
+          "lastMessageAt": "2026-06-13T22:22:05.295Z"
         },
         "7184634055": {
           "userId": 7184634055,
@@ -3942,7 +3942,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T00:22:45.032Z",
-      "lastSeen": "2026-06-13T21:44:39.089Z",
+      "lastSeen": "2026-06-13T22:22:05.051Z",
       "groups": [
         -1002985211839
       ],
@@ -3953,7 +3953,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T00:22:45.230Z",
-          "lastSeen": "2026-06-13T21:44:39.089Z"
+          "lastSeen": "2026-06-13T22:22:05.051Z"
         }
       },
       "contactedBot": false,
@@ -10037,7 +10037,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-27T11:56:31.515Z",
-      "lastSeen": "2026-06-11T03:02:33.418Z",
+      "lastSeen": "2026-06-13T22:22:05.295Z",
       "groups": [
         -1002985211839
       ],
@@ -10048,7 +10048,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-05-27T11:56:31.515Z",
-          "lastSeen": "2026-06-11T03:02:33.418Z"
+          "lastSeen": "2026-06-13T22:22:05.295Z"
         }
       },
       "contactedBot": false,
