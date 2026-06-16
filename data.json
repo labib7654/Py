@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-16T20:25:50.162Z",
+  "savedAt": "2026-06-16T20:27:50.161Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1009,9 +1009,9 @@
           "firstName": "Sasha",
           "role": "member",
           "joinedAt": "2026-06-16T20:24:50.716Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-06-16T20:26:22.205Z"
         }
       },
       "admins": {},
@@ -1152,6 +1152,14 @@
           "firstName": "Egypt 2026 🖤",
           "status": "rejected_bot_blocked",
           "requestedAt": "2026-06-04T20:06:33.040Z"
+        },
+        "8305808609": {
+          "userId": 8305808609,
+          "username": "",
+          "firstName": "Sasha",
+          "status": "pending_verify",
+          "requestedAt": "2026-06-16T20:26:22.552Z",
+          "isExistingMember": true
         }
       },
       "joinRequestsEnabled": true,
@@ -3677,7 +3685,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-06-06T17:16:14.433Z",
+      "lastSeen": "2026-06-16T20:26:22.721Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10631,7 +10639,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-06-16T20:24:50.716Z",
-      "lastSeen": "2026-06-16T20:24:50.716Z",
+      "lastSeen": "2026-06-16T20:26:22.206Z",
       "groups": [
         -1003969494192
       ],
@@ -10642,7 +10650,7 @@
           "chatTitle": "مجتمع جامعة الامير سلطان",
           "chatType": "supergroup",
           "firstSeen": "2026-06-16T20:24:50.716Z",
-          "lastSeen": "2026-06-16T20:24:50.716Z"
+          "lastSeen": "2026-06-16T20:26:22.206Z"
         }
       },
       "contactedBot": false,
