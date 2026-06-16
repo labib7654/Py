@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-16T05:13:32.865Z",
+  "savedAt": "2026-06-16T05:19:49.613Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2809,6 +2809,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-06-02T19:55:30.913Z"
+        },
+        "8825048402": {
+          "userId": 8825048402,
+          "username": "",
+          "firstName": "Mahya",
+          "role": "member",
+          "joinedAt": "2026-06-16T05:19:38.698Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-06-16T05:19:39.403Z"
         }
       },
       "admins": {},
@@ -10529,6 +10539,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-06-15T20:44:37.373Z",
           "lastSeen": "2026-06-15T21:53:06.200Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8825048402": {
+      "userId": 8825048402,
+      "username": "",
+      "firstName": "Mahya",
+      "lastName": "roses",
+      "profileLink": "tg://user?id=8825048402",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-16T05:19:38.697Z",
+      "lastSeen": "2026-06-16T05:19:43.823Z",
+      "groups": [
+        -1003334375214
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003334375214": {
+          "chatId": -1003334375214,
+          "chatTitle": "قناة بوت خدمات يمن",
+          "chatType": "supergroup",
+          "firstSeen": "2026-06-16T05:19:38.698Z",
+          "lastSeen": "2026-06-16T05:19:39.404Z"
         }
       },
       "contactedBot": false,
