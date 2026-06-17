@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-17T18:33:33.239Z",
+  "savedAt": "2026-06-17T18:38:32.364Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -552,16 +552,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:08.852Z"
-        },
-        "8290664728": {
-          "userId": 8290664728,
-          "username": "angieportillo_92",
-          "firstName": "Angela",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:21:10.284Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:10.322Z"
         },
         "6789413385": {
           "userId": 6789413385,
@@ -6302,10 +6292,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:21:10.284Z",
-      "lastSeen": "2026-05-18T14:21:10.322Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-17T18:38:31.364Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
