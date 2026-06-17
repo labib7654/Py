@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-17T19:23:33.246Z",
+  "savedAt": "2026-06-17T19:25:33.036Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -649,16 +649,6 @@
           "firstName": "Abdul",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:47.856Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8766499621": {
-          "userId": 8766499621,
-          "username": "xpgzloy",
-          "firstName": "спайдер",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:48.455Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -7982,10 +7972,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:48.451Z",
-      "lastSeen": "2026-05-18T20:51:48.455Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-17T19:25:32.036Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
