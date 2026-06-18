@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-18T22:45:50.634Z",
+  "savedAt": "2026-06-18T22:51:30.993Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -799,16 +799,6 @@
           "firstName": "بدور 🌕",
           "role": "member",
           "joinedAt": "2026-05-20T09:24:21.741Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8058591410": {
-          "userId": 8058591410,
-          "username": "TGJOOBOWNER",
-          "firstName": "امل ~",
-          "role": "member",
-          "joinedAt": "2026-05-21T08:11:29.469Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -9520,10 +9510,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-21T08:11:29.469Z",
-      "lastSeen": "2026-05-21T08:11:29.469Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-18T22:51:29.991Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
