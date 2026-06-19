@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-19T16:23:33.799Z",
+  "savedAt": "2026-06-19T16:31:51.076Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1567,13 +1567,13 @@
         },
         "8754860295": {
           "userId": 8754860295,
-          "username": "A_1_8_63",
+          "username": "l_0_25",
           "firstName": "☠️ا̶ل̶ق̶ا̶ئد̶ م̶ح̶م̶د̶☠️",
           "role": "admin",
           "joinedAt": "2026-05-27T11:56:31.515Z",
-          "messageCount": 35,
-          "score": 35,
-          "lastMessageAt": "2026-06-14T11:13:06.644Z"
+          "messageCount": 37,
+          "score": 37,
+          "lastMessageAt": "2026-06-19T16:30:46.754Z"
         },
         "7184634055": {
           "userId": 7184634055,
@@ -9885,15 +9885,15 @@
     },
     "8754860295": {
       "userId": 8754860295,
-      "username": "A_1_8_63",
+      "username": "l_0_25",
       "firstName": "☠️ا̶ل̶ق̶ا̶ئد̶ م̶ح̶م̶د̶☠️",
       "lastName": "",
-      "profileLink": "https://t.me/A_1_8_63",
+      "profileLink": "https://t.me/l_0_25",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-27T11:56:31.515Z",
-      "lastSeen": "2026-06-14T11:13:06.644Z",
+      "lastSeen": "2026-06-19T16:30:46.756Z",
       "groups": [
         -1002985211839
       ],
@@ -9904,7 +9904,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-05-27T11:56:31.515Z",
-          "lastSeen": "2026-06-14T11:13:06.644Z"
+          "lastSeen": "2026-06-19T16:30:46.756Z"
         }
       },
       "contactedBot": false,
