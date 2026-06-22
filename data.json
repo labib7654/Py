@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-22T14:35:57.130Z",
+  "savedAt": "2026-06-22T14:40:27.102Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2717,6 +2717,59 @@
         "rejectedMembers": {},
         "cooldowns": {}
       }
+    },
+    "-1003749840515": {
+      "chatId": -1003749840515,
+      "title": "⁨.⁩، ⁨جامعة⁩ و ⁨ㅤㅤㅤㅤ⁩",
+      "type": "supergroup",
+      "ownerId": null,
+      "ownerUsername": "",
+      "ownerVerified": false,
+      "ownerVerifiedAt": null,
+      "addedBy": 0,
+      "addedByUsername": "auto-detected",
+      "addedAt": "2026-06-22T14:40:26.102Z",
+      "members": {},
+      "admins": {},
+      "warns": {},
+      "maxWarns": 3,
+      "welcomeMessage": "👋 مرحباً {name} في {group}!\nنتمنى لك وقتاً ممتعاً.",
+      "welcomeEnabled": true,
+      "antiSpam": false,
+      "muteNewMembers": false,
+      "mutedUsers": [],
+      "bannedUsers": [],
+      "bannedWords": [],
+      "specialistWords": [],
+      "wordViolations": {},
+      "joinRequests": {},
+      "joinRequestsEnabled": false,
+      "autoApproveJoin": false,
+      "rules": "",
+      "communityId": null,
+      "protectContent": false,
+      "antiLinks": false,
+      "antiBot": false,
+      "logChannelId": null,
+      "timedMutes": {},
+      "timedBans": {},
+      "joinRequestCooldown": {},
+      "topics": {},
+      "topicSettings": {
+        "requireApprovalToJoin": false,
+        "autoLockOnCreate": false,
+        "ownerBypassAll": true
+      },
+      "perms": {
+        "canSendMessages": true,
+        "canSendMedia": true,
+        "canSendPolls": true,
+        "canAddWebPreviews": true,
+        "canInviteUsers": true,
+        "canPinMessages": false,
+        "canManageTopics": false
+      },
+      "auditLog": []
     }
   },
   "channels": {},
@@ -2751,7 +2804,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T11:02:00.806Z",
-      "lastSeen": "2026-06-22T14:35:56.127Z",
+      "lastSeen": "2026-06-22T14:40:26.078Z",
       "groups": [],
       "channels": [],
       "seenInChats": {
