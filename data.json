@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-23T16:03:35.367Z",
+  "savedAt": "2026-06-23T16:11:52.950Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1568,12 +1568,12 @@
         "7184634055": {
           "userId": 7184634055,
           "username": "TV_lV",
-          "firstName": "معتز مان⁵⁵",
+          "firstName": "🎩",
           "role": "member",
           "joinedAt": "2026-05-27T18:19:58.810Z",
-          "messageCount": 12,
-          "score": 12,
-          "lastMessageAt": "2026-05-27T18:20:01.249Z"
+          "messageCount": 13,
+          "score": 13,
+          "lastMessageAt": "2026-06-23T16:11:19.746Z"
         },
         "8075626041": {
           "userId": 8075626041,
@@ -1701,6 +1701,14 @@
           "firstName": "الأيام القادمة سنخوضها برعاية الله",
           "status": "pending_verify",
           "requestedAt": "2026-06-01T11:51:20.417Z",
+          "isExistingMember": true
+        },
+        "7184634055": {
+          "userId": 7184634055,
+          "username": "TV_lV",
+          "firstName": "🎩",
+          "status": "pending_verify",
+          "requestedAt": "2026-06-23T16:11:20.470Z",
           "isExistingMember": true
         }
       },
@@ -3562,7 +3570,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-06-16T20:26:22.721Z",
+      "lastSeen": "2026-06-23T16:11:20.533Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -9965,14 +9973,14 @@
     "7184634055": {
       "userId": 7184634055,
       "username": "TV_lV",
-      "firstName": "معتز مان⁵⁵",
+      "firstName": "🎩",
       "lastName": "",
       "profileLink": "https://t.me/TV_lV",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-27T18:19:58.810Z",
-      "lastSeen": "2026-05-27T18:20:01.249Z",
+      "lastSeen": "2026-06-23T16:11:19.748Z",
       "groups": [
         -1002985211839
       ],
@@ -9983,7 +9991,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-05-27T18:19:58.810Z",
-          "lastSeen": "2026-05-27T18:20:01.249Z"
+          "lastSeen": "2026-06-23T16:11:19.748Z"
         }
       },
       "contactedBot": false,
