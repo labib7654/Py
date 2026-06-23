@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-23T16:13:35.371Z",
+  "savedAt": "2026-06-23T16:15:27.948Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -9945,14 +9945,14 @@
     "8754860295": {
       "userId": 8754860295,
       "username": "l_0_25",
-      "firstName": "☠️ا̶ل̶ق̶ا̶ئد̶ م̶ح̶م̶د̶☠️",
+      "firstName": "آنــعــزآلَ نـــهِآئي",
       "lastName": "",
       "profileLink": "https://t.me/l_0_25",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-27T11:56:31.515Z",
-      "lastSeen": "2026-06-19T16:30:46.756Z",
+      "lastSeen": "2026-06-23T16:15:26.947Z",
       "groups": [
         -1002985211839
       ],
@@ -10534,6 +10534,32 @@
           "chatType": "supergroup",
           "firstSeen": "2026-06-23T12:53:10.131Z",
           "lastSeen": "2026-06-23T13:26:22.426Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8612801193": {
+      "userId": 8612801193,
+      "username": "",
+      "firstName": "القائد محمد",
+      "lastName": "",
+      "profileLink": "tg://user?id=8612801193",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-23T16:14:32.468Z",
+      "lastSeen": "2026-06-23T16:14:33.153Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-06-23T16:14:32.468Z",
+          "lastSeen": "2026-06-23T16:14:33.153Z"
         }
       },
       "contactedBot": false,
