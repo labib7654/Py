@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-23T13:23:35.314Z",
+  "savedAt": "2026-06-23T13:26:23.266Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2673,10 +2673,10 @@
           "username": "",
           "firstName": "زيد",
           "role": "member",
-          "joinedAt": "2026-06-23T12:53:10.131Z",
+          "joinedAt": "2026-06-23T13:26:22.426Z",
           "messageCount": 1,
           "score": 1,
-          "lastMessageAt": "2026-06-23T12:53:10.918Z"
+          "lastMessageAt": "2026-06-23T13:26:22.426Z"
         }
       },
       "admins": {},
@@ -10514,7 +10514,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-06-23T12:53:10.130Z",
-      "lastSeen": "2026-06-23T12:56:41.757Z",
+      "lastSeen": "2026-06-23T13:26:22.426Z",
       "groups": [
         -1003334375214
       ],
@@ -10525,7 +10525,7 @@
           "chatTitle": "قناة بوت خدمات يمن",
           "chatType": "supergroup",
           "firstSeen": "2026-06-23T12:53:10.131Z",
-          "lastSeen": "2026-06-23T12:53:10.918Z"
+          "lastSeen": "2026-06-23T13:26:22.426Z"
         }
       },
       "contactedBot": false,
