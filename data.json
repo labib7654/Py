@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-24T21:43:36.082Z",
+  "savedAt": "2026-06-24T21:48:05.468Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1647,6 +1647,13 @@
       ],
       "wordViolations": {},
       "joinRequests": {
+        "310689511": {
+          "userId": 310689511,
+          "username": "vv_k_7",
+          "firstName": "Кенан",
+          "status": "rejected_bot_blocked",
+          "requestedAt": "2026-06-24T21:48:01.822Z"
+        },
         "1087968824": {
           "userId": 1087968824,
           "username": "GroupAnonymousBot",
@@ -2812,6 +2819,32 @@
       "contactedBot": false,
       "lastContactAt": null
     },
+    "310689511": {
+      "userId": 310689511,
+      "username": "vv_k_7",
+      "firstName": "Кенан",
+      "lastName": "",
+      "profileLink": "https://t.me/vv_k_7",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-24T21:48:01.821Z",
+      "lastSeen": "2026-06-24T21:48:03.535Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-06-24T21:48:03.529Z",
+          "lastSeen": "2026-06-24T21:48:03.535Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
     "808821004": {
       "userId": 808821004,
       "username": "shr5f",
@@ -3570,7 +3603,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-06-23T16:11:20.533Z",
+      "lastSeen": "2026-06-24T21:48:04.467Z",
       "groups": [
         -1003969494192,
         -1003940779079,
