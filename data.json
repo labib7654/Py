@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-24T15:23:35.916Z",
+  "savedAt": "2026-06-24T15:33:35.919Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -10562,6 +10562,26 @@
           "lastSeen": "2026-06-23T16:14:33.153Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6833326944": {
+      "userId": 6833326944,
+      "username": "",
+      "firstName": "ابو غزة",
+      "lastName": "",
+      "profileLink": "tg://user?id=6833326944",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-24T15:28:39.655Z",
+      "lastSeen": "2026-06-24T15:32:24.619Z",
+      "groups": [
+        -1003334375214
+      ],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
