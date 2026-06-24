@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-24T21:57:55.294Z",
+  "savedAt": "2026-06-24T22:00:12.303Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1717,6 +1717,13 @@
           "status": "pending_verify",
           "requestedAt": "2026-06-23T16:11:20.470Z",
           "isExistingMember": true
+        },
+        "8447672619": {
+          "userId": 8447672619,
+          "username": "azxvo",
+          "firstName": "شهم",
+          "status": "rejected_bot_blocked",
+          "requestedAt": "2026-06-24T22:00:08.672Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -3603,7 +3610,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-06-24T21:48:04.467Z",
+      "lastSeen": "2026-06-24T22:00:11.302Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10615,6 +10622,32 @@
       ],
       "channels": [],
       "seenInChats": {},
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8447672619": {
+      "userId": 8447672619,
+      "username": "azxvo",
+      "firstName": "شهم",
+      "lastName": "",
+      "profileLink": "https://t.me/azxvo",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-24T22:00:08.671Z",
+      "lastSeen": "2026-06-24T22:00:10.695Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-06-24T22:00:10.312Z",
+          "lastSeen": "2026-06-24T22:00:10.695Z"
+        }
+      },
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
