@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-25T13:55:56.151Z",
+  "savedAt": "2026-06-25T13:55:57.800Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1594,16 +1594,6 @@
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-06-25T00:54:39.923Z"
-        },
-        "8447672619": {
-          "userId": 8447672619,
-          "username": "azxvo",
-          "firstName": "شهم",
-          "role": "member",
-          "joinedAt": "2026-06-25T13:55:55.485Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-06-25T13:55:55.501Z"
         }
       },
       "admins": {
@@ -3620,7 +3610,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-06-25T13:55:56.085Z",
+      "lastSeen": "2026-06-25T13:55:56.800Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10647,9 +10637,7 @@
       "bannedAt": null,
       "firstSeen": "2026-06-24T22:00:08.671Z",
       "lastSeen": "2026-06-25T13:55:55.501Z",
-      "groups": [
-        -1002985211839
-      ],
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1002985211839": {
