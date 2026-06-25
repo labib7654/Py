@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-25T13:53:36.122Z",
+  "savedAt": "2026-06-25T13:55:56.151Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1594,6 +1594,16 @@
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-06-25T00:54:39.923Z"
+        },
+        "8447672619": {
+          "userId": 8447672619,
+          "username": "azxvo",
+          "firstName": "شهم",
+          "role": "member",
+          "joinedAt": "2026-06-25T13:55:55.485Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-06-25T13:55:55.501Z"
         }
       },
       "admins": {
@@ -1723,7 +1733,7 @@
           "username": "azxvo",
           "firstName": "شهم",
           "status": "rejected_bot_blocked",
-          "requestedAt": "2026-06-24T22:00:08.672Z"
+          "requestedAt": "2026-06-25T13:55:53.721Z"
         }
       },
       "joinRequestsEnabled": true,
@@ -3610,7 +3620,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-06-24T22:00:11.302Z",
+      "lastSeen": "2026-06-25T13:55:56.085Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10636,8 +10646,10 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-06-24T22:00:08.671Z",
-      "lastSeen": "2026-06-24T22:00:10.695Z",
-      "groups": [],
+      "lastSeen": "2026-06-25T13:55:55.501Z",
+      "groups": [
+        -1002985211839
+      ],
       "channels": [],
       "seenInChats": {
         "-1002985211839": {
@@ -10645,7 +10657,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-06-24T22:00:10.312Z",
-          "lastSeen": "2026-06-24T22:00:10.695Z"
+          "lastSeen": "2026-06-25T13:55:55.501Z"
         }
       },
       "contactedBot": false,
