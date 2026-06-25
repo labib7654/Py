@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-25T13:23:36.121Z",
+  "savedAt": "2026-06-25T13:33:36.122Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -10648,6 +10648,26 @@
           "lastSeen": "2026-06-24T22:00:10.695Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "5861235109": {
+      "userId": 5861235109,
+      "username": "",
+      "firstName": "ابو رماح دغيش",
+      "lastName": "",
+      "profileLink": "tg://user?id=5861235109",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-25T13:26:15.624Z",
+      "lastSeen": "2026-06-25T13:26:15.624Z",
+      "groups": [
+        -1003334375214
+      ],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
