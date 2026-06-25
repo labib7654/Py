@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-25T20:53:36.130Z",
+  "savedAt": "2026-06-25T20:59:56.182Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2699,6 +2699,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-06-23T13:26:22.426Z"
+        },
+        "5559464222": {
+          "userId": 5559464222,
+          "username": "",
+          "firstName": "93301",
+          "role": "member",
+          "joinedAt": "2026-06-25T20:59:08.748Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-06-25T20:59:09.484Z"
         }
       },
       "admins": {},
@@ -10668,6 +10678,34 @@
       ],
       "channels": [],
       "seenInChats": {},
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "5559464222": {
+      "userId": 5559464222,
+      "username": "",
+      "firstName": "93301",
+      "lastName": "",
+      "profileLink": "tg://user?id=5559464222",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-25T20:59:08.748Z",
+      "lastSeen": "2026-06-25T20:59:49.246Z",
+      "groups": [
+        -1003334375214
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003334375214": {
+          "chatId": -1003334375214,
+          "chatTitle": "قناة بوت خدمات يمن",
+          "chatType": "supergroup",
+          "firstSeen": "2026-06-25T20:59:08.748Z",
+          "lastSeen": "2026-06-25T20:59:09.484Z"
+        }
+      },
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
