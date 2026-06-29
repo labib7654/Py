@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-29T14:23:36.852Z",
+  "savedAt": "2026-06-29T14:24:09.073Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -432,16 +432,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:06.409Z"
-        },
-        "8292638628": {
-          "userId": 8292638628,
-          "username": "mistyblossoms592",
-          "firstName": "Татьяна",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:56.424Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:06.589Z"
         },
         "8381136170": {
           "userId": 8381136170,
@@ -5795,10 +5785,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:56.424Z",
-      "lastSeen": "2026-05-18T14:21:06.589Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-29T14:24:08.073Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
