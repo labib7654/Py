@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-29T20:53:36.929Z",
+  "savedAt": "2026-06-29T20:55:07.215Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -569,16 +569,6 @@
           "firstName": "Максим",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:49.455Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8488396863": {
-          "userId": 8488396863,
-          "username": "mistyechosMv",
-          "firstName": "Нина",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:49.553Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8631,10 +8621,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:49.552Z",
-      "lastSeen": "2026-05-18T20:51:49.553Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-29T20:55:06.214Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
