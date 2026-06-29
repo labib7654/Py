@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-29T14:33:36.853Z",
+  "savedAt": "2026-06-29T14:34:49.676Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -412,16 +412,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:01.524Z"
-        },
-        "8414285488": {
-          "userId": 8414285488,
-          "username": "whimsicalembrace909",
-          "firstName": "Даниил",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:55.035Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:05.845Z"
         },
         "8509983496": {
           "userId": 8509983496,
@@ -5683,10 +5673,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:55.035Z",
-      "lastSeen": "2026-05-18T14:21:05.845Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-29T14:34:48.674Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
