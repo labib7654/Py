@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-29T20:55:07.215Z",
+  "savedAt": "2026-06-29T20:56:17.165Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -649,16 +649,6 @@
           "firstName": "Леонид",
           "role": "member",
           "joinedAt": "2026-05-18T20:52:05.374Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8333608206": {
-          "userId": 8333608206,
-          "username": "shadowblade648",
-          "firstName": "Мария",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:52:52.312Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -9105,10 +9095,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:52:52.312Z",
-      "lastSeen": "2026-05-18T20:52:52.312Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-29T20:56:16.164Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
