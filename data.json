@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-29T14:27:00.257Z",
+  "savedAt": "2026-06-29T14:28:55.532Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -502,16 +502,6 @@
           "messageCount": 3,
           "score": 3,
           "lastMessageAt": "2026-05-18T14:36:34.897Z"
-        },
-        "7250351770": {
-          "userId": 7250351770,
-          "username": "etherealcanvasFBV",
-          "firstName": "Костик",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:25:54.044Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
         },
         "8337236569": {
           "userId": 8337236569,
@@ -6569,10 +6559,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:25:54.044Z",
-      "lastSeen": "2026-05-18T14:25:54.044Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-29T14:28:54.530Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
