@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-29T20:57:34.495Z",
+  "savedAt": "2026-06-29T20:59:51.764Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -609,16 +609,6 @@
           "firstName": "Артемий",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:51.386Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8542507226": {
-          "userId": 8542507226,
-          "username": "playfulwhirlpooldnx",
-          "firstName": "Лев",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:52.575Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8979,10 +8969,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:52.574Z",
-      "lastSeen": "2026-05-18T20:51:52.575Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-29T20:59:50.762Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
