@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-29T20:56:17.165Z",
+  "savedAt": "2026-06-29T20:56:18.767Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -629,26 +629,6 @@
           "firstName": "Лев",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:52.575Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "7506885900": {
-          "userId": 7506885900,
-          "username": "fourth627130",
-          "firstName": "Влада",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:58.733Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8282271973": {
-          "userId": 8282271973,
-          "username": "radiantstreamerNzb",
-          "firstName": "Леонид",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:52:05.374Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -9039,10 +9019,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:58.733Z",
-      "lastSeen": "2026-05-18T20:51:58.733Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-29T20:56:17.767Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
@@ -9067,10 +9045,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:52:05.374Z",
-      "lastSeen": "2026-05-18T20:52:05.374Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-29T20:56:17.301Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
