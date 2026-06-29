@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-29T20:56:18.767Z",
+  "savedAt": "2026-06-29T20:57:34.495Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -569,16 +569,6 @@
           "firstName": "Максим",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:49.455Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8861773316": {
-          "userId": 8861773316,
-          "username": "goldenwhisperingzip",
-          "firstName": "Ира",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:51:49.659Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -8643,10 +8633,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:51:49.659Z",
-      "lastSeen": "2026-05-18T20:51:49.659Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-06-29T20:57:33.494Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
