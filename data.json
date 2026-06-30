@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-06-30T12:43:37.135Z",
+  "savedAt": "2026-06-30T12:53:37.138Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -10620,6 +10620,24 @@
           "lastSeen": "2026-06-27T20:34:19.546Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8441961171": {
+      "userId": 8441961171,
+      "username": "",
+      "firstName": "𝑨𝑹𝑴𝑨𝑵",
+      "lastName": "",
+      "profileLink": "tg://user?id=8441961171",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-06-30T12:47:34.100Z",
+      "lastSeen": "2026-06-30T12:47:34.100Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
