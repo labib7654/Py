@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-02T00:33:37.482Z",
+  "savedAt": "2026-07-02T00:43:37.482Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -10600,6 +10600,26 @@
       "firstSeen": "2026-06-30T12:47:34.100Z",
       "lastSeen": "2026-06-30T12:47:34.100Z",
       "groups": [],
+      "channels": [],
+      "seenInChats": {},
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8144817283": {
+      "userId": 8144817283,
+      "username": "hmde_221",
+      "firstName": "مـ༈ۖ҉ـحـ༈ۖ҉ـمـ༈ۖ҉ـد J͜͡",
+      "lastName": "",
+      "profileLink": "https://t.me/hmde_221",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-07-02T00:37:32.012Z",
+      "lastSeen": "2026-07-02T00:37:32.012Z",
+      "groups": [
+        -1003334375214
+      ],
       "channels": [],
       "seenInChats": {},
       "contactedBot": false,
