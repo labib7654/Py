@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-03T17:03:37.902Z",
+  "savedAt": "2026-07-03T17:07:59.982Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1354,6 +1354,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-27T05:32:20.003Z"
+        },
+        "1938877566": {
+          "userId": 1938877566,
+          "username": "eeeepv",
+          "firstName": "َ⌝❪ رص֓اࠗص֓ ا̶ل̶و̶ق̶ا̶ئي̶ ❫⌞ ⏎ 🇵🇸",
+          "role": "member",
+          "joinedAt": "2026-07-03T17:06:36.540Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-07-03T17:06:36.540Z"
         },
         "6061773220": {
           "userId": 6061773220,
@@ -3215,6 +3225,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T20:51:49.055Z",
           "lastSeen": "2026-05-18T20:51:49.055Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "1938877566": {
+      "userId": 1938877566,
+      "username": "eeeepv",
+      "firstName": "َ⌝❪ رص֓اࠗص֓ ا̶ل̶و̶ق̶ا̶ئي̶ ❫⌞ ⏎ 🇵🇸",
+      "lastName": "",
+      "profileLink": "https://t.me/eeeepv",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-07-03T17:06:36.540Z",
+      "lastSeen": "2026-07-03T17:06:36.540Z",
+      "groups": [
+        -1002985211839
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-07-03T17:06:36.540Z",
+          "lastSeen": "2026-07-03T17:06:36.540Z"
         }
       },
       "contactedBot": false,
