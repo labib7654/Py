@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-03T23:33:37.959Z",
+  "savedAt": "2026-07-03T23:40:00.138Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2350,6 +2350,16 @@
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-07-03T20:27:15.260Z"
+        },
+        "7869275734": {
+          "userId": 7869275734,
+          "username": "D_n_j_r",
+          "firstName": "⤸ال͜جــ͢ـ̸̐ـــٖـلادٰ || 𝑫𝑨𝑵𝑮𝑬𝑹 🃏",
+          "role": "member",
+          "joinedAt": "2026-07-03T23:39:00.270Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-07-03T23:39:00.270Z"
         }
       },
       "admins": {},
@@ -10696,6 +10706,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-07-03T20:26:48.341Z",
           "lastSeen": "2026-07-03T20:27:15.260Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7869275734": {
+      "userId": 7869275734,
+      "username": "D_n_j_r",
+      "firstName": "⤸ال͜جــ͢ـ̸̐ـــٖـلادٰ || 𝑫𝑨𝑵𝑮𝑬𝑹 🃏",
+      "lastName": "",
+      "profileLink": "https://t.me/D_n_j_r",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-07-03T23:39:00.270Z",
+      "lastSeen": "2026-07-03T23:39:00.270Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003750270631": {
+          "chatId": -1003750270631,
+          "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+          "chatType": "supergroup",
+          "firstSeen": "2026-07-03T23:39:00.270Z",
+          "lastSeen": "2026-07-03T23:39:00.270Z"
         }
       },
       "contactedBot": false,
