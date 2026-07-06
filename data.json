@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-06T22:18:32.320Z",
+  "savedAt": "2026-07-06T22:19:26.946Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -402,16 +402,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:07.075Z"
-        },
-        "8415495406": {
-          "userId": 8415495406,
-          "username": "etherealmystic791",
-          "firstName": "Леонид",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:57.440Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:07.235Z"
         },
         "8033713810": {
           "userId": 8033713810,
@@ -5791,10 +5781,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:57.440Z",
-      "lastSeen": "2026-05-18T14:21:07.235Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-07-06T22:19:25.945Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
