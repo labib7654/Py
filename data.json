@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-06T22:20:41.006Z",
+  "savedAt": "2026-07-06T22:22:16.969Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -382,16 +382,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:06.749Z"
-        },
-        "8780273417": {
-          "userId": 8780273417,
-          "username": "radiantduskuZn",
-          "firstName": "Егор",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:57.351Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:07.075Z"
         },
         "8033713810": {
           "userId": 8033713810,
@@ -5701,10 +5691,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:57.351Z",
-      "lastSeen": "2026-05-18T14:21:07.075Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-07-06T22:22:15.968Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
