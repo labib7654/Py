@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-06T22:13:39.117Z",
+  "savedAt": "2026-07-06T22:15:27.318Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -432,16 +432,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:21:07.235Z"
-        },
-        "8461305155": {
-          "userId": 8461305155,
-          "username": "whimsicalwhirlrqC",
-          "firstName": "Глеб",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:58.388Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:21:07.553Z"
         },
         "8033713810": {
           "userId": 8033713810,
@@ -5879,10 +5869,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:58.388Z",
-      "lastSeen": "2026-05-18T14:21:07.554Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-07-06T22:15:26.317Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
