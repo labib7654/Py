@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-06T22:20:24.902Z",
+  "savedAt": "2026-07-06T22:20:33.132Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -332,16 +332,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:20:55.025Z"
-        },
-        "8235265201": {
-          "userId": 8235265201,
-          "username": "chillbloomspNF",
-          "firstName": "Виктор",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:52.430Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:20:52.823Z"
         },
         "6787806049": {
           "userId": 6787806049,
@@ -4187,10 +4177,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:52.429Z",
-      "lastSeen": "2026-05-18T14:20:52.824Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-07-06T22:20:32.131Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
