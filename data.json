@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-06T22:19:26.946Z",
+  "savedAt": "2026-07-06T22:19:51.149Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -539,16 +539,6 @@
           "firstName": "Артемий",
           "role": "member",
           "joinedAt": "2026-05-18T20:51:51.386Z",
-          "messageCount": 0,
-          "score": 0,
-          "lastMessageAt": null
-        },
-        "8432214854": {
-          "userId": 8432214854,
-          "username": "echoingraindropECW",
-          "firstName": "Богдан",
-          "role": "member",
-          "joinedAt": "2026-05-18T20:56:49.701Z",
           "messageCount": 0,
           "score": 0,
           "lastMessageAt": null
@@ -9125,10 +9115,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T20:56:49.701Z",
-      "lastSeen": "2026-05-18T20:56:49.701Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-07-06T22:19:50.147Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
