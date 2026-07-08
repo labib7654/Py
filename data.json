@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-08T23:23:39.358Z",
+  "savedAt": "2026-07-08T23:30:04.863Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2230,6 +2230,16 @@
           "messageCount": 2,
           "score": 2,
           "lastMessageAt": "2026-07-03T23:40:45.596Z"
+        },
+        "7822553857": {
+          "userId": 7822553857,
+          "username": "a_l_i770",
+          "firstName": "♡عہلہي 𝓐𝓵𝓲♡",
+          "role": "member",
+          "joinedAt": "2026-07-08T23:28:40.810Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-07-08T23:28:40.810Z"
         }
       },
       "admins": {},
@@ -10578,6 +10588,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-07-03T23:39:00.270Z",
           "lastSeen": "2026-07-03T23:40:45.596Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7822553857": {
+      "userId": 7822553857,
+      "username": "a_l_i770",
+      "firstName": "♡عہلہي 𝓐𝓵𝓲♡",
+      "lastName": "",
+      "profileLink": "https://t.me/a_l_i770",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-07-08T23:28:40.810Z",
+      "lastSeen": "2026-07-08T23:28:40.811Z",
+      "groups": [
+        -1003750270631
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1003750270631": {
+          "chatId": -1003750270631,
+          "chatTitle": "كروبات دردشه يمنيه تعزية إبية قروبات اليمن صنعاء♡",
+          "chatType": "supergroup",
+          "firstSeen": "2026-07-08T23:28:40.811Z",
+          "lastSeen": "2026-07-08T23:28:40.811Z"
         }
       },
       "contactedBot": false,
