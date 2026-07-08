@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-08T16:13:39.353Z",
+  "savedAt": "2026-07-08T16:16:04.724Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1318,12 +1318,12 @@
         "8075626041": {
           "userId": 8075626041,
           "username": "",
-          "firstName": "الأيام القادمة سنخوضها برعاية الله",
+          "firstName": "×͜×",
           "role": "member",
           "joinedAt": "2026-06-01T11:51:19.691Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-06-01T11:51:19.691Z"
+          "messageCount": 2,
+          "score": 2,
+          "lastMessageAt": "2026-07-08T16:15:07.885Z"
         },
         "5922259592": {
           "userId": 5922259592,
@@ -3426,7 +3426,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-07-02T00:17:46.857Z",
+      "lastSeen": "2026-07-08T16:15:09.075Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -9935,14 +9935,14 @@
     "8075626041": {
       "userId": 8075626041,
       "username": "",
-      "firstName": "الأيام القادمة سنخوضها برعاية الله",
+      "firstName": "×͜×",
       "lastName": "",
       "profileLink": "tg://user?id=8075626041",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-06-01T11:51:19.691Z",
-      "lastSeen": "2026-06-01T11:51:19.693Z",
+      "lastSeen": "2026-07-08T16:15:07.887Z",
       "groups": [
         -1002985211839
       ],
@@ -9953,7 +9953,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-06-01T11:51:19.693Z",
-          "lastSeen": "2026-06-01T11:51:19.693Z"
+          "lastSeen": "2026-07-08T16:15:07.887Z"
         }
       },
       "contactedBot": false,
