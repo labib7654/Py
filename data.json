@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-09T15:22:20.866Z",
+  "savedAt": "2026-07-09T15:23:39.387Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1344,6 +1344,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-06-27T20:34:19.546Z"
+        },
+        "7823500092": {
+          "userId": 7823500092,
+          "username": "",
+          "firstName": "القنــ۬ۦٕ٘۬ 𖥡ﹻٰ۬ۛۛـاص",
+          "role": "member",
+          "joinedAt": "2026-07-09T15:22:40.140Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-07-09T15:22:40.140Z"
         }
       },
       "admins": {
@@ -1505,6 +1515,14 @@
           "firstName": "ضياء",
           "status": "pending_verify",
           "requestedAt": "2026-06-27T20:34:20.295Z",
+          "isExistingMember": true
+        },
+        "7823500092": {
+          "userId": 7823500092,
+          "username": "",
+          "firstName": "القنــ۬ۦٕ٘۬ 𖥡ﹻٰ۬ۛۛـاص",
+          "status": "pending_verify",
+          "requestedAt": "2026-07-09T15:22:40.846Z",
           "isExistingMember": true
         }
       },
@@ -3512,7 +3530,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-07-09T15:22:19.693Z",
+      "lastSeen": "2026-07-09T15:22:40.884Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10692,6 +10710,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-07-08T23:28:40.811Z",
           "lastSeen": "2026-07-08T23:52:14.290Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "7823500092": {
+      "userId": 7823500092,
+      "username": "",
+      "firstName": "القنــ۬ۦٕ٘۬ 𖥡ﹻٰ۬ۛۛـاص",
+      "lastName": "",
+      "profileLink": "tg://user?id=7823500092",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-07-09T15:22:40.140Z",
+      "lastSeen": "2026-07-09T15:22:40.140Z",
+      "groups": [
+        -1002985211839
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-07-09T15:22:40.140Z",
+          "lastSeen": "2026-07-09T15:22:40.140Z"
         }
       },
       "contactedBot": false,
