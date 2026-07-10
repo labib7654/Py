@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-10T17:13:39.419Z",
+  "savedAt": "2026-07-10T17:18:06.028Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1224,6 +1224,16 @@
           "messageCount": 4,
           "score": 4,
           "lastMessageAt": "2026-07-09T20:54:34.583Z"
+        },
+        "1251121716": {
+          "userId": 1251121716,
+          "username": "Armcodye",
+          "firstName": "قسـ𖥡ـورة",
+          "role": "member",
+          "joinedAt": "2026-07-10T17:17:02.429Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-07-10T17:17:04.129Z"
         },
         "1938877566": {
           "userId": 1938877566,
@@ -2930,6 +2940,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-05-18T14:25:53.756Z",
           "lastSeen": "2026-05-18T14:25:53.756Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "1251121716": {
+      "userId": 1251121716,
+      "username": "Armcodye",
+      "firstName": "قسـ𖥡ـورة",
+      "lastName": "ـ᭄ليماني⏎ر᭖͜͡.",
+      "profileLink": "https://t.me/Armcodye",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-07-10T17:17:02.429Z",
+      "lastSeen": "2026-07-10T17:17:04.129Z",
+      "groups": [
+        -1002985211839
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-07-10T17:17:02.429Z",
+          "lastSeen": "2026-07-10T17:17:04.129Z"
         }
       },
       "contactedBot": false,
