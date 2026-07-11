@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-11T16:33:39.441Z",
+  "savedAt": "2026-07-11T16:38:07.204Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1231,9 +1231,9 @@
           "firstName": "َ⌝❪ رص֓اࠗص֓ ا̶ل̶و̶ق̶ا̶ئي̶ ❫⌞ ⏎ 🇵🇸",
           "role": "member",
           "joinedAt": "2026-07-03T17:06:36.540Z",
-          "messageCount": 7,
-          "score": 7,
-          "lastMessageAt": "2026-07-10T23:11:49.689Z"
+          "messageCount": 8,
+          "score": 8,
+          "lastMessageAt": "2026-07-11T16:37:14.491Z"
         },
         "6061773220": {
           "userId": 6061773220,
@@ -3301,7 +3301,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-07-03T17:06:36.540Z",
-      "lastSeen": "2026-07-10T23:11:49.690Z",
+      "lastSeen": "2026-07-11T16:37:14.492Z",
       "groups": [
         -1002985211839
       ],
@@ -3312,7 +3312,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-07-03T17:06:36.540Z",
-          "lastSeen": "2026-07-10T23:11:49.690Z"
+          "lastSeen": "2026-07-11T16:37:14.492Z"
         }
       },
       "contactedBot": false,
