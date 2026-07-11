@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-11T18:13:39.443Z",
+  "savedAt": "2026-07-11T18:18:21.612Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1211,9 +1211,9 @@
           "firstName": "Group",
           "role": "member",
           "joinedAt": "2026-05-27T05:32:20.003Z",
-          "messageCount": 4,
-          "score": 4,
-          "lastMessageAt": "2026-07-09T20:54:34.583Z"
+          "messageCount": 5,
+          "score": 5,
+          "lastMessageAt": "2026-07-11T18:18:18.376Z"
         },
         "1251121716": {
           "userId": 1251121716,
@@ -1413,6 +1413,18 @@
             "warnedBy": 7243808108,
             "warnedAt": "2026-07-09T20:54:36.649Z",
             "isAutomatic": true
+          },
+          {
+            "reason": "أضاف بوت (@GroupAnonymousBot) للمجموعة",
+            "warnedBy": 7243808108,
+            "warnedAt": "2026-07-11T18:18:19.924Z",
+            "isAutomatic": true
+          },
+          {
+            "reason": "أضاف بوت (@GroupAnonymousBot) للمجموعة",
+            "warnedBy": 7243808108,
+            "warnedAt": "2026-07-11T18:18:20.610Z",
+            "isAutomatic": true
           }
         ]
       },
@@ -1564,6 +1576,32 @@
         "canManageTopics": false
       },
       "auditLog": [
+        {
+          "action": "🤖 إزالة بوت",
+          "by": {
+            "id": 7243808108,
+            "username": "Labibytr_bot"
+          },
+          "target": {
+            "id": 1087968824,
+            "username": "GroupAnonymousBot"
+          },
+          "details": "البوت المضاف: @GroupAnonymousBot",
+          "at": "2026-07-11T18:18:20.610Z"
+        },
+        {
+          "action": "🤖 إزالة بوت",
+          "by": {
+            "id": 7243808108,
+            "username": "Labibytr_bot"
+          },
+          "target": {
+            "id": 1087968824,
+            "username": "GroupAnonymousBot"
+          },
+          "details": "البوت المضاف: @GroupAnonymousBot",
+          "at": "2026-07-11T18:18:19.924Z"
+        },
         {
           "action": "🤖 إزالة بوت",
           "by": {
@@ -2844,7 +2882,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T13:49:52.695Z",
-      "lastSeen": "2026-07-09T20:54:34.583Z",
+      "lastSeen": "2026-07-11T18:18:18.376Z",
       "groups": [
         -1003969494192,
         -1003750270631,
@@ -3596,7 +3634,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-07-09T20:54:36.478Z",
+      "lastSeen": "2026-07-11T18:18:20.439Z",
       "groups": [
         -1003969494192,
         -1003940779079,
