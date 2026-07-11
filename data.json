@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-11T06:53:39.430Z",
+  "savedAt": "2026-07-11T07:03:39.429Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -322,16 +322,6 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-05-18T14:00:38.477Z"
-        },
-        "7310339070": {
-          "userId": 7310339070,
-          "username": "Liamonie_RisxTyhunian",
-          "firstName": "Батейко",
-          "role": "member",
-          "joinedAt": "2026-05-18T14:20:52.428Z",
-          "messageCount": 1,
-          "score": 1,
-          "lastMessageAt": "2026-05-18T14:20:55.025Z"
         },
         "6787806049": {
           "userId": 6787806049,
@@ -4269,10 +4259,8 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-18T14:20:52.427Z",
-      "lastSeen": "2026-05-18T14:20:55.025Z",
-      "groups": [
-        -1003969494192
-      ],
+      "lastSeen": "2026-07-11T07:03:39.067Z",
+      "groups": [],
       "channels": [],
       "seenInChats": {
         "-1003969494192": {
