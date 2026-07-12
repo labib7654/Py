@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-12T02:53:39.459Z",
+  "savedAt": "2026-07-12T03:02:08.155Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1327,13 +1327,13 @@
         },
         "5922259592": {
           "userId": 5922259592,
-          "username": "",
+          "username": "Aeslam2030",
           "firstName": "بدر",
           "role": "member",
           "joinedAt": "2026-06-07T22:22:54.038Z",
-          "messageCount": 3,
-          "score": 3,
-          "lastMessageAt": "2026-06-29T06:05:15.118Z"
+          "messageCount": 4,
+          "score": 4,
+          "lastMessageAt": "2026-07-12T03:00:52.089Z"
         },
         "6706299115": {
           "userId": 6706299115,
@@ -10326,15 +10326,15 @@
     },
     "5922259592": {
       "userId": 5922259592,
-      "username": "",
+      "username": "Aeslam2030",
       "firstName": "بدر",
       "lastName": "الدين",
-      "profileLink": "tg://user?id=5922259592",
+      "profileLink": "https://t.me/Aeslam2030",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-06-07T22:22:54.038Z",
-      "lastSeen": "2026-06-29T06:05:15.118Z",
+      "lastSeen": "2026-07-12T03:00:52.089Z",
       "groups": [
         -1002985211839
       ],
@@ -10345,7 +10345,7 @@
           "chatTitle": "نحن أنصار الله",
           "chatType": "supergroup",
           "firstSeen": "2026-06-07T22:22:54.039Z",
-          "lastSeen": "2026-06-29T06:05:15.118Z"
+          "lastSeen": "2026-07-12T03:00:52.089Z"
         }
       },
       "contactedBot": false,
