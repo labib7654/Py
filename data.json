@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-12T17:53:39.484Z",
+  "savedAt": "2026-07-12T18:03:39.484Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -3540,12 +3540,12 @@
     "7411444902": {
       "userId": 7411444902,
       "username": "Labibrd",
-      "firstName": "ㅤㅤㅤㅤ",
+      "firstName": ".",
       "globalBanned": false,
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-06-17T00:55:31.293Z",
+      "lastSeen": "2026-07-12T17:56:17.060Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -3854,7 +3854,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T23:47:43.215Z",
-      "lastSeen": "2026-05-22T20:34:50.941Z",
+      "lastSeen": "2026-07-12T17:55:09.805Z",
       "groups": [
         -1003969494192,
         -1002985211839,
