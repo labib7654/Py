@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-13T17:53:39.537Z",
+  "savedAt": "2026-07-13T18:03:39.536Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -1354,6 +1354,16 @@
           "messageCount": 1,
           "score": 1,
           "lastMessageAt": "2026-07-09T15:22:40.140Z"
+        },
+        "6849391174": {
+          "userId": 6849391174,
+          "username": "YMEEN313",
+          "firstName": "𓅖⃟🇾🇪أمبࢪاطوࢪ ࢪيمة 𓅖⃟🇵🇸",
+          "role": "member",
+          "joinedAt": "2026-07-13T18:03:36.241Z",
+          "messageCount": 1,
+          "score": 1,
+          "lastMessageAt": "2026-07-13T18:03:36.241Z"
         }
       },
       "admins": {
@@ -1547,6 +1557,14 @@
           "firstName": "القنــ۬ۦٕ٘۬ 𖥡ﹻٰ۬ۛۛـاص",
           "status": "pending_verify",
           "requestedAt": "2026-07-09T15:22:40.846Z",
+          "isExistingMember": true
+        },
+        "6849391174": {
+          "userId": 6849391174,
+          "username": "YMEEN313",
+          "firstName": "𓅖⃟🇾🇪أمبࢪاطوࢪ ࢪيمة 𓅖⃟🇵🇸",
+          "status": "pending_verify",
+          "requestedAt": "2026-07-13T18:03:36.968Z",
           "isExistingMember": true
         }
       },
@@ -3634,7 +3652,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T21:35:28.433Z",
-      "lastSeen": "2026-07-11T18:18:20.439Z",
+      "lastSeen": "2026-07-13T18:03:37.305Z",
       "groups": [
         -1003969494192,
         -1003940779079,
@@ -10840,6 +10858,34 @@
           "chatType": "supergroup",
           "firstSeen": "2026-07-09T15:22:40.140Z",
           "lastSeen": "2026-07-09T15:22:40.140Z"
+        }
+      },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "6849391174": {
+      "userId": 6849391174,
+      "username": "YMEEN313",
+      "firstName": "𓅖⃟🇾🇪أمبࢪاطوࢪ ࢪيمة 𓅖⃟🇵🇸",
+      "lastName": "",
+      "profileLink": "https://t.me/YMEEN313",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-07-13T18:03:36.241Z",
+      "lastSeen": "2026-07-13T18:03:36.242Z",
+      "groups": [
+        -1002985211839
+      ],
+      "channels": [],
+      "seenInChats": {
+        "-1002985211839": {
+          "chatId": -1002985211839,
+          "chatTitle": "نحن أنصار الله",
+          "chatType": "supergroup",
+          "firstSeen": "2026-07-13T18:03:36.242Z",
+          "lastSeen": "2026-07-13T18:03:36.242Z"
         }
       },
       "contactedBot": false,
