@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-14T18:43:39.581Z",
+  "savedAt": "2026-07-14T18:53:39.581Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2950,6 +2950,24 @@
           "lastSeen": "2026-05-18T14:20:59.900Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "1224578059": {
+      "userId": 1224578059,
+      "username": "",
+      "firstName": "Thierry Manuel",
+      "lastName": "",
+      "profileLink": "tg://user?id=1224578059",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-07-14T18:47:33.714Z",
+      "lastSeen": "2026-07-14T18:47:33.714Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
