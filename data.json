@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-16T21:33:39.705Z",
+  "savedAt": "2026-07-16T21:43:39.708Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -10894,6 +10894,24 @@
           "lastSeen": "2026-07-13T18:03:36.242Z"
         }
       },
+      "contactedBot": false,
+      "lastContactAt": null,
+      "bioBanInfo": null
+    },
+    "8393771344": {
+      "userId": 8393771344,
+      "username": "Mrtchoffo",
+      "firstName": "Rony",
+      "lastName": "",
+      "profileLink": "https://t.me/Mrtchoffo",
+      "globalBanned": false,
+      "bannedReason": "",
+      "bannedAt": null,
+      "firstSeen": "2026-07-16T21:34:51.771Z",
+      "lastSeen": "2026-07-16T21:34:56.541Z",
+      "groups": [],
+      "channels": [],
+      "seenInChats": {},
       "contactedBot": false,
       "lastContactAt": null,
       "bioBanInfo": null
