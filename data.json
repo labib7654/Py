@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-19T21:53:39.990Z",
+  "savedAt": "2026-07-19T21:54:50.862Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2706,7 +2706,21 @@
         "canPinMessages": true,
         "canManageTopics": true
       },
-      "auditLog": [],
+      "auditLog": [
+        {
+          "action": "⬇️ تنزيل مشرف",
+          "by": {
+            "id": 7411444902,
+            "username": "Labibrd"
+          },
+          "target": {
+            "id": 8825048402,
+            "username": "Mahya"
+          },
+          "details": "",
+          "at": "2026-07-19T21:54:49.863Z"
+        }
+      ],
       "verifySystem": {
         "enabled": false,
         "verifyTopicId": null,
@@ -3561,7 +3575,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-07-12T17:56:17.060Z",
+      "lastSeen": "2026-07-19T21:54:49.676Z",
       "groups": [
         -1003940779079,
         -1003969494192,
