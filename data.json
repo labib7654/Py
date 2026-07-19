@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-19T21:54:50.862Z",
+  "savedAt": "2026-07-19T21:56:14.577Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2698,13 +2698,13 @@
         "ownerBypassAll": true
       },
       "perms": {
-        "canSendMessages": true,
-        "canSendMedia": true,
+        "canSendMessages": false,
+        "canSendMedia": false,
         "canSendPolls": true,
         "canAddWebPreviews": true,
         "canInviteUsers": true,
-        "canPinMessages": true,
-        "canManageTopics": true
+        "canPinMessages": false,
+        "canManageTopics": false
       },
       "auditLog": [
         {
@@ -3575,7 +3575,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-07-19T21:54:49.676Z",
+      "lastSeen": "2026-07-19T21:56:13.443Z",
       "groups": [
         -1003940779079,
         -1003969494192,
