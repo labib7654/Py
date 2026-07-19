@@ -1,5 +1,5 @@
 {
-  "savedAt": "2026-07-19T21:56:14.577Z",
+  "savedAt": "2026-07-19T21:58:14.577Z",
   "botAdmins": [
     6330247540,
     808821004
@@ -2698,7 +2698,7 @@
         "ownerBypassAll": true
       },
       "perms": {
-        "canSendMessages": false,
+        "canSendMessages": true,
         "canSendMedia": false,
         "canSendPolls": true,
         "canAddWebPreviews": true,
@@ -3575,7 +3575,7 @@
       "bannedReason": "",
       "bannedAt": null,
       "firstSeen": "2026-05-17T20:52:53.626Z",
-      "lastSeen": "2026-07-19T21:56:13.443Z",
+      "lastSeen": "2026-07-19T21:56:40.112Z",
       "groups": [
         -1003940779079,
         -1003969494192,
@@ -3620,7 +3620,7 @@
       "profileLink": "https://t.me/Labibrd",
       "lastName": "ㅤㅤㅤㅤ",
       "contactedBot": true,
-      "lastContactAt": "2026-05-23T22:49:43.867Z"
+      "lastContactAt": "2026-07-19T21:56:40.112Z"
     },
     "8607336247": {
       "userId": 8607336247,
